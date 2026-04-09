@@ -1,5 +1,7 @@
 import { VersionPicker } from "@/components/version-picker";
 import { StoryDNAConfig } from "@/components/story-dna/story-dna-config";
+import { CharacterSheetUploader } from "@/components/character-sheet/uploader";
+import { ZoneGeneratorPanel } from "@/components/zones/zone-generator-panel";
 
 export default function HomePage() {
   return (
@@ -20,6 +22,10 @@ export default function HomePage() {
       </section>
 
       <StoryDNAConfig />
+
+      <CharacterSheetUploader />
+
+      <ZoneGeneratorPanel />
 
       <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-500 text-center">
         PF1e: simulation | PF2e: three-action economy
