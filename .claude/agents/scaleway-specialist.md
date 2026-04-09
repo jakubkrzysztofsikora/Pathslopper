@@ -14,21 +14,33 @@ Activate when the user mentions Scaleway, `scw`, `scaleway/scaleway` provider, K
 ## Core product map
 
 - **Compute**
-  - **Instances** — general-purpose VMs. Types: `DEV1`, `GP1`, `PRO2`, `PLAY2`, `POP2`, `ENT1`, `STARDUST1`. Use `STARDUST1-S` for the cheapest always-on nano VM.
+  - **Instances** — general-purpose VMs. Current families per the [Instances datasheet](https://www.scaleway.com/en/docs/instances/reference-content/instances-datasheet/):
+    - Development / cost-optimized: `STARDUST1-S`, `PLAY2-PICO/NANO/MICRO`, `DEV1-S/M/L/XL`
+    - General purpose: `GP1-XS/S/M/L/XL`, `PRO2-XXS/XS/S/M/L`, `POP2-*` (incl. Windows `POP2-*-WIN` variants)
+    - ARM64: `COPARM1-*` (Ampere Altra)
+    - GPU: `L4-*`, `L40S-*`, `H100-*` (SXM and PCI variants)
+    - **Deprecated — do NOT recommend:** `ENT1` (being auto-migrated to `POP2`). Older `GP1` is still supported but `PRO2`/`POP2` are the current recommended general-purpose families.
+    - Cheapest always-on nano VM: `STARDUST1-S` or `PLAY2-PICO` — check current pricing.
   - **Elastic Metal** — bare metal servers, hourly or monthly billing.
-  - **Apple silicon** — Mac minis as a service (M1/M2/M2 Pro).
+  - **Apple silicon** — Mac minis as a service.
 - **Kubernetes**
-  - **Kapsule** — managed K8s control plane (free). You pay for the worker nodes (Instances).
-  - **Kosmos** — multi-cloud control plane that can manage nodes from other providers.
-  - Pool scaling is per node-pool; autoscaling via `cluster-autoscaler` is built in.
+  - **Kapsule** — managed K8s. Two control plane tiers:
+    - **Mutualized** (free) — highly available, shared control plane, **etcd limited to 55 MB**.
+    - **Dedicated** (paid, from ~€80/mo) — dedicated instance, **etcd up to 200 MB**, required for regional (multi-zone replicated) control planes, 30-day minimum commitment.
+    - You pay for worker nodes (Instances) in both tiers.
+  - **Kosmos** — multi-cloud managed control plane that can attach nodes from other clouds.
+  - Cluster topologies: **single-zone** (control plane + nodes in one AZ), **multi-AZ** (single-zone control plane, nodes spread across AZs in the same region), **regional** (control plane replicated across AZs — dedicated tier only).
+  - Pool scaling is per node-pool; `cluster-autoscaler` is built in.
+  - Supported CNIs: `cilium` (default), `calico`, `weave`, `flannel`, `kilo`, `none`.
 - **Serverless**
-  - **Serverless Containers** — Knative-style, scales to zero, accepts any OCI image from Scaleway Container Registry or Docker Hub.
-  - **Serverless Functions** — Node, Python, Go, Rust, PHP runtimes; max 900s timeout.
-  - **Serverless Jobs** — one-off or cron batch jobs, ideal for ETL and scheduled workloads.
+  - **Serverless Containers** — scales to zero, accepts any OCI image from Scaleway Container Registry or any public/private registry. **Must target `linux/amd64`** — ARM64 images will fail to deploy. Protocols: HTTP/1.1 (default) and HTTP/2 (h2c, required for gRPC). HTTP/1.0 is not supported.
+  - **Serverless Functions** — Node.js, Python, Go, Rust, PHP, and container-based runtimes. HTTP request timeout is configurable from **10 seconds to 60 minutes**. 15 minutes is the *scale-to-zero* idle timeout, not the request timeout.
+  - **Serverless Jobs** — one-off or cron batch jobs, up to **24 hours** per run. Use for ETL, data migration, and long batches that exceed the 60-minute Function ceiling.
 - **Storage**
   - **Object Storage** — S3-compatible API. Endpoints `https://s3.{region}.scw.cloud`. Works with any S3 SDK but set `AWS_REGION=fr-par` and a custom endpoint.
-  - **Block Storage** — SBS (new) and legacy volumes. SBS supports snapshots, resize, and multi-AZ.
-  - **Glacier** (cold storage class on Object Storage).
+  - **Block Storage** — SBS (Scaleway Block Storage, the current offering) and legacy per-instance volumes. SBS supports snapshots, online resize, and multiple IOPS tiers. Block volumes are **zone-scoped** — they can only attach to Instances in the same AZ. For cross-AZ redundancy you need application-level replication or Object Storage.
+  - **Multi-AZ Object Storage** — the Standard storage class is replicated across AZs in `fr-par`, `nl-ams`, and `pl-waw`.
+  - **Glacier** — cold storage class on Object Storage.
 - **Managed databases**: PostgreSQL, MySQL, Redis, MongoDB, and Serverless SQL (PostgreSQL-compatible, scales to zero).
 - **Networking**: Load Balancers, Public Gateways (NAT + DHCP for private networks), VPC + Private Networks, IPAM, Edge Services (CDN + WAF), Domains & DNS.
 - **Other**: Container Registry, Secret Manager, IAM (principals, applications, policies), Messaging & Queuing (NATS, SQS/SNS-compatible), IoT Hub, Transactional Email (TEM).
@@ -48,7 +60,7 @@ terraform {
   required_providers {
     scaleway = {
       source  = "scaleway/scaleway"
-      version = "~> 2.48"
+      version = "~> 2.71"
     }
   }
 }
@@ -62,15 +74,23 @@ provider "scaleway" {
 
 Key resources you will reach for:
 
-- `scaleway_instance_server`, `scaleway_instance_volume`, `scaleway_instance_ip`
+- `scaleway_instance_server`, `scaleway_instance_ip`, `scaleway_instance_security_group`
+- `scaleway_block_volume` (new SBS — preferred), `scaleway_instance_volume` (legacy per-instance volumes)
+- `scaleway_baremetal_server` (Elastic Metal), `scaleway_apple_silicon_server`
 - `scaleway_k8s_cluster`, `scaleway_k8s_pool`
-- `scaleway_object_bucket`, `scaleway_object_bucket_policy`
-- `scaleway_container_namespace`, `scaleway_container`
-- `scaleway_function_namespace`, `scaleway_function`, `scaleway_function_cron`
-- `scaleway_rdb_instance`, `scaleway_rdb_database`, `scaleway_rdb_user`
-- `scaleway_lb`, `scaleway_lb_frontend`, `scaleway_lb_backend`
+- `scaleway_object_bucket`, `scaleway_object_bucket_policy`, `scaleway_object_bucket_acl`, `scaleway_object_bucket_website_configuration`
+- `scaleway_container_namespace`, `scaleway_container`, `scaleway_container_cron`, `scaleway_container_domain`
+- `scaleway_function_namespace`, `scaleway_function`, `scaleway_function_cron`, `scaleway_function_trigger`
+- `scaleway_job_definition` (Serverless Jobs)
+- `scaleway_rdb_instance`, `scaleway_rdb_database`, `scaleway_rdb_user`, `scaleway_rdb_read_replica`
+- `scaleway_redis_cluster`, `scaleway_mongodb_instance`
+- `scaleway_lb`, `scaleway_lb_frontend`, `scaleway_lb_backend`, `scaleway_lb_certificate`
 - `scaleway_vpc`, `scaleway_vpc_private_network`, `scaleway_vpc_public_gateway`
-- `scaleway_iam_application`, `scaleway_iam_api_key`, `scaleway_iam_policy`
+- `scaleway_registry_namespace`
+- `scaleway_secret`, `scaleway_secret_version`
+- `scaleway_iam_application`, `scaleway_iam_api_key`, `scaleway_iam_policy`, `scaleway_iam_group`
+- `scaleway_mnq_sqs`, `scaleway_mnq_sqs_queue`, `scaleway_mnq_sns`, `scaleway_mnq_nats_account` (Messaging & Queuing)
+- `scaleway_cockpit`, `scaleway_cockpit_token`, `scaleway_cockpit_source` (observability)
 
 Remote state: use the `s3` backend pointed at Scaleway Object Storage.
 
@@ -119,18 +139,33 @@ When pointing `aws`, `boto3`, `rclone`, or any S3 SDK at Scaleway Object Storage
 
 ## Kapsule operational notes
 
-- Control plane is free; cost comes from node pools (Instances) + public LB IPs.
-- Out of the box: Cilium CNI, Scaleway CCM (LoadBalancer services create `scaleway_lb`), Scaleway CSI (SBS volumes), cluster-autoscaler.
-- For ingress, install an ingress controller yourself (ingress-nginx, Traefik). Scaleway LB is created per Service of type LoadBalancer.
-- Private networks attach to node pools for multi-AZ high availability.
+- Mutualized control plane is free; cost comes from node pools (Instances) + public LB IPs + attached block volumes. Dedicated control plane is paid (from ~€80/mo, 30-day minimum commitment).
+- Mutualized etcd is limited to **55 MB**; Dedicated allows **up to 200 MB**. If you hit the etcd ceiling (large numbers of ConfigMaps/Secrets/CRDs) you must upgrade to Dedicated.
+- Out of the box: Cilium CNI (default), Scaleway CCM (Services of type LoadBalancer provision a `scaleway_lb`), Scaleway CSI for block volumes, `cluster-autoscaler`.
+- For ingress, install an ingress controller yourself (ingress-nginx, Traefik). Each Service of type LoadBalancer creates a new Scaleway LB — consolidate via an ingress controller to keep costs down.
+- For HA across AZs pick **regional clusters** (replicated control plane across zones) — this requires the Dedicated tier. **Multi-AZ** clusters spread worker nodes across AZs but keep the control plane in a single zone.
+- Attach node pools to a `scaleway_vpc_private_network` for intra-cluster traffic over private IPs.
 
-## Serverless Containers/Functions gotchas
+## Serverless Containers gotchas
 
-- Max image size: 2 GB uncompressed. Use slim base images.
-- Cold starts: keep `min_scale` ≥ 1 for latency-sensitive workloads (trades cost).
-- Secrets: inject via `secret_environment_variables` (stored in Secret Manager).
-- Ingress paths are namespace-scoped. Containers listen on `$PORT` (default 8080).
-- Private registry images require `scaleway_registry_namespace` and pull secrets are handled transparently when the same project owns both.
+- **Architecture: `linux/amd64` only.** ARM64 images (including default `docker build` on Apple Silicon) will fail deployment. Use `docker build --platform linux/amd64 ...` or multi-stage `buildx` builds.
+- **Recommended uncompressed image size: ≤ 1 GB.** Bigger images still work but cold starts suffer. Use Alpine, multi-stage builds, and clean apt/pip caches.
+- Default resources: **1000 mvCPU, 2048 MB memory** — override per container.
+- Protocols: **HTTP/1.1** (default), **HTTP/2 h2c** (required for gRPC). HTTP/1.0 is not supported.
+- Containers must listen on the port declared in the container settings. Scaleway injects `PORT` into the env; read it and bind — don't hardcode 8080.
+- **Blocked outbound ports** (spam prevention): 25, 465, 8008, 8012, 8013, 8022, 9090, 9091. Transactional Email (TEM) is the supported way to send mail.
+- Secrets: inject via `secret_environment_variables` (backed by Secret Manager).
+- **JWT authentication is deprecated** — migrate all container/function privacy to IAM-based authentication.
+- Cold starts: keep `min_scale` ≥ 1 for latency-sensitive workloads (trades cost for warm instances).
+- Org-wide quotas: max 1000 containers, 100 namespaces per project, 600 GiB total container memory.
+
+## Serverless Functions gotchas
+
+- Runtimes: Node.js, Python, Go, Rust, PHP, plus container-based runtimes.
+- Request timeout: **10 s min, 60 min max**. The 15-minute figure in the console is the *scale-to-zero idle timeout*, not the per-request ceiling.
+- Zip upload size ≤ 100 MiB; post-build code size ≤ 500 MiB; temp disk ≤ 1024 MiB; payload ≤ 6 MiB per request.
+- Concurrency: 1 request per instance — scale out via `max_scale`, not concurrent request handling.
+- Use **Serverless Jobs** for batch work beyond 60 minutes (up to 24 hours per run).
 
 ## IAM model
 
@@ -143,11 +178,14 @@ Scaleway IAM has **Organizations → Projects → Applications/Users → Groups 
 
 ## Common pitfalls
 
-- Forgetting that Instances are **zonal** while Kapsule/RDB/Object Storage are **regional** — cross-zone traffic inside the same region is free and low-latency.
+- Forgetting that Instances are **zonal** while Kapsule/RDB/Object Storage are **regional** — cross-AZ traffic inside the same region is low-latency over the common network layer.
 - Using the wrong S3 endpoint region; `s3.fr-par.scw.cloud` does NOT serve `nl-ams` buckets.
-- Assuming AWS-style IAM ARNs — Scaleway uses its own IDs and policy format.
-- Serverless functions timing out at 15 min (900s); use Serverless Jobs for longer batches.
+- Assuming AWS-style IAM ARNs — Scaleway uses its own IDs and policy format (Organization → Project → Application/User → Group → Policy).
+- Building Serverless Container images on Apple Silicon without `--platform=linux/amd64` — the deploy will fail.
+- Hitting the **55 MB mutualized etcd cap** in Kapsule with lots of Secrets/ConfigMaps — upgrade to the Dedicated control plane or trim cluster state.
+- Recommending `ENT1` instances — deprecated, being auto-migrated to `POP2`.
 - Forgetting to set `SCW_DEFAULT_PROJECT_ID` — the CLI and Terraform provider silently target the default project.
+- Terraform resource IDs include the zone/region prefix: `fr-par-1/11111111-...`. Use `trimprefix` or `split` when you need the raw Scaleway ID.
 
 ## What to produce
 
