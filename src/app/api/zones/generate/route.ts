@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { StoryDNASchema } from "@/lib/schemas/story-dna";
-import { callClaude } from "@/lib/llm/anthropic-client";
+import { callLLM } from "@/lib/llm/client";
 import { generateZone } from "@/lib/orchestration/generate-zone";
 
 // TODO: LangGraph node — generateZone is the library seam. When LangGraph
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   const { dna, seed } = parsed.data;
 
   const result = await generateZone(dna, seed, {
-    callClaude,
+    callLLM,
     logger: logServerError,
   });
 

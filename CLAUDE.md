@@ -86,6 +86,55 @@ those tests. If a test needs to change, loop back to Phase 2.
   Phase 2 plan.
 - **`debugger`** — call when Phase 4 surfaces failures.
 
+## Phase 5 — Ship
+
+**Goal:** get the verified build running on Scaleway infrastructure via
+GitHub Actions, reusing the same Terraform module for feature-branch
+previews (`dev`) and production (`prod`).
+
+- **`scaleway-specialist`** — owns the Scaleway resource topology
+  (Serverless Containers, Container Registry, Secret Manager, IAM
+  applications, Object Storage for Terraform state). All resources live
+  in `infra/terraform/`.
+- **`deployment-engineer` / `devops-engineer`** — owns the GitHub Actions
+  workflows in `.github/workflows/` (`ci.yml`, `deploy-dev.yml`,
+  `deploy-prod.yml`). CI runs lint + typecheck + test + build + Terraform
+  fmt/validate on every push. Deploys build a linux/amd64 image, push it
+  to Scaleway Container Registry, and `terraform apply` against a workspace
+  (`dev` or `prod`).
+- **`terraform-engineer` + `terraform` skill** — for infra/terraform/
+  changes. Follow the HashiCorp style guide and keep modules small.
+- State backend is the Scaleway Object Storage bucket
+  `pathfinder-nexus-tfstate` (S3-compatible). Bootstrap with
+  `./infra/terraform/scripts/bootstrap-tfstate.sh` before the first init.
+- State locking is serialized via GitHub Actions environment +
+  concurrency groups, since Scaleway Object Storage does not support
+  DynamoDB-style locking.
+- The `dev` environment is shared across feature branches (Option A from
+  the deployment-engineer plan). Per-PR ephemeral environments are a
+  post-MVP upgrade.
+
+## LLM provider
+
+The runtime LLM provider is **Scaleway Generative APIs** (OpenAI-compatible
+`/chat/completions` endpoint). A single Scaleway IAM application API key
+per environment, minted by Terraform and scoped to
+`GenerativeApisFullAccess`, is the only credential the container holds.
+No `ANTHROPIC_API_KEY`, no external provider dependency.
+
+Model selection is env-var driven, not code-driven:
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `LLM_BASE_URL` | `https://api.scaleway.ai/v1` | OpenAI-compatible endpoint |
+| `LLM_TEXT_MODEL` | `llama-3.1-70b-instruct` | GM prompt chains, input optimizer |
+| `LLM_VISION_MODEL` | `pixtral-12b-2409` | Character-sheet VLM route |
+| `LLM_API_KEY` | (secret) | Scaleway IAM API key, injected by Secret Manager |
+
+Swapping to a self-hosted model (e.g., Bielik via Scaleway Managed
+Inference for Polish-first reasoning) is a Terraform variable change, not
+a code deploy.
+
 ## Defaults & conventions
 
 1. **Never skip Phase 2.** Even a tiny bug fix should describe the failing test

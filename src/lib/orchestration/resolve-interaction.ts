@@ -1,4 +1,4 @@
-import type { CallClaudeOptions } from "@/lib/llm/anthropic-client";
+import type { CallLLM } from "@/lib/llm/client";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
 import { optimizeInput } from "./optimize-input";
@@ -6,7 +6,7 @@ import { adjudicate, type AdjudicateOptions } from "./adjudicate";
 
 /**
  * Phase 2 + Phase 3 composition: takes raw player prose, optimizes it into
- * a PlayerIntent via Claude, then adjudicates the intent deterministically
+ * a PlayerIntent via the LLM, then adjudicates the intent deterministically
  * via the dice engine. Returns a tagged result so the HTTP adapter can map
  * failure modes to the right status code.
  *
@@ -14,8 +14,6 @@ import { adjudicate, type AdjudicateOptions } from "./adjudicate";
  * merged onto the optimized intent AFTER optimization so the LLM cannot
  * override explicit numeric overrides from the UI.
  */
-
-type CallClaude = (opts: CallClaudeOptions) => Promise<string>;
 
 export interface ResolveInteractionInput {
   rawInput: string;
@@ -25,7 +23,7 @@ export interface ResolveInteractionInput {
 }
 
 export interface ResolveInteractionDeps {
-  callClaude: CallClaude;
+  callLLM: CallLLM;
   adjudicateOptions?: AdjudicateOptions;
   logger?: (stage: string, err: unknown) => void;
 }
@@ -39,7 +37,7 @@ export async function resolveInteraction(
   deps: ResolveInteractionDeps
 ): Promise<ResolveInteractionResult> {
   const optimized = await optimizeInput(input.rawInput, input.version, {
-    callClaude: deps.callClaude,
+    callLLM: deps.callLLM,
     logger: deps.logger,
   });
 

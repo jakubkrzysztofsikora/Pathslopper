@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const callClaudeMock = vi.fn();
+const callLLMMock = vi.fn();
 
-vi.mock("@/lib/llm/anthropic-client", () => ({
-  callClaude: (...args: unknown[]) => callClaudeMock(...args),
+vi.mock("@/lib/llm/client", () => ({
+  callLLM: (...args: unknown[]) => callLLMMock(...args),
 }));
 
 import { POST } from "@/app/api/character-sheet/route";
@@ -46,7 +46,7 @@ const pf2eFixture = {
 
 describe("POST /api/character-sheet", () => {
   beforeEach(() => {
-    callClaudeMock.mockReset();
+    callLLMMock.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -55,7 +55,7 @@ describe("POST /api/character-sheet", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.ok).toBe(false);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 on invalid request schema", async () => {
@@ -69,11 +69,11 @@ describe("POST /api/character-sheet", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.ok).toBe(false);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("parses a PF1e VLM response end-to-end", async () => {
-    callClaudeMock.mockResolvedValueOnce(JSON.stringify(pf1eFixture));
+    callLLMMock.mockResolvedValueOnce(JSON.stringify(pf1eFixture));
     const res = await POST(
       makeRequest({
         imageBase64: tinyBase64,
@@ -89,12 +89,12 @@ describe("POST /api/character-sheet", () => {
     expect(json.data.bab).toBe(4);
 
     // Verify the system prompt carried the PF1e branding.
-    const callArgs = callClaudeMock.mock.calls[0][0];
+    const callArgs = callLLMMock.mock.calls[0][0];
     expect(callArgs.system).toContain("Pathfinder 1st Edition");
   });
 
   it("parses a PF2e VLM response with discriminated-union narrowing", async () => {
-    callClaudeMock.mockResolvedValueOnce(
+    callLLMMock.mockResolvedValueOnce(
       `\`\`\`json\n${JSON.stringify(pf2eFixture)}\n\`\`\``
     );
     const res = await POST(
@@ -113,7 +113,7 @@ describe("POST /api/character-sheet", () => {
   });
 
   it("returns 502 with sanitised error when upstream call throws", async () => {
-    callClaudeMock.mockRejectedValueOnce(
+    callLLMMock.mockRejectedValueOnce(
       new Error("APIError: 429 rate limited (request_id=req_xyz)")
     );
     const res = await POST(
@@ -131,7 +131,7 @@ describe("POST /api/character-sheet", () => {
   });
 
   it("returns 422 when VLM response cannot be parsed against the schema", async () => {
-    callClaudeMock.mockResolvedValueOnce(
+    callLLMMock.mockResolvedValueOnce(
       JSON.stringify({ version: "pf2e", name: "Broken" }) // missing required fields
     );
     const res = await POST(

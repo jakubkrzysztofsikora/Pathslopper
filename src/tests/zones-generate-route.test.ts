@@ -3,10 +3,10 @@ import { NextRequest } from "next/server";
 import { VERSION_SLIDER_DEFAULTS } from "@/lib/schemas/story-dna";
 import { DEFAULT_BANNED_PHRASES } from "@/lib/prompts/banned-phrases";
 
-const callClaudeMock = vi.fn();
+const callLLMMock = vi.fn();
 
-vi.mock("@/lib/llm/anthropic-client", () => ({
-  callClaude: (...args: unknown[]) => callClaudeMock(...args),
+vi.mock("@/lib/llm/client", () => ({
+  callLLM: (...args: unknown[]) => callLLMMock(...args),
 }));
 
 // Import AFTER vi.mock so the route wires up the mocked client.
@@ -52,7 +52,7 @@ const dirtyMarkdown = `Moreover, the corridor smells of wet stone.\n\n\`\`\`json
 
 describe("POST /api/zones/generate", () => {
   beforeEach(() => {
-    callClaudeMock.mockReset();
+    callLLMMock.mockReset();
     // Silence the intentional console.error calls in the route's logServerError
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -62,7 +62,7 @@ describe("POST /api/zones/generate", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.ok).toBe(false);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 when dna or seed fails schema validation", async () => {
@@ -72,7 +72,7 @@ describe("POST /api/zones/generate", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.ok).toBe(false);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 when seed string contains control characters (prompt-injection guard)", async () => {
@@ -86,11 +86,11 @@ describe("POST /api/zones/generate", () => {
       })
     );
     expect(res.status).toBe(400);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("success path: Stage A + Stage B return clean output, Stage C validates, returns zone", async () => {
-    callClaudeMock
+    callLLMMock
       .mockResolvedValueOnce("Polish skeleton text")
       .mockResolvedValueOnce(cleanMarkdown);
 
@@ -100,11 +100,11 @@ describe("POST /api/zones/generate", () => {
     expect(json.ok).toBe(true);
     expect(json.zone.name).toBe("Flooded Corridor");
     expect(json.warnings).toEqual([]);
-    expect(callClaudeMock).toHaveBeenCalledTimes(2);
+    expect(callLLMMock).toHaveBeenCalledTimes(2);
   });
 
   it("retries Stage B once when banned phrase detected, succeeds on retry", async () => {
-    callClaudeMock
+    callLLMMock
       .mockResolvedValueOnce("Polish skeleton text")
       .mockResolvedValueOnce(dirtyMarkdown)
       .mockResolvedValueOnce(cleanMarkdown);
@@ -114,13 +114,13 @@ describe("POST /api/zones/generate", () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.zone.name).toBe("Flooded Corridor");
-    expect(callClaudeMock).toHaveBeenCalledTimes(3);
+    expect(callLLMMock).toHaveBeenCalledTimes(3);
 
     // Warnings should mention the detected phrase.
     expect(json.warnings.some((w: string) => w.includes("moreover"))).toBe(true);
 
     // Retry call should pass 3 messages: user prompt, assistant bad output, user corrective turn.
-    const retryCallArgs = callClaudeMock.mock.calls[2][0];
+    const retryCallArgs = callLLMMock.mock.calls[2][0];
     expect(retryCallArgs.messages).toHaveLength(3);
     expect(retryCallArgs.messages[1].role).toBe("assistant");
     expect(retryCallArgs.messages[1].content).toBe(dirtyMarkdown);
@@ -129,7 +129,7 @@ describe("POST /api/zones/generate", () => {
   });
 
   it("returns 502 with sanitised error when Stage A upstream call throws", async () => {
-    callClaudeMock.mockRejectedValueOnce(
+    callLLMMock.mockRejectedValueOnce(
       new Error("API key leak: sk-ant-XXXXX request_id=req_123")
     );
     const res = await POST(makeRequest({ dna: validDna, seed: validSeed }));

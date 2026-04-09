@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const callClaudeMock = vi.fn();
+const callLLMMock = vi.fn();
 
-vi.mock("@/lib/llm/anthropic-client", () => ({
-  callClaude: (...args: unknown[]) => callClaudeMock(...args),
+vi.mock("@/lib/llm/client", () => ({
+  callLLM: (...args: unknown[]) => callLLMMock(...args),
 }));
 
 import { POST } from "@/app/api/interaction/resolve/route";
@@ -29,14 +29,14 @@ const validIntent = {
 
 describe("POST /api/interaction/resolve", () => {
   beforeEach(() => {
-    callClaudeMock.mockReset();
+    callLLMMock.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   it("returns 400 on malformed JSON body", async () => {
     const res = await POST(makeRequest("not-json"));
     expect(res.status).toBe(400);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 when rawInput contains control characters", async () => {
@@ -47,7 +47,7 @@ describe("POST /api/interaction/resolve", () => {
       })
     );
     expect(res.status).toBe(400);
-    expect(callClaudeMock).not.toHaveBeenCalled();
+    expect(callLLMMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 when version is missing", async () => {
@@ -56,7 +56,7 @@ describe("POST /api/interaction/resolve", () => {
   });
 
   it("happy path: optimizer returns JSON, adjudicator resolves with DC", async () => {
-    callClaudeMock.mockResolvedValueOnce(JSON.stringify(validIntent));
+    callLLMMock.mockResolvedValueOnce(JSON.stringify(validIntent));
     const res = await POST(
       makeRequest({
         rawInput: "I swing at the goblin",
@@ -74,7 +74,7 @@ describe("POST /api/interaction/resolve", () => {
   });
 
   it("returns 502 with sanitised error when optimizer upstream fails", async () => {
-    callClaudeMock.mockRejectedValueOnce(
+    callLLMMock.mockRejectedValueOnce(
       new Error("APIError: 429 request_id=req_leak_XYZ")
     );
     const res = await POST(

@@ -1,5 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
-import type { CallClaudeOptions } from "@/lib/llm/anthropic-client";
+import type { CallLLM, ChatMessage } from "@/lib/llm/client";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import {
   PlayerIntentSchema,
@@ -10,16 +9,14 @@ import { extractJsonBlock } from "@/lib/llm/structured-output";
 
 /**
  * Phase 2 orchestrator. Takes raw player prose + version and returns a
- * validated PlayerIntent. The Claude response is expected to be bare JSON
+ * validated PlayerIntent. The LLM response is expected to be bare JSON
  * per the optimizer system prompt; if the model wraps it in a fence we
  * still handle it via extractJsonBlock, and if it emits bare JSON we wrap
  * before extracting.
  */
 
-type CallClaude = (opts: CallClaudeOptions) => Promise<string>;
-
 export interface OptimizeInputDeps {
-  callClaude: CallClaude;
+  callLLM: CallLLM;
   logger?: (stage: string, err: unknown) => void;
 }
 
@@ -40,14 +37,14 @@ export async function optimizeInput(
   version: PathfinderVersion,
   deps: OptimizeInputDeps
 ): Promise<OptimizeInputResult> {
-  const { callClaude, logger } = deps;
+  const { callLLM, logger } = deps;
   const { system, user } = buildInputOptimizerPrompt(rawInput, version);
 
-  const messages: Anthropic.MessageParam[] = [{ role: "user", content: user }];
+  const messages: ChatMessage[] = [{ role: "user", content: user }];
 
   let response: string;
   try {
-    response = await callClaude({ system, messages });
+    response = await callLLM({ system, messages });
   } catch (err) {
     logger?.("optimize-input", err);
     return { ok: false, error: UPSTREAM_ERROR_MESSAGE };

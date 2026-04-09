@@ -4,9 +4,8 @@ import {
   CharacterSheetParsedSchema,
 } from "@/lib/schemas/character-sheet";
 import { buildCharacterSheetVLMPrompt } from "@/lib/prompts/character-sheet-vlm";
-import { callClaude } from "@/lib/llm/anthropic-client";
+import { callLLM, type ChatMessage } from "@/lib/llm/client";
 import { extractJsonBlock } from "@/lib/llm/structured-output";
-import type Anthropic from "@anthropic-ai/sdk";
 
 // TODO: LangGraph node — wire this handler as a node in a character-processing graph.
 // The node receives CharacterSheetVLMRequest and emits CharacterSheetParsed to downstream
@@ -41,21 +40,18 @@ export async function POST(request: NextRequest) {
   const { imageBase64, mimeType, version } = parsed.data;
   const textPrompt = buildCharacterSheetVLMPrompt(version);
 
-  const messages: Anthropic.MessageParam[] = [
+  // Scaleway Generative APIs accepts OpenAI-style vision content: a mixed
+  // content array with a text part and an image_url part whose URL is a
+  // data URI. The `multimodal: true` hint routes the request to the vision
+  // default model (Pixtral 12B) unless LLM_VISION_MODEL overrides it.
+  const messages: ChatMessage[] = [
     {
       role: "user",
       content: [
+        { type: "text", text: textPrompt },
         {
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: mimeType,
-            data: imageBase64,
-          },
-        },
-        {
-          type: "text",
-          text: textPrompt,
+          type: "image_url",
+          image_url: { url: `data:${mimeType};base64,${imageBase64}` },
         },
       ],
     },
@@ -63,12 +59,13 @@ export async function POST(request: NextRequest) {
 
   let rawResponse: string;
   try {
-    rawResponse = await callClaude({
+    rawResponse = await callLLM({
       system: `You are a precise character sheet parser for ${version === "pf1e" ? "Pathfinder 1st Edition" : "Pathfinder 2nd Edition"}. Extract data accurately and return only valid JSON.`,
       messages,
+      multimodal: true,
     });
   } catch (err) {
-    logServerError("claude-call", err);
+    logServerError("llm-call", err);
     return NextResponse.json(
       { ok: false, error: UPSTREAM_ERROR_MESSAGE },
       { status: 502 }

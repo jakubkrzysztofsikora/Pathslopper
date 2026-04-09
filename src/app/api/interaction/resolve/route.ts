@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { VersionSchema } from "@/lib/schemas/version";
-import { callClaude } from "@/lib/llm/anthropic-client";
+import { callLLM } from "@/lib/llm/client";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
 
 // Thin HTTP adapter for the Phase 2 + Phase 3 slice of the Stateful
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await resolveInteraction(parsed.data, {
-    callClaude,
+    callLLM,
     logger: logServerError,
   });
 

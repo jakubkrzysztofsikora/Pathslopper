@@ -1,30 +1,27 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import type { StoryDNA } from "@/lib/schemas/story-dna";
 import type { TacticalZone } from "@/lib/schemas/zone";
 import {
   buildZonePromptChain,
   type ZoneSeed,
 } from "@/lib/prompts/zone-generator";
-import type { CallClaudeOptions } from "@/lib/llm/anthropic-client";
+import type { CallLLM, ChatMessage } from "@/lib/llm/client";
 
 /**
  * Pure orchestrator for the Tactical Environment Protocol zone generation
- * pipeline. Sequences Stage A (Polish mechanical skeleton) → Stage B
- * (English narration + JSON) → Stage C (verify + slop scan), retries
+ * pipeline. Sequences Stage A (Polish mechanical skeleton) -> Stage B
+ * (English narration + JSON) -> Stage C (verify + slop scan), retries
  * Stage B once with a real corrective conversation turn on banned-phrase
  * hits, and surfaces a typed result rather than an HTTP response.
  *
  * Dependencies are injected so tests can exercise the orchestrator
- * directly without mocking the Anthropic client module. The route handler
- * in src/app/api/zones/generate/route.ts is a thin HTTP adapter that
- * wires the real callClaude into this function — see the orchestration
- * location rule in CLAUDE.md.
+ * directly without mocking the LLM client module. The route handler in
+ * src/app/api/zones/generate/route.ts is a thin HTTP adapter that wires
+ * the real callLLM into this function — see the orchestration location
+ * rule in CLAUDE.md.
  */
 
-type CallClaude = (opts: CallClaudeOptions) => Promise<string>;
-
 export interface GenerateZoneDeps {
-  callClaude: CallClaude;
+  callLLM: CallLLM;
   logger?: (stage: string, err: unknown) => void;
 }
 
@@ -53,19 +50,19 @@ export async function generateZone(
   seed: ZoneSeed,
   deps: GenerateZoneDeps
 ): Promise<GenerateZoneResult> {
-  const { callClaude, logger } = deps;
+  const { callLLM, logger } = deps;
   const chain = buildZonePromptChain(dna, seed);
   const warnings: string[] = [];
 
   // Stage A — Polish mechanical skeleton
   const stageAPrompts = chain.stageA(dna.version);
-  const stageAMessages: Anthropic.MessageParam[] = [
+  const stageAMessages: ChatMessage[] = [
     { role: "user", content: stageAPrompts.user },
   ];
 
   let polishSkeleton: string;
   try {
-    polishSkeleton = await callClaude({
+    polishSkeleton = await callLLM({
       system: stageAPrompts.system,
       messages: stageAMessages,
     });
@@ -81,13 +78,13 @@ export async function generateZone(
 
   // Stage B — English narration + JSON zone
   const stageBPrompts = chain.stageB(polishSkeleton, dna);
-  const stageBMessages: Anthropic.MessageParam[] = [
+  const stageBMessages: ChatMessage[] = [
     { role: "user", content: stageBPrompts.user },
   ];
 
   let markdown: string;
   try {
-    markdown = await callClaude({
+    markdown = await callLLM({
       system: stageBPrompts.system,
       messages: stageBMessages,
     });
@@ -116,7 +113,7 @@ export async function generateZone(
       .map((p) => `"${p}"`)
       .join(", ");
 
-    const retryMessages: Anthropic.MessageParam[] = [
+    const retryMessages: ChatMessage[] = [
       { role: "user", content: stageBPrompts.user },
       { role: "assistant", content: markdown },
       {
@@ -126,7 +123,7 @@ export async function generateZone(
     ];
 
     try {
-      markdown = await callClaude({
+      markdown = await callLLM({
         system: stageBPrompts.system,
         messages: retryMessages,
       });

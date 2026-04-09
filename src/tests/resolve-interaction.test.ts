@@ -13,7 +13,7 @@ const optimizedIntent = {
 
 describe("resolveInteraction", () => {
   it("composes optimizeInput + adjudicate and returns a resolved result", async () => {
-    const callClaude = vi
+    const callLLM = vi
       .fn()
       .mockResolvedValueOnce(JSON.stringify(optimizedIntent));
 
@@ -24,7 +24,7 @@ describe("resolveInteraction", () => {
         overrideModifier: 5,
         overrideDc: 15,
       },
-      { callClaude, adjudicateOptions: { seed: 1 } }
+      { callLLM, adjudicateOptions: { seed: 1 } }
     );
 
     expect(result.ok).toBe(true);
@@ -44,7 +44,7 @@ describe("resolveInteraction", () => {
       modifier: 35,
       dc: 55,
     };
-    const callClaude = vi
+    const callLLM = vi
       .fn()
       .mockResolvedValueOnce(JSON.stringify(optimizedWithInferred));
 
@@ -55,7 +55,7 @@ describe("resolveInteraction", () => {
         overrideModifier: 3,
         overrideDc: 12,
       },
-      { callClaude, adjudicateOptions: { seed: 1 } }
+      { callLLM, adjudicateOptions: { seed: 1 } }
     );
 
     expect(result.ok).toBe(true);
@@ -71,13 +71,13 @@ describe("resolveInteraction", () => {
       modifier: 8,
       dc: 20,
     };
-    const callClaude = vi
+    const callLLM = vi
       .fn()
       .mockResolvedValueOnce(JSON.stringify(optimizedWithInferred));
 
     const result = await resolveInteraction(
       { rawInput: "I swing", version: "pf2e" },
-      { callClaude, adjudicateOptions: { seed: 1 } }
+      { callLLM, adjudicateOptions: { seed: 1 } }
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -87,13 +87,13 @@ describe("resolveInteraction", () => {
   });
 
   it("returns stage='optimize' failure when optimizer fails", async () => {
-    const callClaude = vi
+    const callLLM = vi
       .fn()
       .mockRejectedValueOnce(new Error("upstream down"));
     const logger = vi.fn();
     const result = await resolveInteraction(
       { rawInput: "I swing", version: "pf2e" },
-      { callClaude, logger }
+      { callLLM, logger }
     );
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -108,13 +108,13 @@ describe("resolveInteraction", () => {
       action: "narrative",
       description: "The character broods by the fire without action.",
     };
-    const callClaude = vi
+    const callLLM = vi
       .fn()
       .mockResolvedValueOnce(JSON.stringify(narrativeIntent));
 
     const result = await resolveInteraction(
       { rawInput: "I brood silently", version: "pf2e" },
-      { callClaude }
+      { callLLM }
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
