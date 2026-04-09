@@ -38,6 +38,20 @@ If the User Request at the bottom of this prompt is a bare subcommand string (no
 
 ---
 
+## About local references
+
+To keep this repo small, only `SKILL.md` and `LICENSE.txt` are bundled locally — the language directories (`python/`, `typescript/`, `java/`, `go/`, `ruby/`, `csharp/`, `php/`, `curl/`) and the `shared/` directory are **not** shipped. When a section below says "read from `python/`" or references `shared/live-sources.md`, treat that as a path under the upstream Anthropic skills repo and WebFetch the raw file:
+
+```
+https://raw.githubusercontent.com/anthropics/skills/main/skills/claude-api/<path>
+```
+
+For example, `shared/live-sources.md` becomes
+`https://raw.githubusercontent.com/anthropics/skills/main/skills/claude-api/shared/live-sources.md`, and `python/claude-api/README.md` becomes
+`https://raw.githubusercontent.com/anthropics/skills/main/skills/claude-api/python/claude-api/README.md`.
+
+If the Skill tool's bundled `claude-api` skill is available in the environment, prefer its local files over WebFetch — they are identical to the upstream copies.
+
 ## Language Detection
 
 Before reading code examples, determine which language the user is working in:

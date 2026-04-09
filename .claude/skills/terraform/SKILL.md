@@ -1,5 +1,5 @@
 ---
-name: terraform-skill
+name: terraform
 description: Use when working with Terraform or OpenTofu - creating modules, writing tests (native test framework, Terratest), setting up CI/CD pipelines, reviewing configurations, choosing between testing approaches, debugging state issues, implementing security scanning (trivy, checkov), or making infrastructure-as-code architecture decisions
 license: Apache-2.0
 metadata:

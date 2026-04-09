@@ -84,7 +84,7 @@ those tests. If a test needs to change, loop back to Phase 2.
 - **`code-reviewer`** — final line-by-line review. Gate before commit.
 - **`architect-reviewer`** — revisit if the implementation drifted from the
   Phase 2 plan.
-- **`debugger` / `error-detective`** — call when Phase 4 surfaces failures.
+- **`debugger`** — call when Phase 4 surfaces failures.
 
 ## Defaults & conventions
 
