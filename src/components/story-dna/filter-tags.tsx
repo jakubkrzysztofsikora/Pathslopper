@@ -1,0 +1,54 @@
+"use client";
+
+import * as React from "react";
+import { TagInput } from "@/components/ui/tag-input";
+import { cn } from "@/lib/utils/cn";
+
+export interface FilterTagsProps {
+  includeTags: string[];
+  excludeTags: string[];
+  onAddInclude: (tag: string) => void;
+  onRemoveInclude: (tag: string) => void;
+  onAddExclude: (tag: string) => void;
+  onRemoveExclude: (tag: string) => void;
+  className?: string;
+}
+
+export function FilterTags({
+  includeTags,
+  excludeTags,
+  onAddInclude,
+  onRemoveInclude,
+  onAddExclude,
+  onRemoveExclude,
+  className,
+}: FilterTagsProps) {
+  return (
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">
+          Include Themes
+        </h4>
+        <TagInput
+          tags={includeTags}
+          onAdd={onAddInclude}
+          onRemove={onRemoveInclude}
+          placeholder="Add include theme..."
+          chipClassName="border-amber-800 bg-amber-900/30 text-amber-300"
+        />
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">
+          Slop Filter (Exclude)
+        </h4>
+        <TagInput
+          tags={excludeTags}
+          onAdd={onAddExclude}
+          onRemove={onRemoveExclude}
+          placeholder="Add banned phrase..."
+          chipClassName="border-red-900 bg-red-900/20 text-red-400"
+        />
+      </div>
+    </div>
+  );
+}
