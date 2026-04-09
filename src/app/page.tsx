@@ -2,6 +2,7 @@ import { VersionPicker } from "@/components/version-picker";
 import { StoryDNAConfig } from "@/components/story-dna/story-dna-config";
 import { CharacterSheetUploader } from "@/components/character-sheet/uploader";
 import { ZoneGeneratorPanel } from "@/components/zones/zone-generator-panel";
+import { PlayerInputConsole } from "@/components/interaction/player-input-console";
 
 export default function HomePage() {
   return (
@@ -26,6 +27,8 @@ export default function HomePage() {
       <CharacterSheetUploader />
 
       <ZoneGeneratorPanel />
+
+      <PlayerInputConsole />
 
       <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-300 text-center">
         PF1e: simulation | PF2e: three-action economy
