@@ -3,7 +3,7 @@ import { z } from "zod";
 import { SessionIdSchema } from "@/lib/schemas/session";
 import { callLLM } from "@/lib/llm/client";
 import { narrateScene } from "@/lib/orchestration/narrate-scene";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 // Thin HTTP adapter for Phase 1 (Narration). The orchestration and the
 // server-owned session store both live in src/lib/, per the state
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
   const { sessionId, sceneSeed, persist } = parsed.data;
   const store = getSessionStore();
-  const session = store.get(sessionId);
+  const session = await store.get(sessionId);
   if (!session) {
     return NextResponse.json(
       { ok: false, error: `Unknown session: ${sessionId}` },
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const worldStateHash = store.worldStateHash(sessionId);
+  const worldStateHash = await store.worldStateHash(sessionId);
   if (!worldStateHash) {
     // Can only happen if the session was deleted between the two reads
     // above — treat as a 404 for client simplicity.
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
   let updatedSession = session;
   if (persist) {
-    const appended = store.appendNarration(sessionId, narration.markdown);
+    const appended = await store.appendNarration(sessionId, narration.markdown);
     if (appended) updatedSession = appended;
   }
 

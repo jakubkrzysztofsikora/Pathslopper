@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+# Opt JavaScript actions into Node.js 24 ahead of the June 2nd 2026
+# default switch so we don't get surprised by the runner upgrade.
+# See: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

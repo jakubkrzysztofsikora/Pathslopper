@@ -7,7 +7,8 @@ Scaleway infrastructure for the Pathfinder Nexus Next.js application.
 - **Scaleway Container Registry** — namespace `pathfinder-nexus`, single image `app` tagged by git short SHA plus a floating `latest` tag.
 - **Scaleway Serverless Container** — scale-to-zero at launch (`container_min_scale = 0`). Bump to `1` when real traffic warrants always-warm.
 - **Scaleway IAM application + API key** — scoped to `GenerativeApisFullAccess`. Terraform mints the key; it is the only credential the container holds.
-- **Scaleway Secret Manager** — stores the minted LLM API key, injected into the container via `secret_environment_variables` as `LLM_API_KEY`.
+- **Scaleway Secret Manager** — stores both the minted LLM API key (`llm-api-key`) and the Redis connection string (`redis-url`). Injected into the container via `secret_environment_variables` as `LLM_API_KEY` and `REDIS_URL`.
+- **Scaleway Managed Redis** — `RED1-MICRO` TLS-enabled cluster (`pathfinder-nexus-redis`) backing the server-owned session store (Phase 4 of the Stateful Interaction Loop). Sessions are keyed under `pfnexus:session:${id}` with a 24h sliding TTL. Gated behind `enable_redis = true` (default); flip to `false` for Terraform iterations where you don't need persistence and the app automatically falls back to its in-memory session store.
 - **Scaleway Generative APIs** — the runtime LLM provider. Base URL and model names are environment variables on the container, not code constants, so you can point `LLM_BASE_URL` at a Scaleway Managed Inference endpoint (e.g., a self-hosted Bielik for Polish-first reasoning) without a code deploy.
 - **Scaleway Object Storage** — bucket `pathfinder-nexus-tfstate` holds Terraform state via the S3 backend. Single state key, no workspaces.
 
@@ -106,7 +107,6 @@ Scaleway Object Storage does not support DynamoDB-style state locking. We rely o
 
 The module is structured so the following can be added without a rewrite:
 
-- **Managed Redis** (for RedisVL episodic memory) — add a `scaleway_redis_cluster` behind an `enable_redis` variable.
 - **Object Storage for character-sheet assets** — add a `scaleway_object_bucket` behind an `enable_asset_storage` variable.
 - **Custom prod domain** — add `scaleway_container_domain` and a DNS record resource when the domain is chosen.
 - **Self-hosted Bielik** — override `llm_base_url` to a Scaleway Managed Inference endpoint; update `llm_text_model` to the model name the inference endpoint exposes. No code or image changes needed.

@@ -6,6 +6,10 @@ terraform {
       source  = "scaleway/scaleway"
       version = ">= 2.30.0, < 3.0.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.5.0, < 4.0.0"
+    }
   }
 
   # State lives in a Scaleway Object Storage bucket via the S3 backend.

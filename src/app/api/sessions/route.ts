@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { VersionSchema } from "@/lib/schemas/version";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 // Create a new server-owned session. Returns the session state including
 // the opaque sessionId the client keeps in sessionStorage and passes back
@@ -30,6 +30,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const session = getSessionStore().create(parsed.data.version);
+  const session = await getSessionStore().create(parsed.data.version);
   return NextResponse.json({ ok: true, session });
 }

@@ -135,6 +135,29 @@ Swapping to a self-hosted model (e.g., Bielik via Scaleway Managed
 Inference for Polish-first reasoning) is a Terraform variable change, not
 a code deploy.
 
+## Persistence
+
+The server-owned session store (Stateful Interaction Loop Phase 4) is
+backed by **Scaleway Managed Redis** in production. Terraform mints a
+`RED1-MICRO` cluster (TLS-enabled, public endpoint + strong password),
+publishes the full `rediss://` URL via Scaleway Secret Manager, and
+injects it into the container as `REDIS_URL`.
+
+The factory at `src/lib/state/server/store-factory.ts` reads
+`REDIS_URL` at first use:
+
+| `REDIS_URL` | Store used | When |
+|---|---|---|
+| set | `RedisSessionStore` (ioredis) | production, integration tests |
+| unset / empty | `InMemorySessionStore` | local dev, vitest |
+
+Sessions are stored as JSON under `pfnexus:session:${id}` with a 24h
+sliding TTL. Every mutation extends the TTL so active games never
+expire while abandoned ones evaporate after a day. Disable the Redis
+dependency for a cheap Terraform iteration by setting
+`enable_redis = false` in `infra/terraform/` — the app falls back to
+the in-memory store automatically.
+
 ## Defaults & conventions
 
 1. **Never skip Phase 2.** Even a tiny bug fix should describe the failing test

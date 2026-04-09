@@ -4,7 +4,7 @@ import { VersionSchema } from "@/lib/schemas/version";
 import { SessionIdSchema } from "@/lib/schemas/session";
 import { callLLM } from "@/lib/llm/client";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 // Thin HTTP adapter for the Phase 2 + Phase 3 + Phase 4 slice of the
 // Stateful Interaction Loop. All orchestration lives in

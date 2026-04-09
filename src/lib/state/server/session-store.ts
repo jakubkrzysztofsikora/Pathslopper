@@ -7,46 +7,43 @@ import type {
 import type { PathfinderVersion } from "@/lib/schemas/version";
 
 /**
- * Server-only in-memory session store.
+ * Server-only session store.
  *
  * Holds the per-session append-only turn log that backs the Stateful
- * Interaction Loop. Lives in module scope on the server and persists
- * across requests on a warm Scaleway Serverless Container instance.
- * Cold starts and horizontal scaling WILL lose state — this is the
- * acknowledged MVP limit. RedisVL will replace this module under the
- * same interface in a later tranche.
+ * Interaction Loop. The interface is async so Redis (or any future
+ * remote store) can implement it without refactoring callers.
  *
  * Per CLAUDE.md's state boundary invariant, nothing in this file is
  * safe to import from a client component. Only API route handlers and
  * orchestrators should touch the store.
  */
 
-const MAX_TURNS_PER_SESSION = 200;
-const MAX_SESSIONS_TRACKED = 1000;
+export const MAX_TURNS_PER_SESSION = 200;
+export const MAX_SESSIONS_TRACKED = 1000;
 
 export interface SessionStore {
-  create(version: PathfinderVersion): SessionState;
-  get(id: string): SessionState | undefined;
+  create(version: PathfinderVersion): Promise<SessionState>;
+  get(id: string): Promise<SessionState | undefined>;
   appendResolved(
     id: string,
     turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-  ): SessionState | undefined;
+  ): Promise<SessionState | undefined>;
   appendNarration(
     id: string,
     markdown: string,
     opts?: { at?: string }
-  ): SessionState | undefined;
-  worldStateHash(id: string): string | undefined;
-  size(): number;
+  ): Promise<SessionState | undefined>;
+  worldStateHash(id: string): Promise<string | undefined>;
+  size(): Promise<number>;
   /** Test-only: clear all sessions. */
-  _reset(): void;
+  _reset(): Promise<void>;
 }
 
-function nowIso(): string {
+export function nowIso(): string {
   return new Date().toISOString();
 }
 
-function newSessionId(): string {
+export function newSessionId(): string {
   // 18 random bytes base64url-encoded → 24-char URL-safe ID (matches the
   // SessionIdSchema regex and length bounds).
   return randomBytes(18)
@@ -56,10 +53,10 @@ function newSessionId(): string {
     .replace(/=+$/, "");
 }
 
-function hashState(state: SessionState): string {
-  // Deterministic fingerprint of the turn log. The "world-state hash" in
-  // the original brief — the AI narrates against this so determinism is
-  // explicit. sha256 truncated to 16 hex chars is plenty for keying.
+export function hashState(state: SessionState): string {
+  // Deterministic fingerprint of the turn log — the "world-state hash"
+  // from the original brief. The narrator treats this as authoritative.
+  // sha256 truncated to 16 hex chars is plenty for keying.
   const canonical = JSON.stringify({
     id: state.id,
     version: state.version,
@@ -68,12 +65,48 @@ function hashState(state: SessionState): string {
   return createHash("sha256").update(canonical).digest("hex").slice(0, 16);
 }
 
-class InMemorySessionStore implements SessionStore {
+export function buildResolvedTurn(
+  input: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
+): ResolvedTurn {
+  return {
+    kind: "resolved",
+    at: input.at ?? nowIso(),
+    intent: input.intent,
+    result: input.result,
+  };
+}
+
+export function buildNarrationTurn(
+  markdown: string,
+  worldStateHash: string,
+  opts: { at?: string } = {}
+): NarrationTurn {
+  return {
+    kind: "narration",
+    at: opts.at ?? nowIso(),
+    markdown,
+    worldStateHash,
+  };
+}
+
+export function appendTurnCapped<T extends { turns: SessionState["turns"] }>(
+  state: T,
+  turn: SessionState["turns"][number]
+): SessionState["turns"] {
+  return [...state.turns, turn].slice(-MAX_TURNS_PER_SESSION);
+}
+
+/**
+ * In-memory session store. Holds sessions in a Map<id, SessionState> in
+ * module scope on the server and persists across requests on a warm
+ * Scaleway Serverless Container instance. Cold starts and horizontal
+ * scaling WILL lose state — this is the local-dev and fallback path.
+ * Production uses the Redis-backed store via getSessionStore().
+ */
+export class InMemorySessionStore implements SessionStore {
   private readonly sessions = new Map<string, SessionState>();
 
-  create(version: PathfinderVersion): SessionState {
-    // Trim oldest sessions if we hit the cap so the map cannot grow
-    // unboundedly in a long-running container.
+  async create(version: PathfinderVersion): Promise<SessionState> {
     if (this.sessions.size >= MAX_SESSIONS_TRACKED) {
       const oldestKey = this.sessions.keys().next().value;
       if (oldestKey) this.sessions.delete(oldestKey);
@@ -91,79 +124,57 @@ class InMemorySessionStore implements SessionStore {
     return state;
   }
 
-  get(id: string): SessionState | undefined {
+  async get(id: string): Promise<SessionState | undefined> {
     return this.sessions.get(id);
   }
 
-  appendResolved(
+  async appendResolved(
     id: string,
     turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-  ): SessionState | undefined {
+  ): Promise<SessionState | undefined> {
     const session = this.sessions.get(id);
     if (!session) return undefined;
-    const resolved: ResolvedTurn = {
-      kind: "resolved",
-      at: turn.at ?? nowIso(),
-      intent: turn.intent,
-      result: turn.result,
-    };
-    const nextTurns = [...session.turns, resolved].slice(-MAX_TURNS_PER_SESSION);
+    const resolved = buildResolvedTurn(turn);
     const next: SessionState = {
       ...session,
       updatedAt: nowIso(),
-      turns: nextTurns,
+      turns: appendTurnCapped(session, resolved),
     };
     this.sessions.set(id, next);
     return next;
   }
 
-  appendNarration(
+  async appendNarration(
     id: string,
     markdown: string,
     opts: { at?: string } = {}
-  ): SessionState | undefined {
+  ): Promise<SessionState | undefined> {
     const session = this.sessions.get(id);
     if (!session) return undefined;
-    const narration: NarrationTurn = {
-      kind: "narration",
-      at: opts.at ?? nowIso(),
+    const narration = buildNarrationTurn(
       markdown,
-      worldStateHash: hashState(session),
-    };
-    const nextTurns = [...session.turns, narration].slice(
-      -MAX_TURNS_PER_SESSION
+      hashState(session),
+      opts
     );
     const next: SessionState = {
       ...session,
       updatedAt: nowIso(),
-      turns: nextTurns,
+      turns: appendTurnCapped(session, narration),
     };
     this.sessions.set(id, next);
     return next;
   }
 
-  worldStateHash(id: string): string | undefined {
+  async worldStateHash(id: string): Promise<string | undefined> {
     const session = this.sessions.get(id);
     return session ? hashState(session) : undefined;
   }
 
-  size(): number {
+  async size(): Promise<number> {
     return this.sessions.size;
   }
 
-  _reset(): void {
+  async _reset(): Promise<void> {
     this.sessions.clear();
   }
 }
-
-// Singleton. Warm Serverless Container instances reuse this across
-// requests; cold starts reset it. Acceptable for the MVP slice — the
-// RedisVL replacement will expose the same interface.
-let _store: SessionStore | null = null;
-
-export function getSessionStore(): SessionStore {
-  if (!_store) _store = new InMemorySessionStore();
-  return _store;
-}
-
-export { hashState, MAX_TURNS_PER_SESSION, MAX_SESSIONS_TRACKED };

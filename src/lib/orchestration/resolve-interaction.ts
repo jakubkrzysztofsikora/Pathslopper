@@ -88,7 +88,7 @@ export async function resolveInteraction(
         error: "sessionStore dependency is required when sessionId is provided.",
       };
     }
-    const updated = deps.sessionStore.appendResolved(input.sessionId, {
+    const updated = await deps.sessionStore.appendResolved(input.sessionId, {
       intent,
       result,
     });

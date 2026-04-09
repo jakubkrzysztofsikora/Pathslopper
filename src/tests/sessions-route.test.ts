@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as createSessionPOST } from "@/app/api/sessions/route";
 import { GET as getSessionGET } from "@/app/api/sessions/[id]/route";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 function jsonRequest(url: string, body: unknown): NextRequest {
   return new NextRequest(url, {
@@ -17,8 +17,8 @@ function getRequest(url: string): NextRequest {
 }
 
 describe("POST /api/sessions", () => {
-  beforeEach(() => {
-    getSessionStore()._reset();
+  beforeEach(async () => {
+    await getSessionStore()._reset();
   });
 
   it("creates a session for PF2e and returns the state", async () => {
@@ -49,12 +49,12 @@ describe("POST /api/sessions", () => {
 });
 
 describe("GET /api/sessions/[id]", () => {
-  beforeEach(() => {
-    getSessionStore()._reset();
+  beforeEach(async () => {
+    await getSessionStore()._reset();
   });
 
   it("returns the session state for a valid ID", async () => {
-    const created = getSessionStore().create("pf1e");
+    const created = await getSessionStore().create("pf1e");
     const res = await getSessionGET(
       getRequest(`http://localhost/api/sessions/${created.id}`),
       { params: { id: created.id } }

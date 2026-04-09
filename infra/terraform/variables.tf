@@ -48,3 +48,21 @@ variable "container_max_scale" {
   type        = number
   default     = 5
 }
+
+variable "enable_redis" {
+  description = "Provision Scaleway Managed Redis for persistent session + episodic memory storage. When false the app falls back to the in-memory session store (cold starts lose state)."
+  type        = bool
+  default     = true
+}
+
+variable "redis_node_type" {
+  description = "Scaleway Managed Redis node type. RED1-MICRO is the cheapest option (~EUR 12-15/month) and sufficient for MVP session storage."
+  type        = string
+  default     = "RED1-MICRO"
+}
+
+variable "redis_version" {
+  description = "Scaleway Managed Redis engine version. Must match a version supported by the provider."
+  type        = string
+  default     = "7.0.5"
+}

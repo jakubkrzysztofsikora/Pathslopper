@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getSessionStore, hashState } from "@/lib/state/server/session-store";
+import {
+  hashState,
+  InMemorySessionStore,
+} from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 import { SessionIdSchema, SessionStateSchema } from "@/lib/schemas/session";
 import type { PlayerIntent } from "@/lib/schemas/player-intent";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
@@ -36,38 +40,38 @@ function makeResult(intent: PlayerIntent): AdjudicationResult {
 }
 
 describe("InMemorySessionStore", () => {
-  const store = getSessionStore();
+  const store = new InMemorySessionStore();
 
-  beforeEach(() => {
-    store._reset();
+  beforeEach(async () => {
+    await store._reset();
   });
 
-  it("creates a session with a URL-safe id and empty turn log", () => {
-    const session = store.create("pf2e");
+  it("creates a session with a URL-safe id and empty turn log", async () => {
+    const session = await store.create("pf2e");
     expect(SessionIdSchema.safeParse(session.id).success).toBe(true);
     expect(session.version).toBe("pf2e");
     expect(session.turns).toHaveLength(0);
     expect(session.createdAt).toBe(session.updatedAt);
   });
 
-  it("persists sessions and returns them via get()", () => {
-    const created = store.create("pf1e");
-    const fetched = store.get(created.id);
+  it("persists sessions and returns them via get()", async () => {
+    const created = await store.create("pf1e");
+    const fetched = await store.get(created.id);
     expect(fetched).toBeDefined();
     expect(fetched?.id).toBe(created.id);
     expect(fetched?.version).toBe("pf1e");
   });
 
-  it("returns undefined for unknown session IDs", () => {
-    expect(store.get("nonexistent-session-id")).toBeUndefined();
+  it("returns undefined for unknown session IDs", async () => {
+    expect(await store.get("nonexistent-session-id")).toBeUndefined();
   });
 
   it("appendResolved adds a resolved turn and bumps updatedAt", async () => {
-    const session = store.create("pf2e");
+    const session = await store.create("pf2e");
     // Small sleep so updatedAt differs from createdAt.
     await new Promise((r) => setTimeout(r, 2));
     const intent = makeIntent();
-    const next = store.appendResolved(session.id, {
+    const next = await store.appendResolved(session.id, {
       intent,
       result: makeResult(intent),
     });
@@ -77,10 +81,10 @@ describe("InMemorySessionStore", () => {
     expect(next?.updatedAt).not.toBe(session.createdAt);
   });
 
-  it("appendNarration adds a narration turn with the current world-state hash", () => {
-    const session = store.create("pf2e");
-    const hashBefore = store.worldStateHash(session.id);
-    const next = store.appendNarration(
+  it("appendNarration adds a narration turn with the current world-state hash", async () => {
+    const session = await store.create("pf2e");
+    const hashBefore = await store.worldStateHash(session.id);
+    const next = await store.appendNarration(
       session.id,
       "The corridor reeks of damp stone."
     );
@@ -93,51 +97,54 @@ describe("InMemorySessionStore", () => {
     }
   });
 
-  it("worldStateHash changes when turns are appended", () => {
-    const session = store.create("pf2e");
-    const h0 = store.worldStateHash(session.id);
-    store.appendNarration(session.id, "Opening scene.");
-    const h1 = store.worldStateHash(session.id);
+  it("worldStateHash changes when turns are appended", async () => {
+    const session = await store.create("pf2e");
+    const h0 = await store.worldStateHash(session.id);
+    await store.appendNarration(session.id, "Opening scene.");
+    const h1 = await store.worldStateHash(session.id);
     expect(h0).toBeDefined();
     expect(h1).toBeDefined();
     expect(h1).not.toBe(h0);
   });
 
-  it("hashState is deterministic for identical session content", () => {
-    const session = store.create("pf2e");
+  it("hashState is deterministic for identical session content", async () => {
+    const session = await store.create("pf2e");
     const a = hashState(session);
     const b = hashState({ ...session });
     expect(a).toBe(b);
   });
 
-  it("appendResolved returns undefined for unknown session", () => {
+  it("appendResolved returns undefined for unknown session", async () => {
     const intent = makeIntent();
-    const result = store.appendResolved("missing", {
+    const result = await store.appendResolved("missing", {
       intent,
       result: makeResult(intent),
     });
     expect(result).toBeUndefined();
   });
 
-  it("appendNarration returns undefined for unknown session", () => {
-    const result = store.appendNarration("missing", "test");
+  it("appendNarration returns undefined for unknown session", async () => {
+    const result = await store.appendNarration("missing", "test");
     expect(result).toBeUndefined();
   });
 
-  it("session state is schema-valid after appends", () => {
-    const session = store.create("pf2e");
+  it("session state is schema-valid after appends", async () => {
+    const session = await store.create("pf2e");
     const intent = makeIntent();
-    const afterResolve = store.appendResolved(session.id, {
+    const afterResolve = await store.appendResolved(session.id, {
       intent,
       result: makeResult(intent),
     });
     expect(afterResolve).toBeDefined();
     expect(SessionStateSchema.safeParse(afterResolve).success).toBe(true);
-    const afterNarration = store.appendNarration(session.id, "Scene text.");
+    const afterNarration = await store.appendNarration(
+      session.id,
+      "Scene text."
+    );
     expect(SessionStateSchema.safeParse(afterNarration).success).toBe(true);
   });
 
-  it("store is a singleton across getSessionStore() calls", () => {
+  it("factory returns a singleton across getSessionStore() calls (no REDIS_URL)", () => {
     const a = getSessionStore();
     const b = getSessionStore();
     expect(a).toBe(b);

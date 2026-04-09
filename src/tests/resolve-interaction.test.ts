@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 const optimizedIntent = {
   version: "pf2e",
@@ -104,8 +104,8 @@ describe("resolveInteraction", () => {
 
   it("appends a resolved turn to the session when sessionId + sessionStore are provided", async () => {
     const store = getSessionStore();
-    store._reset();
-    const session = store.create("pf2e");
+    await store._reset();
+    const session = await store.create("pf2e");
 
     const callLLM = vi
       .fn()
@@ -146,7 +146,7 @@ describe("resolveInteraction", () => {
 
   it("returns stage='session' failure when sessionId is unknown", async () => {
     const store = getSessionStore();
-    store._reset();
+    await store._reset();
     const callLLM = vi
       .fn()
       .mockResolvedValueOnce(JSON.stringify(optimizedIntent));

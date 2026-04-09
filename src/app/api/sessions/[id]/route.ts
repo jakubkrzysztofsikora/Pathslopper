@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 import { SessionIdSchema } from "@/lib/schemas/session";
 
 // Fetch a session state by ID. The Player Input Console uses this to
@@ -17,7 +17,7 @@ export async function GET(
     );
   }
 
-  const session = getSessionStore().get(idParse.data);
+  const session = await getSessionStore().get(idParse.data);
   if (!session) {
     return NextResponse.json(
       { ok: false, error: "Session not found." },

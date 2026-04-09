@@ -32,3 +32,18 @@ output "llm_base_url" {
   description = "Effective LLM endpoint the container will talk to at runtime."
   value       = var.llm_base_url
 }
+
+output "redis_enabled" {
+  description = "Whether the Managed Redis cluster is provisioned in this workspace."
+  value       = var.enable_redis
+}
+
+output "redis_cluster_id" {
+  description = "Scaleway Managed Redis cluster ID (when enabled)."
+  value       = var.enable_redis ? scaleway_redis_cluster.main[0].id : null
+}
+
+output "redis_secret_id" {
+  description = "Scaleway Secret Manager secret ID holding the rediss:// URL (when enabled)."
+  value       = var.enable_redis ? scaleway_secret.redis_url[0].id : null
+}

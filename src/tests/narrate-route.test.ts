@@ -8,7 +8,7 @@ vi.mock("@/lib/llm/client", () => ({
 }));
 
 import { POST } from "@/app/api/interaction/narrate/route";
-import { getSessionStore } from "@/lib/state/server/session-store";
+import { getSessionStore } from "@/lib/state/server/store-factory";
 
 function makeRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/interaction/narrate", {
@@ -19,9 +19,9 @@ function makeRequest(body: unknown): NextRequest {
 }
 
 describe("POST /api/interaction/narrate", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     callLLMMock.mockReset();
-    getSessionStore()._reset();
+    await getSessionStore()._reset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -44,7 +44,7 @@ describe("POST /api/interaction/narrate", () => {
   });
 
   it("returns 400 when sceneSeed contains control characters", async () => {
-    const session = getSessionStore().create("pf2e");
+    const session = await getSessionStore().create("pf2e");
     const res = await POST(
       makeRequest({
         sessionId: session.id,
@@ -56,7 +56,7 @@ describe("POST /api/interaction/narrate", () => {
   });
 
   it("happy path: returns narration markdown and the current world-state hash", async () => {
-    const session = getSessionStore().create("pf2e");
+    const session = await getSessionStore().create("pf2e");
     callLLMMock.mockResolvedValueOnce(
       "You step into a flooded corridor. Torchlight catches on rippling water."
     );
@@ -73,7 +73,7 @@ describe("POST /api/interaction/narrate", () => {
   });
 
   it("appends a narration turn when persist=true", async () => {
-    const session = getSessionStore().create("pf2e");
+    const session = await getSessionStore().create("pf2e");
     callLLMMock.mockResolvedValueOnce("Scene prose here.");
 
     const res = await POST(
@@ -88,7 +88,7 @@ describe("POST /api/interaction/narrate", () => {
   });
 
   it("returns 502 with sanitised error when the LLM throws", async () => {
-    const session = getSessionStore().create("pf2e");
+    const session = await getSessionStore().create("pf2e");
     callLLMMock.mockRejectedValueOnce(
       new Error("APIError 429 request_id=req_leak_xyz")
     );
