@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { RedisSessionStore } from "@/lib/state/server/redis-session-store";
 import type { RedisClient } from "@/lib/state/server/redis-client";
 import { SessionIdSchema } from "@/lib/schemas/session";
@@ -93,6 +93,14 @@ describe("RedisSessionStore", () => {
   beforeEach(() => {
     fake = new FakeRedisClient();
     store = new RedisSessionStore(fake, 3600);
+    // The store intentionally console.errors on corrupt / schema-invalid
+    // reads so operators notice drift. Silence it here — the tests
+    // assert the resulting behaviour, not the log output.
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("create() writes the session JSON under a prefixed key with TTL", async () => {

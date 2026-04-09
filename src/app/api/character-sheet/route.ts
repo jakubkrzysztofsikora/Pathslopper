@@ -72,13 +72,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // The VLM is instructed to return only JSON; wrap in a fence for extractJsonBlock.
-  const trimmed = rawResponse.trim();
-  const fencedResponse = trimmed.startsWith("```")
-    ? trimmed
-    : "```json\n" + trimmed + "\n```";
-
-  const extracted = extractJsonBlock(fencedResponse, CharacterSheetParsedSchema);
+  // The VLM is instructed to return only JSON. extractJsonBlock now
+  // handles both fenced and bare shapes (plus prose-prefixed bare JSON
+  // via a balanced-brace heuristic), so we no longer need to pre-wrap
+  // the response in a fence — that pre-wrap was fragile when the model
+  // added conversational prose before the JSON.
+  const extracted = extractJsonBlock(rawResponse, CharacterSheetParsedSchema);
 
   if (!extracted.ok || !extracted.data) {
     const warnings: string[] = [];

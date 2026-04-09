@@ -7,7 +7,7 @@ Scaleway infrastructure for the Pathfinder Nexus Next.js application.
 - **Scaleway Container Registry** — namespace `pathfinder-nexus`, single image `app` tagged by git short SHA plus a floating `latest` tag.
 - **Scaleway Serverless Container** — scale-to-zero at launch (`container_min_scale = 0`). Bump to `1` when real traffic warrants always-warm.
 - **Scaleway IAM application + API key** — scoped to `GenerativeApisFullAccess`. Terraform mints the key; it is the only credential the container holds.
-- **Scaleway Secret Manager** — stores both the minted LLM API key (`llm-api-key`) and the Redis connection string (`redis-url`). Injected into the container via `secret_environment_variables` as `LLM_API_KEY` and `REDIS_URL`.
+- **Container secret injection** — the minted LLM key and the rediss:// URL are passed into the Serverless Container via `secret_environment_variables` (hidden from the UI and logs, but stored as literal values in Terraform state). The provider does not support dynamic Secret Manager references today; see the NOTE block in `main.tf` for rationale.
 - **Scaleway Managed Redis** — `RED1-MICRO` TLS-enabled cluster (`pathfinder-nexus-redis`) backing the server-owned session store (Phase 4 of the Stateful Interaction Loop). Sessions are keyed under `pfnexus:session:${id}` with a 24h sliding TTL. Gated behind `enable_redis = true` (default); flip to `false` for Terraform iterations where you don't need persistence and the app automatically falls back to its in-memory session store.
 - **Scaleway Generative APIs** — the runtime LLM provider. Base URL and model names are environment variables on the container, not code constants, so you can point `LLM_BASE_URL` at a Scaleway Managed Inference endpoint (e.g., a self-hosted Bielik for Polish-first reasoning) without a code deploy.
 - **Scaleway Object Storage** — bucket `pathfinder-nexus-tfstate` holds Terraform state via the S3 backend. Single state key, no workspaces.
@@ -99,8 +99,9 @@ Scaleway Object Storage does not support DynamoDB-style state locking. We rely o
 
 ## Secrets boundary
 
-- The **only** runtime credential is the LLM API key. Terraform mints it as a Scaleway IAM API key scoped to `GenerativeApisFullAccess`, stores it in Scaleway Secret Manager, and injects it into the container as `LLM_API_KEY`. It never lands in container logs or the image.
-- **Terraform state does contain the minted key value** inside the `scaleway_iam_api_key` and `scaleway_secret_version` resources. The state bucket must therefore have bucket-owner-only ACLs (the bootstrap script enforces this).
+- The **only** runtime credentials are the minted LLM IAM API key and the Managed Redis rediss:// URL. Both are injected into the container via `secret_environment_variables` as `LLM_API_KEY` and `REDIS_URL`. They are hidden from the Scaleway UI and logs, and the container sees them as plain environment variables.
+- **Terraform state does contain both values** in the `scaleway_iam_api_key` and `random_password.redis` resources. The state bucket must therefore have bucket-owner-only ACLs (the bootstrap script enforces this) — that is the actual protection layer.
+- We do not create `scaleway_secret` resources for these values because the container cannot reference them dynamically with the current Scaleway provider. When the provider gains a secret-reference primitive we can add a rotation path without re-applying Terraform.
 - `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` are used by CI and Terraform only — the running container never sees them.
 
 ## Future seams

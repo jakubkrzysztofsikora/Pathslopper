@@ -18,11 +18,6 @@ output "image_ref" {
   value       = "${scaleway_registry_namespace.this.endpoint}/app:${var.image_tag}"
 }
 
-output "llm_secret_id" {
-  description = "Scaleway Secret Manager secret ID holding the minted LLM IAM API key."
-  value       = scaleway_secret.llm_api_key.id
-}
-
 output "llm_iam_application_id" {
   description = "IAM application ID whose API key grants Generative APIs access to the container."
   value       = scaleway_iam_application.llm.id
@@ -34,16 +29,11 @@ output "llm_base_url" {
 }
 
 output "redis_enabled" {
-  description = "Whether the Managed Redis cluster is provisioned in this workspace."
+  description = "Whether the Managed Redis cluster is provisioned."
   value       = var.enable_redis
 }
 
 output "redis_cluster_id" {
   description = "Scaleway Managed Redis cluster ID (when enabled)."
   value       = var.enable_redis ? scaleway_redis_cluster.main[0].id : null
-}
-
-output "redis_secret_id" {
-  description = "Scaleway Secret Manager secret ID holding the rediss:// URL (when enabled)."
-  value       = var.enable_redis ? scaleway_secret.redis_url[0].id : null
 }

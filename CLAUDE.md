@@ -117,10 +117,18 @@ GitHub Actions, using a single prod environment (no separate dev for now).
 ## LLM provider
 
 The runtime LLM provider is **Scaleway Generative APIs** (OpenAI-compatible
-`/chat/completions` endpoint). A single Scaleway IAM application API key
-per environment, minted by Terraform and scoped to
-`GenerativeApisFullAccess`, is the only credential the container holds.
-No `ANTHROPIC_API_KEY`, no external provider dependency.
+`/chat/completions` endpoint). A single Scaleway IAM application API key,
+minted by Terraform and scoped to `GenerativeApisFullAccess`, is the only
+LLM credential the container holds. No `ANTHROPIC_API_KEY`, no external
+provider dependency.
+
+The minted key and the Managed Redis URL reach the container via
+`secret_environment_variables` (hidden in the Scaleway UI + logs, stored
+as literal strings in Terraform state, protected by the bucket-owner-only
+ACLs on `pathfinder-nexus-tfstate`). The Scaleway provider does not
+currently offer a dynamic Secret Manager reference primitive — see the
+NOTE block in `infra/terraform/main.tf` for the rationale and the
+upgrade path.
 
 Model selection is env-var driven, not code-driven:
 

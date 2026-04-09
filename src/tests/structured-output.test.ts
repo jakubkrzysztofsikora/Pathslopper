@@ -8,11 +8,11 @@ const MinSchema = z.object({
 });
 
 describe("extractJsonBlock", () => {
-  it("returns ok=false with error when no fenced block exists", () => {
+  it("returns ok=false when neither a fenced block nor valid bare JSON is present", () => {
     const result = extractJsonBlock("The corridor reeks of damp stone.", MinSchema);
     expect(result.ok).toBe(false);
     expect(result.data).toBeUndefined();
-    expect(result.error).toContain("No ```json");
+    expect(result.error).toBeDefined();
   });
 
   it("extracts a single valid fenced block", () => {
@@ -51,5 +51,33 @@ describe("extractJsonBlock", () => {
     const result = extractJsonBlock(md, MinSchema);
     expect(result.ok).toBe(true);
     expect(result.data?.name).toBe("Kyra");
+  });
+
+  it("parses a bare JSON object without any fence", () => {
+    const md = JSON.stringify({ name: "Bare", count: 7 });
+    const result = extractJsonBlock(md, MinSchema);
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual({ name: "Bare", count: 7 });
+  });
+
+  it("parses a bare JSON object with VLM-style prose before it", () => {
+    const md = `Sure, here's the parsed data: ${JSON.stringify({ name: "Prosed", count: 2 })}`;
+    const result = extractJsonBlock(md, MinSchema);
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual({ name: "Prosed", count: 2 });
+  });
+
+  it("parses a bare JSON object with prose both before and after it", () => {
+    const md = `OK: ${JSON.stringify({ name: "Sandwich", count: 1 })}\nHope that helps!`;
+    const result = extractJsonBlock(md, MinSchema);
+    expect(result.ok).toBe(true);
+    expect(result.data).toEqual({ name: "Sandwich", count: 1 });
+  });
+
+  it("handles nested braces inside string values correctly", () => {
+    const md = `Data: ${JSON.stringify({ name: "a { b } c", count: 0 })}`;
+    const result = extractJsonBlock(md, MinSchema);
+    expect(result.ok).toBe(true);
+    expect(result.data?.name).toBe("a { b } c");
   });
 });

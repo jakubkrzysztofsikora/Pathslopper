@@ -60,13 +60,27 @@ export class RedisSessionStore implements SessionStore {
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
-    } catch {
+    } catch (err) {
       // Corrupt entry — treat as missing rather than throwing, so a bad
-      // write cannot poison the whole route handler.
+      // write cannot poison the whole route handler. Log so operators
+      // notice data corruption vs. a legitimately missing session.
+      console.error(
+        `[RedisSessionStore] Failed to parse session ${id}: ${err instanceof Error ? err.message : String(err)}`
+      );
       return undefined;
     }
     const result = SessionStateSchema.safeParse(parsed);
-    return result.success ? result.data : undefined;
+    if (!result.success) {
+      // Schema validation failure usually means the schema evolved but
+      // the persisted data did not. Log so the drift is visible in
+      // container logs; caller receives undefined (equivalent to
+      // "session expired") which is the safest fallback.
+      console.error(
+        `[RedisSessionStore] Session ${id} failed schema validation: ${result.error.message}`
+      );
+      return undefined;
+    }
+    return result.data;
   }
 
   private async writeSession(state: SessionState): Promise<void> {

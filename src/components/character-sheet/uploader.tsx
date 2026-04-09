@@ -131,6 +131,10 @@ export function CharacterSheetUploader({
       });
     } finally {
       inFlightRef.current = false;
+      // Reset the file input value so re-selecting the same file
+      // (e.g., to retry after an error) triggers onChange again.
+      // Browsers otherwise swallow identical consecutive selections.
+      if (inputRef.current) inputRef.current.value = "";
     }
   }
 

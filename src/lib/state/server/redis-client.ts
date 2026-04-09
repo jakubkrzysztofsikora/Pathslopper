@@ -47,11 +47,13 @@ interface IoRedisLike {
 }
 
 /**
- * IoRedis-backed adapter. The ioredis module is imported dynamically on
- * first use so test environments (which rely on FakeRedisClient only)
- * never resolve or initialise the real Redis client. In production on
- * Scaleway Serverless Containers this still happens exactly once per
- * warm instance.
+ * IoRedis-backed adapter. ioredis is pure JS (no native bindings), but
+ * importing it eagerly would bundle the full module into the vitest
+ * graph and open a real network client at first use. We instead use a
+ * dynamic `await import("ioredis")` gated behind the first call so
+ * the test suite never touches ioredis at all and the production cold
+ * start only pays the import cost once per warm Serverless Container
+ * instance.
  */
 export function createIoRedisClient(url: string): RedisClient {
   let clientPromise: Promise<IoRedisLike> | null = null;

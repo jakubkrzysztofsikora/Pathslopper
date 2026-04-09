@@ -11,14 +11,17 @@ describe("GET /api/health", () => {
     expect(typeof json.uptime).toBe("number");
   });
 
-  it("does not depend on ANTHROPIC_API_KEY being set", async () => {
-    const original = process.env.ANTHROPIC_API_KEY;
-    delete process.env.ANTHROPIC_API_KEY;
+  it("does not depend on LLM_API_KEY or REDIS_URL being set", async () => {
+    const originalLlm = process.env.LLM_API_KEY;
+    const originalRedis = process.env.REDIS_URL;
+    delete process.env.LLM_API_KEY;
+    delete process.env.REDIS_URL;
     try {
       const res = await GET();
       expect(res.status).toBe(200);
     } finally {
-      if (original !== undefined) process.env.ANTHROPIC_API_KEY = original;
+      if (originalLlm !== undefined) process.env.LLM_API_KEY = originalLlm;
+      if (originalRedis !== undefined) process.env.REDIS_URL = originalRedis;
     }
   });
 });

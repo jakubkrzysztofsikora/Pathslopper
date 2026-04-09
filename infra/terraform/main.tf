@@ -3,10 +3,8 @@ locals {
   registry_namespace       = local.project_name
   container_namespace_name = local.project_name
   container_name           = "app"
-  secret_name              = "llm-api-key"
   iam_app_name             = "${local.project_name}-llm"
   redis_cluster_name       = "${local.project_name}-redis"
-  redis_secret_name        = "redis-url"
 
   common_tags = [
     "project=${local.project_name}",
@@ -53,28 +51,26 @@ resource "scaleway_iam_api_key" "llm" {
 # Current project lookup — used to scope the IAM policy above.
 data "scaleway_account_project" "current" {}
 
-# ---- Secret Manager ----
-# The LLM API key lives in Secret Manager, not in container env vars, so
-# it can be rotated independently of deploys and never lands in container
-# logs. The container references the secret by ID via
-# secret_environment_variables so the runtime fetches the value at
-# cold-start.
-resource "scaleway_secret" "llm_api_key" {
-  name        = local.secret_name
-  description = "Scaleway Generative APIs key. Minted and rotated by Terraform."
-  tags        = local.common_tags
-}
-
-resource "scaleway_secret_version" "llm_api_key" {
-  secret_id = scaleway_secret.llm_api_key.id
-  data      = scaleway_iam_api_key.llm.secret_key
-}
+# NOTE on the runtime secret storage model:
+# The Scaleway provider's `scaleway_container.secret_environment_variables`
+# block takes literal string values, not references to Scaleway Secret
+# Manager resources. "Secret" here means "hidden from the UI and logs",
+# not "fetched from Secret Manager at cold-start". The authoritative
+# store for the minted LLM IAM key and the rediss:// URL is therefore
+# the Terraform state file itself — protected by the bucket-owner-only
+# ACLs enforced by the bootstrap script on pathfinder-nexus-tfstate.
+#
+# We intentionally do NOT create scaleway_secret / scaleway_secret_version
+# resources for these values: that would duplicate state without any
+# actual rotation benefit because the container cannot reference them
+# dynamically. If/when the Scaleway provider gains a secret-reference
+# primitive we can revisit.
 
 # ---- Managed Redis (session + episodic memory) ----
 # Scaleway Managed Redis holds the server-owned session store so sessions
 # survive container cold starts. The app talks to it via ioredis using a
-# rediss:// URL built from the cluster outputs, injected into the
-# container as REDIS_URL via Secret Manager.
+# rediss:// URL built from the cluster outputs and injected into the
+# container as REDIS_URL via secret_environment_variables.
 #
 # Gated behind `enable_redis` so local `terraform plan` runs without
 # provisioning the cluster can still be useful for quick iteration on
@@ -114,21 +110,6 @@ locals {
     scaleway_redis_cluster.main[0].public_network[0].ips[0],
     scaleway_redis_cluster.main[0].public_network[0].port,
   ) : ""
-}
-
-resource "scaleway_secret" "redis_url" {
-  count = var.enable_redis ? 1 : 0
-
-  name        = local.redis_secret_name
-  description = "Full rediss:// URL for Scaleway Managed Redis. Injected into the Serverless Container as REDIS_URL."
-  tags        = local.common_tags
-}
-
-resource "scaleway_secret_version" "redis_url" {
-  count = var.enable_redis ? 1 : 0
-
-  secret_id = scaleway_secret.redis_url[0].id
-  data      = local.redis_url
 }
 
 # ---- Serverless Container namespace ----

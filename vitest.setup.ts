@@ -1,6 +1,7 @@
-// jsdom does not implement ResizeObserver or DOMRect, which Radix UI
-// primitives (Slider, ToggleGroup) call on mount via use-size / collection
-// hooks. Provide minimal no-op shims so component tests can render.
+// jsdom does not implement ResizeObserver and leaves several Element
+// pointer-capture helpers undefined. Radix UI primitives (Slider,
+// ToggleGroup) call these on mount via use-size / collection hooks.
+// Provide minimal no-op shims so component tests can render.
 
 class ResizeObserverMock {
   observe(): void {}

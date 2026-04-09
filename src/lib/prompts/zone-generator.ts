@@ -44,7 +44,17 @@ export function buildZonePromptChain(
     polishSkeleton: string,
     currentDna: StoryDNA
   ): { system: string; user: string } => {
-    const bannedList = DEFAULT_BANNED_PHRASES.join(", ");
+    // Effective banned-phrase list = DEFAULT ∪ dna.tags.exclude. The
+    // verifier at Stage C scans against this same union, so listing the
+    // full set in the Stage B system prompt avoids spurious retries for
+    // user-added excludes the model was never explicitly forbidden.
+    const effectiveBanned = Array.from(
+      new Set([
+        ...DEFAULT_BANNED_PHRASES,
+        ...currentDna.tags.exclude,
+      ].map((p) => p.toLowerCase()))
+    );
+    const bannedList = effectiveBanned.join(", ");
     const versionNote =
       currentDna.version === "pf2e"
         ? "Reference the three-action economy when describing movement and action costs in this zone."
@@ -63,13 +73,12 @@ Do NOT use banned phrases: ${bannedList}.
 The JSON block must appear at the end of your response, fenced with \`\`\`json ... \`\`\`.`;
 
     const includeTags = currentDna.tags.include.length > 0
-      ? `Thematic includes: ${currentDna.tags.include.join(", ")}.`
-      : "";
-    const excludeTags = currentDna.tags.exclude.length > 0
-      ? `Excluded themes/phrases: ${currentDna.tags.exclude.join(", ")}.`
+      ? `Thematic includes: ${currentDna.tags.include.join(", ")}.\n\n`
       : "";
 
-    const user = `Mechanical skeleton (Polish):\n\n${polishSkeleton}\n\n${includeTags}\n${excludeTags}\n\nProduce the Markdown narration with embedded JSON.`;
+    // Excludes are intentionally NOT duplicated in the user prompt —
+    // they are already enumerated in the Stage B system prompt above.
+    const user = `Mechanical skeleton (Polish):\n\n${polishSkeleton}\n\n${includeTags}Produce the Markdown narration with embedded JSON.`;
 
     return { system, user };
   };

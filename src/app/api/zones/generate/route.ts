@@ -9,14 +9,19 @@ import { generateZone } from "@/lib/orchestration/generate-zone";
 // nodes) and keep this route as the HTTP adapter.
 
 // Seed strings are user-supplied and interpolated into both Stage A (Polish)
-// and Stage B (English) prompts. Enforce length + reject control characters
-// and backticks to block basic prompt-injection and fence-escape attempts.
+// and Stage B (English) prompts. Reject all C0 control characters
+// (0x00-0x1F) and backticks — same pattern as /api/interaction/resolve —
+// to block newline-based "SYSTEM:" forgery and fence-escape attempts.
+// NOTE: this is a first-line guard only. Plain-text injection like
+// "Ignore prior instructions" still needs the output-side banned-phrase
+// scan + the anti-sycophancy clause in the GM system prompt.
 const SEED_STRING = z
   .string()
   .trim()
   .min(1)
   .max(200)
-  .regex(/^[^\n\r\t\0`]+$/, "Seed strings cannot contain control characters or backticks.");
+  // eslint-disable-next-line no-control-regex
+  .regex(/^[^\x00-\x1f`]+$/, "Seed strings cannot contain control characters or backticks.");
 
 const RequestSchema = z.object({
   dna: StoryDNASchema,

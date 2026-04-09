@@ -50,20 +50,15 @@ export async function optimizeInput(
     return { ok: false, error: UPSTREAM_ERROR_MESSAGE };
   }
 
-  // The optimizer is instructed to emit bare JSON. Wrap in a fence if
-  // missing so extractJsonBlock can parse it with the same pipeline as
-  // the character-sheet route.
-  const trimmed = response.trim();
-  const fenced = trimmed.startsWith("```")
-    ? trimmed
-    : "```json\n" + trimmed + "\n```";
-
-  const extracted = extractJsonBlock(fenced, PlayerIntentSchema);
+  // The optimizer is instructed to emit bare JSON. extractJsonBlock now
+  // handles both fenced and bare shapes so we pass the raw response
+  // through without pre-wrapping.
+  const extracted = extractJsonBlock(response, PlayerIntentSchema);
   if (!extracted.ok || !extracted.data) {
     return {
       ok: false,
       error: extracted.error ?? PARSE_ERROR_MESSAGE,
-      raw: extracted.raw ?? trimmed,
+      raw: extracted.raw ?? response.trim(),
     };
   }
 

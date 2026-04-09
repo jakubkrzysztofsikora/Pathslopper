@@ -113,8 +113,15 @@ export async function callLLM(opts: CallLLMOptions): Promise<string> {
         authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
+      // Hard cap on upstream latency. Without a timeout a hung model
+      // call would pin a Serverless Container instance until the
+      // platform's request timeout kicks in, wasting GB-s billing.
+      signal: AbortSignal.timeout(60_000),
     });
   } catch (err) {
+    if (err instanceof Error && err.name === "TimeoutError") {
+      throw new Error("Scaleway Generative APIs request timed out after 60s.");
+    }
     throw new Error(
       `Scaleway Generative APIs network error: ${err instanceof Error ? err.message : String(err)}`
     );
