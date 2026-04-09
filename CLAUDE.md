@@ -139,6 +139,38 @@ those tests. If a test needs to change, loop back to Phase 2.
 **Infrastructure:** `terraform-engineer`, `devops-engineer`,
 `deployment-engineer`, `cloud-architect`, `scaleway-specialist`
 
+## Environment & secrets
+
+This repository has the following Scaleway credentials pre-configured as
+environment variables / CI secrets. Agents and skills (Terraform provider,
+`scw` CLI, any S3 SDK against Scaleway Object Storage) should rely on these
+rather than prompting the user for credentials or hardcoding values:
+
+| Variable | Purpose |
+|---|---|
+| `SCW_ACCESS_KEY` | Scaleway API access key (IAM) |
+| `SCW_SECRET_KEY` | Scaleway API secret key (IAM) — treat as sensitive, never echo |
+| `SCW_DEFAULT_ORGANIZATION_ID` | Default organization ID used by `scw` and the Terraform provider |
+| `SCW_DEFAULT_PROJECT_ID` | Default project ID — Scaleway resources land here unless overridden |
+| `SCW_DEFAULT_REGION` | Default region (e.g. `fr-par`, `nl-ams`, `pl-waw`) for region-scoped resources |
+| `SCW_DEFAULT_ZONE` | Default availability zone (e.g. `fr-par-1`) for zone-scoped resources |
+
+Rules:
+
+1. **Do not add these keys to example `.tf`, `.env`, or docs files.** The
+   `scaleway/scaleway` Terraform provider and the `scw` CLI both read them
+   from the environment automatically; leave `provider "scaleway" {}` empty
+   or only set non-secret overrides.
+2. **Do not print their values** in command output, logs, or commit messages.
+   When you need to reference a variable, use its name only.
+3. **Terraform state on Scaleway Object Storage** should reuse these
+   credentials via the S3 backend's `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`
+   env-var shim (or the `access_key` / `secret_key` backend arguments sourced
+   from the SCW equivalents) — never inline the secrets in `backend "s3" {}`.
+4. **Region/zone overrides** — if a task explicitly targets a different
+   region or zone, pass it as a resource-level argument; don't mutate
+   `SCW_DEFAULT_REGION` / `SCW_DEFAULT_ZONE` for the whole session.
+
 ## Sources
 
 - [anthropics/skills](https://github.com/anthropics/skills) — official Anthropic skills
