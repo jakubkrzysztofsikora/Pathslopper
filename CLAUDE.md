@@ -86,6 +86,86 @@ those tests. If a test needs to change, loop back to Phase 2.
   Phase 2 plan.
 - **`debugger`** — call when Phase 4 surfaces failures.
 
+## Phase 5 — Ship
+
+**Goal:** get the verified build running on Scaleway infrastructure via
+GitHub Actions, using a single prod environment (no separate dev for now).
+
+- **`scaleway-specialist`** — owns the Scaleway resource topology
+  (Serverless Containers, Container Registry, Secret Manager, IAM
+  applications, Object Storage for Terraform state). All resources live
+  in `infra/terraform/`.
+- **`deployment-engineer` / `devops-engineer`** — owns the GitHub Actions
+  workflows in `.github/workflows/` (`ci.yml`, `deploy.yml`,
+  `bootstrap-tfstate.yml`). CI runs lint + typecheck + test + build +
+  Terraform fmt/validate on every push. Deploy builds a linux/amd64
+  image, pushes it to Scaleway Container Registry, and
+  `terraform apply`s against the single state backend.
+- **`terraform-engineer` + `terraform` skill** — for infra/terraform/
+  changes. Follow the HashiCorp style guide and keep modules small.
+- State backend is the Scaleway Object Storage bucket
+  `pathfinder-nexus-tfstate` (S3-compatible). Bootstrap via
+  **Actions → Bootstrap Terraform State Bucket → Run workflow** once
+  before the first Deploy run. The underlying script is idempotent.
+- State locking is serialized via a single GitHub Actions concurrency
+  group (`deploy`), since Scaleway Object Storage does not support
+  DynamoDB-style locking.
+- **Single environment** (prod). Push to `main` deploys. There is no
+  `dev` workspace, no per-PR preview. Per-PR ephemeral environments and
+  a dedicated dev workspace are post-MVP upgrades.
+
+## LLM provider
+
+The runtime LLM provider is **Scaleway Generative APIs** (OpenAI-compatible
+`/chat/completions` endpoint). A single Scaleway IAM application API key,
+minted by Terraform and scoped to `GenerativeApisFullAccess`, is the only
+LLM credential the container holds. No `ANTHROPIC_API_KEY`, no external
+provider dependency.
+
+The minted key and the Managed Redis URL reach the container via
+`secret_environment_variables` (hidden in the Scaleway UI + logs, stored
+as literal strings in Terraform state, protected by the bucket-owner-only
+ACLs on `pathfinder-nexus-tfstate`). The Scaleway provider does not
+currently offer a dynamic Secret Manager reference primitive — see the
+NOTE block in `infra/terraform/main.tf` for the rationale and the
+upgrade path.
+
+Model selection is env-var driven, not code-driven:
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `LLM_BASE_URL` | `https://api.scaleway.ai/v1` | OpenAI-compatible endpoint |
+| `LLM_TEXT_MODEL` | `llama-3.1-70b-instruct` | GM prompt chains, input optimizer |
+| `LLM_VISION_MODEL` | `pixtral-12b-2409` | Character-sheet VLM route |
+| `LLM_API_KEY` | (secret) | Scaleway IAM API key, injected by Secret Manager |
+
+Swapping to a self-hosted model (e.g., Bielik via Scaleway Managed
+Inference for Polish-first reasoning) is a Terraform variable change, not
+a code deploy.
+
+## Persistence
+
+The server-owned session store (Stateful Interaction Loop Phase 4) is
+backed by **Scaleway Managed Redis** in production. Terraform mints a
+`RED1-MICRO` cluster (TLS-enabled, public endpoint + strong password),
+publishes the full `rediss://` URL via Scaleway Secret Manager, and
+injects it into the container as `REDIS_URL`.
+
+The factory at `src/lib/state/server/store-factory.ts` reads
+`REDIS_URL` at first use:
+
+| `REDIS_URL` | Store used | When |
+|---|---|---|
+| set | `RedisSessionStore` (ioredis) | production, integration tests |
+| unset / empty | `InMemorySessionStore` | local dev, vitest |
+
+Sessions are stored as JSON under `pfnexus:session:${id}` with a 24h
+sliding TTL. Every mutation extends the TTL so active games never
+expire while abandoned ones evaporate after a day. Disable the Redis
+dependency for a cheap Terraform iteration by setting
+`enable_redis = false` in `infra/terraform/` — the app falls back to
+the in-memory store automatically.
+
 ## Defaults & conventions
 
 1. **Never skip Phase 2.** Even a tiny bug fix should describe the failing test
@@ -103,6 +183,20 @@ those tests. If a test needs to change, loop back to Phase 2.
    - `haiku` — focused linting and deployment tasks
    These are set in each agent's frontmatter; override per invocation only
    when you have a reason.
+6. **State boundary invariant (Pathfinder Nexus).** The client owns
+   *authoring state* (Story DNA, form inputs, UI mode). The server owns
+   *session and episodic memory* (future RedisVL / Pinecone stores). Story
+   DNA is always shipped to the server as a POST payload — it is never
+   mirrored into a server-side cache for convenience. When the stateful
+   interaction loop (Narration → Optimization → Adjudication → Resolution)
+   lands, its world-state hash and episodic memory belong in a server-owned
+   store, not in zustand. Do not cross this boundary to simplify a feature.
+7. **Orchestration lives in `src/lib/orchestration/`, not in API routes.**
+   Next.js route handlers should be thin HTTP adapters that validate input,
+   call an orchestrator from `src/lib/orchestration/`, and serialize the
+   result. Multi-stage prompt chains, retry policies, and RAG context
+   assembly all belong in the orchestration layer so LangGraph can take
+   ownership later without rewriting routes.
 
 ## Inventory
 

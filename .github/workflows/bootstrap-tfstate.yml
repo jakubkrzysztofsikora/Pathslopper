@@ -1,0 +1,61 @@
+name: Bootstrap Terraform State Bucket
+
+# One-off workflow that creates the Scaleway Object Storage bucket
+# `pathfinder-nexus-tfstate` used as the Terraform S3 backend. Run this
+# ONCE via "Actions -> Bootstrap Terraform State Bucket -> Run workflow"
+# before the first Deploy run. The underlying script is idempotent, so
+# re-running it is a no-op.
+#
+# This exists as a workflow (rather than a manual local script) so the
+# only environment that needs the SCW credentials is GitHub Actions,
+# matching the rest of the deploy pipeline.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Opt JavaScript actions into Node.js 24 ahead of the June 2nd 2026
+# default switch. See:
+# https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: bootstrap-tfstate
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    env:
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_DEFAULT_REGION: ${{ vars.SCW_REGION || 'fr-par' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          if [[ -z "${SCW_ACCESS_KEY}" || -z "${SCW_SECRET_KEY}" ]]; then
+            echo "SCW_ACCESS_KEY and SCW_SECRET_KEY must be set as repository secrets." >&2
+            exit 1
+          fi
+          echo "Credentials present. Region: ${SCW_DEFAULT_REGION}"
+
+      - name: Verify aws CLI is available
+        run: aws --version
+
+      - name: Run bootstrap script
+        run: ./infra/terraform/scripts/bootstrap-tfstate.sh
+
+      - name: Confirm bucket exists
+        run: |
+          aws --endpoint-url "https://s3.${SCW_DEFAULT_REGION}.scw.cloud" \
+            s3api head-bucket --bucket pathfinder-nexus-tfstate
+          echo "Terraform state bucket is ready."
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          AWS_REGION: ${{ vars.SCW_REGION || 'fr-par' }}

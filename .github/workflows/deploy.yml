@@ -1,0 +1,129 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy. Use a previous SHA to roll back.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  deployments: write
+
+# Opt JavaScript actions into Node.js 24 ahead of the June 2nd 2026
+# default switch. See:
+# https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  # One live deploy at a time. Serialises terraform apply as a substitute
+  # for state locking (Scaleway Object Storage has no DynamoDB equivalent).
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SCW_REGION: ${{ vars.SCW_REGION || 'fr-par' }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      AWS_REGION: ${{ vars.SCW_REGION || 'fr-par' }}
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+      SCW_DEFAULT_REGION: ${{ vars.SCW_REGION || 'fr-par' }}
+      SCW_DEFAULT_ZONE: ${{ vars.SCW_ZONE || 'fr-par-1' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.sha }}
+
+      - name: Compute image tag
+        id: tag
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Scaleway Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: rg.${{ env.SCW_REGION }}.scw.cloud
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: Build and push container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            rg.${{ env.SCW_REGION }}.scw.cloud/pathfinder-nexus/app:${{ steps.tag.outputs.sha }}
+            rg.${{ env.SCW_REGION }}.scw.cloud/pathfinder-nexus/app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.5'
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infra/terraform
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: infra/terraform
+        run: |
+          terraform apply -auto-approve \
+            -var image_tag=${{ steps.tag.outputs.sha }}
+
+      - name: Capture outputs
+        id: outputs
+        working-directory: infra/terraform
+        run: |
+          echo "container_url=$(terraform output -raw container_url)" >> "$GITHUB_OUTPUT"
+          echo "health_url=$(terraform output -raw health_url)" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test health endpoint
+        run: |
+          for i in 1 2 3 4 5; do
+            if curl -fsS "${{ steps.outputs.outputs.health_url }}" ; then
+              echo ""
+              echo "Health OK"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
+          echo "Health check did not succeed after 5 attempts." >&2
+          exit 1
+
+      - name: Create GitHub deployment record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'prod',
+              auto_merge: false,
+              required_contexts: [],
+              description: 'Scaleway Serverless Container'
+            });
