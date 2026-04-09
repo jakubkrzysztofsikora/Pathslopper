@@ -34,12 +34,12 @@ export function Slider({
       min={min}
       max={max}
       step={step}
-      aria-label={ariaLabel}
     >
       <RadixSlider.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-zinc-700">
         <RadixSlider.Range className="absolute h-full bg-amber-500" />
       </RadixSlider.Track>
       <RadixSlider.Thumb
+        aria-label={ariaLabel}
         className={cn(
           "block h-4 w-4 rounded-full border-2 border-amber-500 bg-zinc-900",
           "ring-offset-zinc-950 transition-colors",
