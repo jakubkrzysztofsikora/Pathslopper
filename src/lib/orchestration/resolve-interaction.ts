@@ -1,14 +1,16 @@
 import type { CallLLM } from "@/lib/llm/client";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
+import type { SessionState } from "@/lib/schemas/session";
+import type { SessionStore } from "@/lib/state/server/session-store";
 import { optimizeInput } from "./optimize-input";
 import { adjudicate, type AdjudicateOptions } from "./adjudicate";
 
 /**
  * Phase 2 + Phase 3 composition: takes raw player prose, optimizes it into
  * a PlayerIntent via the LLM, then adjudicates the intent deterministically
- * via the dice engine. Returns a tagged result so the HTTP adapter can map
- * failure modes to the right status code.
+ * via the dice engine. When a sessionId + sessionStore are provided the
+ * resolved turn is appended to the session log (Phase 4 Resolution).
  *
  * `modifier` / `dc` from the client-side Player Input Console are
  * merged onto the optimized intent AFTER optimization so the LLM cannot
@@ -20,17 +22,30 @@ export interface ResolveInteractionInput {
   version: PathfinderVersion;
   overrideModifier?: number;
   overrideDc?: number;
+  /** Optional session ID — when present, the resolved turn is appended to the session log. */
+  sessionId?: string;
 }
 
 export interface ResolveInteractionDeps {
   callLLM: CallLLM;
   adjudicateOptions?: AdjudicateOptions;
   logger?: (stage: string, err: unknown) => void;
+  /** Optional server session store. Required if `sessionId` is set; otherwise ignored. */
+  sessionStore?: SessionStore;
 }
 
 export type ResolveInteractionResult =
-  | { ok: true; result: AdjudicationResult }
-  | { ok: false; stage: "optimize"; error: string; raw?: string };
+  | {
+      ok: true;
+      result: AdjudicationResult;
+      session?: SessionState;
+    }
+  | {
+      ok: false;
+      stage: "optimize" | "session";
+      error: string;
+      raw?: string;
+    };
 
 export async function resolveInteraction(
   input: ResolveInteractionInput,
@@ -62,5 +77,30 @@ export async function resolveInteraction(
   };
 
   const result = adjudicate(intent, deps.adjudicateOptions);
-  return { ok: true, result };
+
+  // Phase 4 — Resolution: append to the server-owned session log.
+  let session: SessionState | undefined;
+  if (input.sessionId) {
+    if (!deps.sessionStore) {
+      return {
+        ok: false,
+        stage: "session",
+        error: "sessionStore dependency is required when sessionId is provided.",
+      };
+    }
+    const updated = deps.sessionStore.appendResolved(input.sessionId, {
+      intent,
+      result,
+    });
+    if (!updated) {
+      return {
+        ok: false,
+        stage: "session",
+        error: `Unknown session: ${input.sessionId}`,
+      };
+    }
+    session = updated;
+  }
+
+  return { ok: true, result, session };
 }

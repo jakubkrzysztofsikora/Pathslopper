@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
+import { getSessionStore } from "@/lib/state/server/session-store";
 
 const optimizedIntent = {
   version: "pf2e",
@@ -98,6 +99,65 @@ describe("resolveInteraction", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.stage).toBe("optimize");
+    }
+  });
+
+  it("appends a resolved turn to the session when sessionId + sessionStore are provided", async () => {
+    const store = getSessionStore();
+    store._reset();
+    const session = store.create("pf2e");
+
+    const callLLM = vi
+      .fn()
+      .mockResolvedValueOnce(JSON.stringify(optimizedIntent));
+
+    const result = await resolveInteraction(
+      {
+        rawInput: "I swing",
+        version: "pf2e",
+        overrideModifier: 5,
+        overrideDc: 15,
+        sessionId: session.id,
+      },
+      { callLLM, sessionStore: store, adjudicateOptions: { seed: 1 } }
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.session).toBeDefined();
+      expect(result.session?.turns).toHaveLength(1);
+      expect(result.session?.turns[0].kind).toBe("resolved");
+    }
+  });
+
+  it("returns stage='session' failure when sessionId is provided without sessionStore", async () => {
+    const callLLM = vi
+      .fn()
+      .mockResolvedValueOnce(JSON.stringify(optimizedIntent));
+    const result = await resolveInteraction(
+      { rawInput: "I swing", version: "pf2e", sessionId: "abcdefgh12345678" },
+      { callLLM }
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.stage).toBe("session");
+    }
+  });
+
+  it("returns stage='session' failure when sessionId is unknown", async () => {
+    const store = getSessionStore();
+    store._reset();
+    const callLLM = vi
+      .fn()
+      .mockResolvedValueOnce(JSON.stringify(optimizedIntent));
+    const result = await resolveInteraction(
+      { rawInput: "I swing", version: "pf2e", sessionId: "missingxyz123456" },
+      { callLLM, sessionStore: store }
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.stage).toBe("session");
+      expect(result.error).toContain("Unknown session");
     }
   });
 
