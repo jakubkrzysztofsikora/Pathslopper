@@ -84,21 +84,28 @@ describe("useStoryDNAStore", () => {
     expect(useStoryDNAStore.getState().tags.exclude).not.toContain("narrative gold");
   });
 
-  it("getSnapshot returns valid StoryDNA", () => {
+  it("getSnapshot returns a successful SafeParseReturnType", () => {
     const { getSnapshot } = useStoryDNAStore.getState();
-    const snapshot = getSnapshot();
-    expect(snapshot.version).toBe("pf2e");
-    expect(typeof snapshot.sliders.narrativePacing).toBe("number");
-    expect(Array.isArray(snapshot.tags.include)).toBe(true);
-    expect(Array.isArray(snapshot.tags.exclude)).toBe(true);
+    const result = getSnapshot();
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.version).toBe("pf2e");
+      expect(typeof result.data.sliders.narrativePacing).toBe("number");
+      expect(Array.isArray(result.data.tags.include)).toBe(true);
+      expect(Array.isArray(result.data.tags.exclude)).toBe(true);
+    }
   });
 
-  it("getSnapshot throws if state is invalid", () => {
+  it("getSnapshot returns success=false without throwing when state is invalid", () => {
     useStoryDNAStore.setState({
       sliders: { narrativePacing: 999, tacticalLethality: 55, npcImprov: 50 },
     } as never);
     const { getSnapshot } = useStoryDNAStore.getState();
-    expect(() => getSnapshot()).toThrow();
+    let result: ReturnType<typeof getSnapshot> | undefined;
+    expect(() => {
+      result = getSnapshot();
+    }).not.toThrow();
+    expect(result?.success).toBe(false);
   });
 
   it("exclude tags are pre-seeded with banned phrases", () => {

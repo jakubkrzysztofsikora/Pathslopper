@@ -11,6 +11,10 @@ export interface TagInputProps {
   placeholder?: string;
   className?: string;
   chipClassName?: string;
+  /** ID of a visible label element (e.g., parent h4) for a11y association. */
+  labelledBy?: string;
+  /** Fallback accessible name when no labelledBy is provided. */
+  ariaLabel?: string;
 }
 
 export function TagInput({
@@ -20,6 +24,8 @@ export function TagInput({
   placeholder = "Add tag...",
   className,
   chipClassName,
+  labelledBy,
+  ariaLabel,
 }: TagInputProps) {
   const [inputValue, setInputValue] = React.useState("");
 
@@ -75,9 +81,11 @@ export function TagInput({
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder}
+        aria-labelledby={labelledBy}
+        aria-label={labelledBy ? undefined : ariaLabel ?? placeholder}
         className={cn(
           "w-full rounded-md bg-zinc-800 border border-zinc-700 px-3 py-1.5",
-          "text-sm text-zinc-200 placeholder:text-zinc-500",
+          "text-sm text-zinc-200 placeholder:text-zinc-400",
           "focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
         )}
       />

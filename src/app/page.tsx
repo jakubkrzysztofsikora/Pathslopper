@@ -11,7 +11,7 @@ export default function HomePage() {
           Pathfinder Nexus{" "}
           <span className="text-amber-500">— AI Game Master</span>
         </h1>
-        <p className="text-zinc-400 text-base">
+        <p className="text-zinc-300 text-base">
           Deterministic state-driven storytelling. Calibrate your DNA, generate
           tactical zones, and parse character sheets with vision AI.
         </p>
@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <ZoneGeneratorPanel />
 
-      <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-500 text-center">
+      <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-300 text-center">
         PF1e: simulation | PF2e: three-action economy
       </footer>
     </main>

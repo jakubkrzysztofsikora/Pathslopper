@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import type { SafeParseReturnType } from "zod";
 import {
   StoryDNASchema,
   VERSION_SLIDER_DEFAULTS,
@@ -11,6 +12,8 @@ import { DEFAULT_BANNED_PHRASES } from "@/lib/prompts/banned-phrases";
 
 const DEFAULT_INCLUDE_TAGS = ["Dark Fantasy", "Political Intrigue"];
 
+export type StoryDNASnapshot = SafeParseReturnType<unknown, StoryDNA>;
+
 interface StoryDNAState extends StoryDNA {
   setVersion: (version: PathfinderVersion) => void;
   setSlider: (key: keyof StoryDNA["sliders"], value: number) => void;
@@ -18,7 +21,11 @@ interface StoryDNAState extends StoryDNA {
   removeIncludeTag: (tag: string) => void;
   addExcludeTag: (tag: string) => void;
   removeExcludeTag: (tag: string) => void;
-  getSnapshot: () => StoryDNA;
+  /**
+   * Returns a zod SafeParseReturnType rather than throwing so callers can
+   * render-path-safely inspect validity. Use `result.success` to branch.
+   */
+  getSnapshot: () => StoryDNASnapshot;
 }
 
 const initialVersion: PathfinderVersion = "pf2e";
@@ -92,6 +99,6 @@ export const useStoryDNAStore = create<StoryDNAState>((set, get) => ({
 
   getSnapshot: () => {
     const { version, sliders, tags } = get();
-    return StoryDNASchema.parse({ version, sliders, tags });
+    return StoryDNASchema.safeParse({ version, sliders, tags });
   },
 }));

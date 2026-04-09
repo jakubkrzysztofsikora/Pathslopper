@@ -103,6 +103,20 @@ those tests. If a test needs to change, loop back to Phase 2.
    - `haiku` — focused linting and deployment tasks
    These are set in each agent's frontmatter; override per invocation only
    when you have a reason.
+6. **State boundary invariant (Pathfinder Nexus).** The client owns
+   *authoring state* (Story DNA, form inputs, UI mode). The server owns
+   *session and episodic memory* (future RedisVL / Pinecone stores). Story
+   DNA is always shipped to the server as a POST payload — it is never
+   mirrored into a server-side cache for convenience. When the stateful
+   interaction loop (Narration → Optimization → Adjudication → Resolution)
+   lands, its world-state hash and episodic memory belong in a server-owned
+   store, not in zustand. Do not cross this boundary to simplify a feature.
+7. **Orchestration lives in `src/lib/orchestration/`, not in API routes.**
+   Next.js route handlers should be thin HTTP adapters that validate input,
+   call an orchestrator from `src/lib/orchestration/`, and serialize the
+   result. Multi-stage prompt chains, retry policies, and RAG context
+   assembly all belong in the orchestration layer so LangGraph can take
+   ownership later without rewriting routes.
 
 ## Inventory
 

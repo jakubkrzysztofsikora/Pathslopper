@@ -8,15 +8,20 @@ export interface ExtractJsonBlockResult<T> {
 }
 
 /**
- * Extracts a fenced ```json ... ``` block from markdown text,
+ * Extracts the LAST fenced ```json ... ``` block from markdown text,
  * parses it, and validates it against the provided Zod schema.
+ *
+ * Picking the last block matches the Stage B prompt contract
+ * ("JSON block must appear at the end of your response") and avoids
+ * false matches on inline example fences earlier in the narration.
  */
 export function extractJsonBlock<T>(
   markdown: string,
   schema: ZodType<T, ZodTypeDef, unknown>
 ): ExtractJsonBlockResult<T> {
-  const fenceRegex = /```json\s*([\s\S]*?)```/i;
-  const match = fenceRegex.exec(markdown);
+  const fenceRegex = /```json\s*([\s\S]*?)```/gi;
+  const matches = Array.from(markdown.matchAll(fenceRegex));
+  const match = matches[matches.length - 1];
 
   if (!match || !match[1]) {
     return {

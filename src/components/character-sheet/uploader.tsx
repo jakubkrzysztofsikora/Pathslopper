@@ -20,8 +20,28 @@ const ACCEPTED_TYPES = [
 
 type AcceptedMime = (typeof ACCEPTED_TYPES)[number];
 
+// ~5 MB raw file cap. Server enforces ~6 MB decoded via the zod schema;
+// this client-side guard rejects oversize before we spend time base64-encoding.
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
 function isAcceptedMime(mime: string): mime is AcceptedMime {
   return (ACCEPTED_TYPES as readonly string[]).includes(mime);
+}
+
+function formatApiError(error: unknown, fallback: string): string {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const flat = error as { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
+    const form = flat.formErrors?.join(", ");
+    const fields = flat.fieldErrors
+      ? Object.entries(flat.fieldErrors)
+          .map(([k, v]) => `${k}: ${v.join(", ")}`)
+          .join("; ")
+      : "";
+    const combined = [form, fields].filter((s) => s && s.length > 0).join(" | ");
+    if (combined) return combined;
+  }
+  return fallback;
 }
 
 export function fileToBase64(file: File): Promise<string> {
@@ -51,8 +71,19 @@ export function CharacterSheetUploader({
   const version = useStoryDNAStore((s) => s.version);
   const [state, setState] = React.useState<State>({ status: "idle" });
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const resultRef = React.useRef<HTMLDivElement>(null);
+  const inFlightRef = React.useRef(false);
+
+  // Move focus to the result panel once parsing finishes so keyboard and
+  // screen-reader users don't lose context after an async success.
+  React.useEffect(() => {
+    if (state.status === "success" && resultRef.current) {
+      resultRef.current.focus();
+    }
+  }, [state.status]);
 
   async function handleFile(file: File) {
+    if (inFlightRef.current) return;
     if (!isAcceptedMime(file.type)) {
       setState({
         status: "error",
@@ -60,6 +91,14 @@ export function CharacterSheetUploader({
       });
       return;
     }
+    if (file.size > MAX_FILE_BYTES) {
+      setState({
+        status: "error",
+        message: `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is ${(MAX_FILE_BYTES / 1024 / 1024).toFixed(0)} MB.`,
+      });
+      return;
+    }
+    inFlightRef.current = true;
     setState({ status: "loading" });
     try {
       const imageBase64 = await fileToBase64(file);
@@ -76,10 +115,7 @@ export function CharacterSheetUploader({
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message:
-            typeof json.error === "string"
-              ? json.error
-              : "Character sheet parsing failed.",
+          message: formatApiError(json.error, "Character sheet parsing failed."),
         });
         return;
       }
@@ -93,8 +129,12 @@ export function CharacterSheetUploader({
         status: "error",
         message: err instanceof Error ? err.message : "Upload failed.",
       });
+    } finally {
+      inFlightRef.current = false;
     }
   }
+
+  const fileInputId = "character-sheet-file-input-id";
 
   return (
     <section
@@ -111,19 +151,26 @@ export function CharacterSheetUploader({
         >
           Character Sheet — Vision Ingest
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-zinc-300 mt-1">
           Upload a photo or scan of a paper sheet. The VLM parses layout-aware
           data for {version === "pf1e" ? "Pathfinder 1e" : "Pathfinder 2e"}.
         </p>
       </div>
 
       <div className="flex flex-col gap-3">
+        <label
+          htmlFor={fileInputId}
+          className="text-sm font-medium text-zinc-200"
+        >
+          Upload character sheet image
+        </label>
         <input
+          id={fileInputId}
           ref={inputRef}
           type="file"
           accept={ACCEPTED_TYPES.join(",")}
           data-testid="character-sheet-file-input"
-          className="block w-full text-sm text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-amber-600 file:text-zinc-950 file:font-medium hover:file:bg-amber-500 file:cursor-pointer"
+          className="block w-full text-sm text-zinc-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-amber-600 file:text-zinc-950 file:font-medium hover:file:bg-amber-500 file:cursor-pointer"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) void handleFile(file);
@@ -144,18 +191,21 @@ export function CharacterSheetUploader({
 
         {state.status === "success" && (
           <div
-            className="rounded-md border border-zinc-700 bg-zinc-950 p-4"
+            ref={resultRef}
+            tabIndex={-1}
+            aria-live="polite"
+            className="rounded-md border border-zinc-700 bg-zinc-950 p-4 focus:outline-none focus:ring-2 focus:ring-amber-500"
             data-testid="character-sheet-result"
           >
             <div className="flex items-baseline justify-between mb-2">
               <h3 className="text-base font-semibold text-amber-400">
                 {state.data.name}
               </h3>
-              <span className="text-xs uppercase tracking-wide text-zinc-500">
+              <span className="text-xs uppercase tracking-wide text-zinc-400">
                 {state.data.version}
               </span>
             </div>
-            <pre className="text-xs text-zinc-300 overflow-x-auto whitespace-pre-wrap">
+            <pre className="text-xs text-zinc-200 overflow-x-auto whitespace-pre-wrap">
               {JSON.stringify(state.data, null, 2)}
             </pre>
             {state.warnings.length > 0 && (

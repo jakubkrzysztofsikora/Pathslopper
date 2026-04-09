@@ -23,10 +23,16 @@ export function FilterTags({
   onRemoveExclude,
   className,
 }: FilterTagsProps) {
+  const includeHeadingId = "filter-tags-include-heading";
+  const excludeHeadingId = "filter-tags-exclude-heading";
+
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2">
+        <h4
+          id={includeHeadingId}
+          className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-2"
+        >
           Include Themes
         </h4>
         <TagInput
@@ -34,11 +40,15 @@ export function FilterTags({
           onAdd={onAddInclude}
           onRemove={onRemoveInclude}
           placeholder="Add include theme..."
+          labelledBy={includeHeadingId}
           chipClassName="border-amber-800 bg-amber-900/30 text-amber-300"
         />
       </div>
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">
+        <h4
+          id={excludeHeadingId}
+          className="text-xs font-semibold uppercase tracking-widest text-zinc-300 mb-2"
+        >
           Slop Filter (Exclude)
         </h4>
         <TagInput
@@ -46,6 +56,7 @@ export function FilterTags({
           onAdd={onAddExclude}
           onRemove={onRemoveExclude}
           placeholder="Add banned phrase..."
+          labelledBy={excludeHeadingId}
           chipClassName="border-red-900 bg-red-900/20 text-red-400"
         />
       </div>

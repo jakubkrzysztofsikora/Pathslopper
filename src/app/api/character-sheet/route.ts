@@ -12,6 +12,13 @@ import type Anthropic from "@anthropic-ai/sdk";
 // The node receives CharacterSheetVLMRequest and emits CharacterSheetParsed to downstream
 // nodes (inventory normalizer, stat-block renderer, etc.).
 
+const UPSTREAM_ERROR_MESSAGE = "Upstream model call failed.";
+
+function logServerError(stage: string, err: unknown): void {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`[character-sheet] ${stage} failed: ${message}`);
+}
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -61,20 +68,18 @@ export async function POST(request: NextRequest) {
       messages,
     });
   } catch (err) {
+    logServerError("claude-call", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          err instanceof Error ? err.message : "Claude API call failed.",
-      },
+      { ok: false, error: UPSTREAM_ERROR_MESSAGE },
       { status: 502 }
     );
   }
 
   // The VLM is instructed to return only JSON; wrap in a fence for extractJsonBlock.
-  const fencedResponse = rawResponse.trim().startsWith("```")
-    ? rawResponse
-    : "```json\n" + rawResponse + "\n```";
+  const trimmed = rawResponse.trim();
+  const fencedResponse = trimmed.startsWith("```")
+    ? trimmed
+    : "```json\n" + trimmed + "\n```";
 
   const extracted = extractJsonBlock(fencedResponse, CharacterSheetParsedSchema);
 

@@ -28,7 +28,7 @@ export function SliderRow({
       <div className="flex items-center justify-between">
         <div>
           <span className="text-sm font-medium text-zinc-200">{label}</span>
-          <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+          <p className="text-xs text-zinc-300 mt-0.5">{description}</p>
         </div>
         <span className="text-sm font-mono text-amber-400 tabular-nums min-w-[2.5rem] text-right">
           {value}
