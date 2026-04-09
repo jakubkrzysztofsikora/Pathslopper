@@ -1,8 +1,3 @@
-output "environment" {
-  description = "Deployment environment for this Terraform workspace."
-  value       = var.environment
-}
-
 output "container_url" {
   description = "Auto-generated Scaleway hostname for the Serverless Container."
   value       = "https://${scaleway_container.app.domain_name}"
@@ -14,7 +9,7 @@ output "health_url" {
 }
 
 output "registry_endpoint" {
-  description = "Scaleway Container Registry endpoint for this environment."
+  description = "Scaleway Container Registry endpoint."
   value       = scaleway_registry_namespace.this.endpoint
 }
 

@@ -89,30 +89,30 @@ those tests. If a test needs to change, loop back to Phase 2.
 ## Phase 5 — Ship
 
 **Goal:** get the verified build running on Scaleway infrastructure via
-GitHub Actions, reusing the same Terraform module for feature-branch
-previews (`dev`) and production (`prod`).
+GitHub Actions, using a single prod environment (no separate dev for now).
 
 - **`scaleway-specialist`** — owns the Scaleway resource topology
   (Serverless Containers, Container Registry, Secret Manager, IAM
   applications, Object Storage for Terraform state). All resources live
   in `infra/terraform/`.
 - **`deployment-engineer` / `devops-engineer`** — owns the GitHub Actions
-  workflows in `.github/workflows/` (`ci.yml`, `deploy-dev.yml`,
-  `deploy-prod.yml`). CI runs lint + typecheck + test + build + Terraform
-  fmt/validate on every push. Deploys build a linux/amd64 image, push it
-  to Scaleway Container Registry, and `terraform apply` against a workspace
-  (`dev` or `prod`).
+  workflows in `.github/workflows/` (`ci.yml`, `deploy.yml`,
+  `bootstrap-tfstate.yml`). CI runs lint + typecheck + test + build +
+  Terraform fmt/validate on every push. Deploy builds a linux/amd64
+  image, pushes it to Scaleway Container Registry, and
+  `terraform apply`s against the single state backend.
 - **`terraform-engineer` + `terraform` skill** — for infra/terraform/
   changes. Follow the HashiCorp style guide and keep modules small.
 - State backend is the Scaleway Object Storage bucket
-  `pathfinder-nexus-tfstate` (S3-compatible). Bootstrap with
-  `./infra/terraform/scripts/bootstrap-tfstate.sh` before the first init.
-- State locking is serialized via GitHub Actions environment +
-  concurrency groups, since Scaleway Object Storage does not support
+  `pathfinder-nexus-tfstate` (S3-compatible). Bootstrap via
+  **Actions → Bootstrap Terraform State Bucket → Run workflow** once
+  before the first Deploy run. The underlying script is idempotent.
+- State locking is serialized via a single GitHub Actions concurrency
+  group (`deploy`), since Scaleway Object Storage does not support
   DynamoDB-style locking.
-- The `dev` environment is shared across feature branches (Option A from
-  the deployment-engineer plan). Per-PR ephemeral environments are a
-  post-MVP upgrade.
+- **Single environment** (prod). Push to `main` deploys. There is no
+  `dev` workspace, no per-PR preview. Per-PR ephemeral environments and
+  a dedicated dev workspace are post-MVP upgrades.
 
 ## LLM provider
 

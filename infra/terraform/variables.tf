@@ -1,12 +1,3 @@
-variable "environment" {
-  description = "Deployment environment. Drives naming, min_scale, and IAM scoping."
-  type        = string
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "environment must be 'dev' or 'prod'."
-  }
-}
-
 variable "image_tag" {
   description = "Container image tag (short git SHA) to deploy. Passed by the GitHub Actions workflow."
   type        = string
@@ -47,7 +38,7 @@ variable "container_cpu_limit" {
 }
 
 variable "container_min_scale" {
-  description = "Minimum warm instances. Set to 0 for scale-to-zero (cold starts), 1 for always-warm."
+  description = "Minimum warm instances. 0 = scale-to-zero (cold starts), 1 = always-warm."
   type        = number
   default     = 0
 }

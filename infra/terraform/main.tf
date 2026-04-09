@@ -1,38 +1,35 @@
 locals {
   project_name             = "pathfinder-nexus"
-  resource_suffix          = var.environment
-  registry_namespace       = "${local.project_name}-${local.resource_suffix}"
-  container_namespace_name = "${local.project_name}-${local.resource_suffix}"
+  registry_namespace       = local.project_name
+  container_namespace_name = local.project_name
   container_name           = "app"
-  secret_name              = "llm-api-key-${local.resource_suffix}"
-  iam_app_name             = "${local.project_name}-llm-${local.resource_suffix}"
+  secret_name              = "llm-api-key"
+  iam_app_name             = "${local.project_name}-llm"
 
   common_tags = [
     "project=${local.project_name}",
-    "environment=${var.environment}",
     "managed_by=terraform",
   ]
 }
 
 # ---- Container Registry ----
-# One registry namespace per environment so dev and prod IAM scopes can be
-# cleanly isolated. Images are pushed by CI and referenced by the
-# Serverless Container below via the `image_tag` input.
+# Single registry namespace for the project. Images are pushed by CI and
+# referenced by the Serverless Container below via the `image_tag` input.
 resource "scaleway_registry_namespace" "this" {
   name        = local.registry_namespace
-  description = "Container images for Pathfinder Nexus (${var.environment})."
+  description = "Container images for Pathfinder Nexus."
   is_public   = false
 }
 
 # ---- LLM IAM application + policy + API key ----
-# Minting a dedicated IAM application for LLM access per environment means
-# the container never holds the humans' SCW_SECRET_KEY, which would grant
-# full project permissions. The app is scoped to GenerativeApisFullAccess
-# only, so a compromised container can at worst burn inference credits —
-# it cannot touch buckets, secrets, or any other Scaleway resource.
+# A dedicated IAM application for LLM access means the container never
+# holds the humans' SCW_SECRET_KEY (which would grant full project
+# permissions). The app is scoped to GenerativeApisFullAccess only, so
+# a compromised container can at worst burn inference credits — it
+# cannot touch buckets, other secrets, or any Scaleway resource.
 resource "scaleway_iam_application" "llm" {
   name        = local.iam_app_name
-  description = "Pathfinder Nexus LLM credential (${var.environment})."
+  description = "Pathfinder Nexus LLM credential."
 }
 
 resource "scaleway_iam_policy" "llm" {
@@ -48,7 +45,7 @@ resource "scaleway_iam_policy" "llm" {
 
 resource "scaleway_iam_api_key" "llm" {
   application_id = scaleway_iam_application.llm.id
-  description    = "LLM credential for Pathfinder Nexus ${var.environment} runtime."
+  description    = "LLM credential for Pathfinder Nexus runtime."
 }
 
 # Current project lookup — used to scope the IAM policy above.
@@ -62,7 +59,7 @@ data "scaleway_account_project" "current" {}
 # cold-start.
 resource "scaleway_secret" "llm_api_key" {
   name        = local.secret_name
-  description = "Scaleway Generative APIs key for ${var.environment}. Minted and rotated by Terraform."
+  description = "Scaleway Generative APIs key. Minted and rotated by Terraform."
   tags        = local.common_tags
 }
 
@@ -72,11 +69,9 @@ resource "scaleway_secret_version" "llm_api_key" {
 }
 
 # ---- Serverless Container namespace ----
-# Namespaces group containers + shared env/secret config. One per
-# environment so dev and prod never share IAM scope.
 resource "scaleway_container_namespace" "this" {
   name        = local.container_namespace_name
-  description = "Pathfinder Nexus ${var.environment} runtime."
+  description = "Pathfinder Nexus runtime."
 }
 
 # ---- Serverless Container ----
