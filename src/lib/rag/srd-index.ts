@@ -56,11 +56,12 @@ async function loadIndex(): Promise<VectorStore> {
     embeddings = file.embeddings;
   } catch {
     // Embeddings file does not exist (local dev without compute step).
-    // Fall back to zero-vectors so the store is still searchable.
+    // Fall back to empty-vector arrays so the store loads without crashing.
     // All cosine similarities will be 0 (uniform ranking) — acceptable
     // for local development; run compute-srd-embeddings to fix.
-    const dimensions = 768; // default for bge-multilingual-gemma2
-    embeddings = chunks.map(() => new Array(dimensions).fill(0) as number[]);
+    // Using empty arrays avoids hardcoding a dimension that may not match
+    // the actual bge-multilingual-gemma2 output dimension at search time.
+    embeddings = chunks.map(() => [] as number[]);
   }
 
   const store = new InMemoryVectorStore();

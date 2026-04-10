@@ -10,7 +10,7 @@
 export interface SRDChunk {
   id: string;
   text: string;
-  metadata: { category: string; name: string; version: string };
+  metadata: { category: string; name: string; version: string; source?: string };
 }
 
 export interface SRDChunkWithScore extends SRDChunk {
@@ -71,10 +71,13 @@ export class InMemoryVectorStore implements VectorStore {
   search(query: number[], topK: number): SRDChunkWithScore[] {
     if (this._chunks.length === 0) return [];
 
-    const scored: SRDChunkWithScore[] = this._chunks.map((chunk, i) => ({
-      ...chunk,
-      score: cosineSimilarity(query, this._embeddings[i]),
-    }));
+    const scored: SRDChunkWithScore[] = this._chunks.map((chunk, i) => {
+      const embedding = this._embeddings[i];
+      // When embeddings are empty (fallback mode — no embeddings file), return
+      // score 0 for every chunk so retrieval still works without crashing.
+      const score = embedding.length === 0 ? 0 : cosineSimilarity(query, embedding);
+      return { ...chunk, score };
+    });
 
     scored.sort((a, b) => b.score - a.score);
     return scored.slice(0, topK);
