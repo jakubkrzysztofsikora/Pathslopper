@@ -17,8 +17,8 @@ test.describe("Pathfinder Nexus — Smoke Test", () => {
     await expect(page.getByText("Select Pathfinder Edition")).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("Pathfinder 1e")).toBeVisible();
-    await expect(page.getByText("Pathfinder 2e")).toBeVisible();
+    await expect(page.getByText("Pathfinder 1e").first()).toBeVisible();
+    await expect(page.getByText("Pathfinder 2e").first()).toBeVisible();
   });
 
   test("story DNA sliders render", async ({ page }) => {
