@@ -100,6 +100,74 @@ jobs:
           terraform init -backend=false
           terraform validate
 
+  integration:
+    name: Integration Tests (real LLM + Redis)
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      # Use the Scaleway IAM key for Generative APIs access
+      LLM_API_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      LLM_BASE_URL: https://api.scaleway.ai/v1
+      LLM_TEXT_MODEL: llama-3.1-70b-instruct
+      LLM_EMBEDDING_MODEL: bge-multilingual-gemma2
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+
+      - name: Setup Terraform (to read Redis URL)
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.5'
+          terraform_wrapper: false
+
+      - name: Get Redis URL from Terraform state
+        working-directory: infra/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          AWS_REGION: fr-par
+        run: |
+          terraform init
+          REDIS_URL=$(terraform output -raw redis_url 2>/dev/null || echo "")
+          echo "REDIS_URL=$REDIS_URL" >> "$GITHUB_ENV"
+          if [ -n "$REDIS_URL" ]; then
+            echo "Redis URL retrieved ✓"
+          else
+            echo "::warning::Redis URL not available — Redis tests will fail"
+          fi
+
+      - name: Run integration tests
+        run: npm run test:integration
+        timeout-minutes: 5
+
+  e2e:
+    name: E2E Smoke (Playwright)
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install chromium
+
+      - name: Run E2E against live deployment
+        env:
+          PLAYWRIGHT_BASE_URL: https://pathfindernexus5821adad-app.functions.fnc.fr-par.scw.cloud
+        run: npx playwright test --reporter=list
+        timeout-minutes: 10
+
   srd-embeddings-check:
     name: SRD Embeddings Staleness
     runs-on: ubuntu-latest

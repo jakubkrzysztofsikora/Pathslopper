@@ -38,6 +38,12 @@ output "redis_cluster_id" {
   value       = var.enable_redis ? scaleway_redis_cluster.main[0].id : null
 }
 
+output "redis_url" {
+  description = "Redis connection URL (when enabled). Sensitive — contains password."
+  value       = var.enable_redis ? local.redis_url : ""
+  sensitive   = true
+}
+
 output "character_sheets_bucket" {
   description = "Object Storage bucket for character-sheet uploads."
   value       = var.enable_object_storage ? scaleway_object_bucket.character_sheets[0].name : ""
