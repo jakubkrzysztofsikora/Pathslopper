@@ -66,3 +66,9 @@ variable "redis_version" {
   type        = string
   default     = "7.4.2"
 }
+
+variable "llm_embedding_model" {
+  description = "Embedding model for SRD RAG retrieval. Must be available on the configured LLM endpoint."
+  type        = string
+  default     = "bge-multilingual-gemma2"
+}

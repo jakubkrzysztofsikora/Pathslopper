@@ -26,6 +26,13 @@ export interface AdjudicateOptions {
   defaultModifier?: number;
   /** Character sheet for auto-deriving modifier from proficiencies / stats. */
   character?: CharacterSheetParsed;
+  /**
+   * SRD rules snippets retrieved by the RAG pipeline. Appended to the
+   * summary as a "Rules Reference" section for display to the player.
+   *
+   * TRUST BOUNDARY: srdContext is display-only. NEVER parse it for modifiers/DCs.
+   */
+  srdContext?: string;
 }
 
 export function adjudicate(
@@ -70,7 +77,10 @@ export function adjudicate(
   // success. Otherwise we roll raw and leave the GM / UI to interpret.
   if (typeof intent.dc === "number") {
     const result = check({ ...rollInput, dc: intent.dc });
-    const summary = summariseCheck(intent, result.degreeOfSuccess, result.total);
+    let summary = summariseCheck(intent, result.degreeOfSuccess, result.total);
+    if (options.srdContext) {
+      summary += `\n\nRules Reference:\n${options.srdContext}`;
+    }
     return {
       intent,
       roll: {
@@ -88,6 +98,10 @@ export function adjudicate(
   }
 
   const result = roll(rollInput);
+  let needsDcSummary = `Rolled ${result.total} — no DC provided, GM must set difficulty.`;
+  if (options.srdContext) {
+    needsDcSummary += `\n\nRules Reference:\n${options.srdContext}`;
+  }
   return {
     intent,
     roll: {
@@ -98,7 +112,7 @@ export function adjudicate(
       breakdown: result.breakdown,
     },
     outcome: "needs-dc",
-    summary: `Rolled ${result.total} — no DC provided, GM must set difficulty.`,
+    summary: needsDcSummary,
   };
 }
 

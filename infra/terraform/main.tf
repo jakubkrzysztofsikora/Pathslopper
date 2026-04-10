@@ -146,6 +146,7 @@ resource "scaleway_container" "app" {
     LLM_BASE_URL            = var.llm_base_url
     LLM_TEXT_MODEL          = var.llm_text_model
     LLM_VISION_MODEL        = var.llm_vision_model
+    LLM_EMBEDDING_MODEL     = var.llm_embedding_model
   }
 
   # Runtime-only secrets. Scaleway resolves these at cold-start and

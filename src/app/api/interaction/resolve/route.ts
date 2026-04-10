@@ -5,6 +5,9 @@ import { SessionIdSchema } from "@/lib/schemas/session";
 import { callLLM } from "@/lib/llm/client";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
 import { getSessionStore } from "@/lib/state/server/store-factory";
+import { getSrdIndex } from "@/lib/rag/srd-index";
+import { embedTexts } from "@/lib/rag/embed";
+import type { VectorStore } from "@/lib/rag/vector-store";
 
 // Thin HTTP adapter for the Phase 2 + Phase 3 + Phase 4 slice of the
 // Stateful Interaction Loop. All orchestration lives in
@@ -54,10 +57,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let srdIndex: VectorStore | undefined;
+  try {
+    srdIndex = await getSrdIndex();
+  } catch {
+    // SRD not available — proceed without it.
+  }
+
   const result = await resolveInteraction(parsed.data, {
     callLLM,
     logger: logServerError,
     sessionStore: parsed.data.sessionId ? getSessionStore() : undefined,
+    srdIndex,
+    embedTexts: srdIndex ? embedTexts : undefined,
   });
 
   if (!result.ok) {

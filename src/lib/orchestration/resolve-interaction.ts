@@ -3,6 +3,8 @@ import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
 import type { SessionState } from "@/lib/schemas/session";
 import type { SessionStore } from "@/lib/state/server/session-store";
+import type { VectorStore } from "@/lib/rag/vector-store";
+import type { embedTexts as EmbedTextsFn } from "@/lib/rag/embed";
 import { optimizeInput } from "./optimize-input";
 import { adjudicate, type AdjudicateOptions } from "./adjudicate";
 
@@ -34,6 +36,10 @@ export interface ResolveInteractionDeps {
   logger?: (stage: string, err: unknown) => void;
   /** Optional server session store. Required if `sessionId` is set; otherwise ignored. */
   sessionStore?: SessionStore;
+  /** Optional SRD vector index. When provided alongside `embedTexts`, retrieves rules context. */
+  srdIndex?: VectorStore;
+  /** Optional embedding function. Must be provided together with `srdIndex`. */
+  embedTexts?: typeof EmbedTextsFn;
 }
 
 export type ResolveInteractionResult =
@@ -77,6 +83,23 @@ export async function resolveInteraction(
         : optimized.intent.modifier,
     dc: input.overrideDc !== undefined ? input.overrideDc : optimized.intent.dc,
   };
+
+  // SRD RAG retrieval — informational only, never used to derive modifiers/DCs.
+  // Non-fatal: any error is logged and the request continues without SRD context.
+  let srdContext: string | undefined;
+  if (deps.srdIndex && deps.embedTexts) {
+    try {
+      const queryText = `${intent.action} ${intent.skillOrAttack ?? ""} ${intent.description}`;
+      const [queryEmbedding] = await deps.embedTexts([queryText]);
+      const chunks = deps.srdIndex.search(queryEmbedding, 3);
+      if (chunks.length > 0) {
+        srdContext = chunks.map((c) => `[${c.metadata.name}] ${c.text}`).join("\n");
+      }
+    } catch (err) {
+      deps.logger?.("srd-retrieval", err);
+      // Non-fatal: proceed without SRD context.
+    }
+  }
 
   // Phase 4 — Resolution: append to the server-owned session log.
   // If characterName is provided, load the session first to find the character
@@ -138,7 +161,7 @@ export async function resolveInteraction(
     }
   }
 
-  const result = adjudicate(intent, adjudicateOptions);
+  const result = adjudicate(intent, { ...adjudicateOptions, srdContext });
 
   if (input.sessionId) {
     // sessionStore already verified above.
