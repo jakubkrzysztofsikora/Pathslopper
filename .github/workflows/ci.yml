@@ -104,6 +104,10 @@ jobs:
     name: Integration Tests (real LLM + Redis)
     needs: [test]
     runs-on: ubuntu-latest
+    # External services (Scaleway LLM + Redis) may be unreachable from
+    # GitHub Actions runners. Failures here should be visible but must
+    # not block CI or deploys.
+    continue-on-error: true
     environment: prod
     env:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}

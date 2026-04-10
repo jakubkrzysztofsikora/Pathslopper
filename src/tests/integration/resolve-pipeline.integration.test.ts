@@ -5,15 +5,18 @@ import { RedisSessionStore } from "@/lib/state/server/redis-session-store";
 import { createIoRedisClient } from "@/lib/state/server/redis-client";
 import type { RedisClient } from "@/lib/state/server/redis-client";
 
-// No guards. Both LLM_API_KEY and REDIS_URL must be set.
+const HAS_DEPS = !!process.env.LLM_API_KEY && !!process.env.REDIS_URL;
 
-describe("resolveInteraction — full pipeline with real LLM + Redis", () => {
+describe.skipIf(!HAS_DEPS)("resolveInteraction — full pipeline with real LLM + Redis", () => {
   let store: RedisSessionStore;
   let client: RedisClient;
 
   beforeAll(() => {
     const url = process.env.REDIS_URL!;
-    client = createIoRedisClient(url);
+    client = createIoRedisClient(url, {
+      connectTimeout: 5_000,
+      maxRetriesPerRequest: 3,
+    });
     store = new RedisSessionStore(client, 300);
   });
 

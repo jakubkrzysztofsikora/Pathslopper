@@ -57,6 +57,17 @@ function redactUrl(url: string): string {
   return url.replace(/\/\/[^@]+@/, "//***@");
 }
 
+/** Options forwarded to the underlying ioredis constructor. */
+export interface IoRedisOptions {
+  /** TCP connection timeout in ms (default: 10 000). */
+  connectTimeout?: number;
+  /**
+   * Max command retries when the connection is down (default: 20).
+   * Set to a lower value in tests so unreachable hosts fail fast.
+   */
+  maxRetriesPerRequest?: number;
+}
+
 /**
  * IoRedis-backed adapter. ioredis is pure JS (no native bindings), but
  * importing it eagerly would bundle the full module into the vitest
@@ -66,7 +77,10 @@ function redactUrl(url: string): string {
  * start only pays the import cost once per warm Serverless Container
  * instance.
  */
-export function createIoRedisClient(url: string): RedisClient {
+export function createIoRedisClient(
+  url: string,
+  options?: IoRedisOptions,
+): RedisClient {
   let clientPromise: Promise<IoRedisLike> | null = null;
 
   async function getClient(): Promise<IoRedisLike> {
@@ -76,8 +90,18 @@ export function createIoRedisClient(url: string): RedisClient {
           const mod = await import("ioredis");
           const Ctor = (mod as unknown as { default?: unknown }).default ??
             (mod as unknown);
-          const RedisCtor = Ctor as new (url: string) => IoRedisLike;
-          return new RedisCtor(url);
+          const RedisCtor = Ctor as new (
+            url: string,
+            opts?: Record<string, unknown>,
+          ) => IoRedisLike;
+          return new RedisCtor(url, {
+            ...(options?.connectTimeout != null && {
+              connectTimeout: options.connectTimeout,
+            }),
+            ...(options?.maxRetriesPerRequest != null && {
+              maxRetriesPerRequest: options.maxRetriesPerRequest,
+            }),
+          });
         } catch (err) {
           throw new Error(
             `Failed to connect to Redis at ${redactUrl(url)}: ${err instanceof Error ? err.message : String(err)}`

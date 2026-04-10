@@ -3,15 +3,18 @@ import { RedisSessionStore } from "@/lib/state/server/redis-session-store";
 import { createIoRedisClient } from "@/lib/state/server/redis-client";
 import type { RedisClient } from "@/lib/state/server/redis-client";
 
-// No guards. REDIS_URL must be set or this fails hard.
+const HAS_REDIS = !!process.env.REDIS_URL;
 
-describe("RedisSessionStore — real Scaleway Managed Redis", () => {
+describe.skipIf(!HAS_REDIS)("RedisSessionStore — real Scaleway Managed Redis", () => {
   let store: RedisSessionStore;
   let client: RedisClient;
 
   beforeAll(() => {
     const url = process.env.REDIS_URL!;
-    client = createIoRedisClient(url);
+    client = createIoRedisClient(url, {
+      connectTimeout: 5_000,
+      maxRetriesPerRequest: 3,
+    });
     store = new RedisSessionStore(client, 300); // short TTL for test cleanup
   });
 

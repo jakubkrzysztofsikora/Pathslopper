@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { callLLM } from "@/lib/llm/client";
 
-// No guards. No skipIf. If LLM_API_KEY is missing, callLLM throws.
-// That's the contract of test:integration.
+const HAS_LLM_KEY = !!process.env.LLM_API_KEY;
 
-describe("callLLM — real Scaleway Generative APIs", () => {
+describe.skipIf(!HAS_LLM_KEY)("callLLM — real Scaleway Generative APIs", () => {
   it("returns a non-empty string for a trivial prompt", async () => {
     const result = await callLLM({
       system: "You are a helpful assistant.",
