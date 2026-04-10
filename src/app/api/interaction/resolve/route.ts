@@ -27,6 +27,7 @@ const RequestSchema = z.object({
   overrideModifier: z.number().int().finite().min(-20).max(40).optional(),
   overrideDc: z.number().int().finite().min(1).max(60).optional(),
   sessionId: SessionIdSchema.optional(),
+  characterName: z.string().trim().min(1).max(200).optional(),
 });
 
 function logServerError(stage: string, err: unknown): void {

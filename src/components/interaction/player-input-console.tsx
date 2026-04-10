@@ -120,6 +120,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
   );
   const [modifierStr, setModifierStr] = React.useState("5");
   const [dcStr, setDcStr] = React.useState("15");
+  const [characterName, setCharacterName] = React.useState<string>("");
   const [state, setState] = React.useState<State>({ status: "idle" });
   const resultRef = React.useRef<HTMLDivElement>(null);
   const inFlightRef = React.useRef(false);
@@ -182,13 +183,16 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     inFlightRef.current = true;
     setState({ status: "loading-resolve" });
     try {
-      const body = {
+      const body: Record<string, unknown> = {
         rawInput,
         version,
         overrideModifier: parseOptionalInt(modifierStr),
         overrideDc: parseOptionalInt(dcStr),
         sessionId: sid,
       };
+      if (characterName) {
+        body.characterName = characterName;
+      }
       const res = await fetch("/api/interaction/resolve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -315,7 +319,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
           />
         </label>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <label className="flex flex-col gap-1 flex-1">
             <span className="text-xs uppercase tracking-wide text-zinc-300">
               Modifier (optional)
@@ -340,6 +344,26 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
               className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
             />
           </label>
+          {session?.characters && session.characters.length > 0 && (
+            <label className="flex flex-col gap-1 flex-1">
+              <span className="text-xs uppercase tracking-wide text-zinc-300">
+                Character (optional)
+              </span>
+              <select
+                value={characterName}
+                onChange={(e) => setCharacterName(e.target.value)}
+                data-testid="player-input-character"
+                className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="">— none —</option>
+                {session.characters.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
 
         <div className="flex gap-2 flex-wrap">

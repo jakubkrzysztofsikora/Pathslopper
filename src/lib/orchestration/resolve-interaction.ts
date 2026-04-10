@@ -24,6 +24,8 @@ export interface ResolveInteractionInput {
   overrideDc?: number;
   /** Optional session ID — when present, the resolved turn is appended to the session log. */
   sessionId?: string;
+  /** Optional character name — when present and session exists, auto-derives modifier from the character sheet. */
+  characterName?: string;
 }
 
 export interface ResolveInteractionDeps {
@@ -76,10 +78,12 @@ export async function resolveInteraction(
     dc: input.overrideDc !== undefined ? input.overrideDc : optimized.intent.dc,
   };
 
-  const result = adjudicate(intent, deps.adjudicateOptions);
-
   // Phase 4 — Resolution: append to the server-owned session log.
+  // If characterName is provided, load the session first to find the character
+  // and use it to auto-derive the modifier.
   let session: SessionState | undefined;
+  let adjudicateOptions = deps.adjudicateOptions ?? {};
+
   if (input.sessionId) {
     if (!deps.sessionStore) {
       return {
@@ -88,7 +92,26 @@ export async function resolveInteraction(
         error: "sessionStore dependency is required when sessionId is provided.",
       };
     }
-    const updated = await deps.sessionStore.appendResolved(input.sessionId, {
+
+    // Load the session to find the character if characterName is provided.
+    if (input.characterName) {
+      const currentSession = await deps.sessionStore.get(input.sessionId);
+      if (currentSession) {
+        const character = currentSession.characters.find(
+          (c) => c.name === input.characterName
+        );
+        if (character) {
+          adjudicateOptions = { ...adjudicateOptions, character };
+        }
+      }
+    }
+  }
+
+  const result = adjudicate(intent, adjudicateOptions);
+
+  if (input.sessionId) {
+    // sessionStore already verified above.
+    const updated = await deps.sessionStore!.appendResolved(input.sessionId, {
       intent,
       result,
     });

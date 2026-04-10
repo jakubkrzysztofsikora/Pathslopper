@@ -119,11 +119,21 @@ export function CharacterSheetUploader({
         });
         return;
       }
+      const parsed = json.data as CharacterSheetParsed;
       setState({
         status: "success",
-        data: json.data as CharacterSheetParsed,
+        data: parsed,
         warnings: Array.isArray(json.warnings) ? json.warnings : [],
       });
+      // Best-effort: persist parsed character to the server session if one exists.
+      const sessionId = window.sessionStorage.getItem("pathfinder-nexus:sessionId");
+      if (sessionId) {
+        fetch(`/api/sessions/${sessionId}/characters`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(parsed),
+        }).catch(() => {}); // best-effort, don't block the UI
+      }
     } catch (err) {
       setState({
         status: "error",

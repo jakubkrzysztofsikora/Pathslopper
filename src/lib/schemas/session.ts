@@ -2,6 +2,7 @@ import { z } from "zod";
 import { VersionSchema } from "./version";
 import { PlayerIntentSchema } from "./player-intent";
 import { AdjudicationResultSchema } from "./adjudication";
+import { CharacterSheetParsedSchema } from "./character-sheet";
 
 /**
  * Session + Turn schemas for the Stateful Interaction Loop.
@@ -44,12 +45,15 @@ export const TurnSchema = z.discriminatedUnion("kind", [
   NarrationTurnSchema,
 ]);
 
+export const MAX_CHARACTERS_PER_SESSION = 12;
+
 export const SessionStateSchema = z.object({
   id: SessionIdSchema,
   version: VersionSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   turns: z.array(TurnSchema).max(500),
+  characters: z.array(CharacterSheetParsedSchema).max(MAX_CHARACTERS_PER_SESSION).default([]),
 });
 
 export type SessionId = z.infer<typeof SessionIdSchema>;

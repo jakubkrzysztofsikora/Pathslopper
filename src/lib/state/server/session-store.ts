@@ -4,7 +4,9 @@ import type {
   ResolvedTurn,
   SessionState,
 } from "@/lib/schemas/session";
+import { MAX_CHARACTERS_PER_SESSION } from "@/lib/schemas/session";
 import type { PathfinderVersion } from "@/lib/schemas/version";
+import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 
 /**
  * Server-only session store.
@@ -20,6 +22,7 @@ import type { PathfinderVersion } from "@/lib/schemas/version";
 
 export const MAX_TURNS_PER_SESSION = 200;
 export const MAX_SESSIONS_TRACKED = 1000;
+export { MAX_CHARACTERS_PER_SESSION };
 
 export interface SessionStore {
   create(version: PathfinderVersion): Promise<SessionState>;
@@ -34,6 +37,10 @@ export interface SessionStore {
     opts?: { at?: string }
   ): Promise<SessionState | undefined>;
   worldStateHash(id: string): Promise<string | undefined>;
+  addCharacter(
+    id: string,
+    character: CharacterSheetParsed
+  ): Promise<SessionState | undefined>;
   size(): Promise<number>;
   /** Test-only: clear all sessions. */
   _reset(): Promise<void>;
@@ -119,6 +126,7 @@ export class InMemorySessionStore implements SessionStore {
       createdAt: now,
       updatedAt: now,
       turns: [],
+      characters: [],
     };
     this.sessions.set(id, state);
     return state;
@@ -168,6 +176,32 @@ export class InMemorySessionStore implements SessionStore {
   async worldStateHash(id: string): Promise<string | undefined> {
     const session = this.sessions.get(id);
     return session ? hashState(session) : undefined;
+  }
+
+  async addCharacter(
+    id: string,
+    character: CharacterSheetParsed
+  ): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    if (session.characters.length >= MAX_CHARACTERS_PER_SESSION) {
+      throw new Error(
+        `Character roster is full (max ${MAX_CHARACTERS_PER_SESSION}).`
+      );
+    }
+    const duplicate = session.characters.find(
+      (c) => c.name.toLowerCase() === character.name.toLowerCase()
+    );
+    if (duplicate) {
+      throw new Error(`A character named "${character.name}" already exists in this session.`);
+    }
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      characters: [...session.characters, character],
+    };
+    this.sessions.set(id, next);
+    return next;
   }
 
   async size(): Promise<number> {
