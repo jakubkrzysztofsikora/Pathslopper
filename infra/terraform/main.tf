@@ -79,8 +79,13 @@ data "scaleway_account_project" "current" {}
 resource "random_password" "redis" {
   count = var.enable_redis ? 1 : 0
 
-  length  = 32
-  special = false
+  length           = 32
+  special          = true
+  min_lower        = 1
+  min_upper        = 1
+  min_numeric      = 1
+  min_special      = 1
+  override_special = "!$&*()-_=+"
 }
 
 resource "scaleway_redis_cluster" "main" {
