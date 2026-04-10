@@ -55,6 +55,26 @@ jobs:
         id: tag
         run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.5'
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infra/terraform
+        run: terraform init
+
+      # Create the Container Registry namespace before pushing the image.
+      # On the first deploy the namespace does not exist yet, so a targeted
+      # apply bootstraps it without touching resources that depend on the
+      # image tag. On subsequent deploys this is a no-op.
+      - name: Ensure Container Registry exists
+        working-directory: infra/terraform
+        run: |
+          terraform apply -auto-approve \
+            -target=scaleway_registry_namespace.this
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -76,16 +96,6 @@ jobs:
             rg.${{ env.SCW_REGION }}.scw.cloud/pathfinder-nexus/app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: '1.9.5'
-          terraform_wrapper: false
-
-      - name: Terraform init
-        working-directory: infra/terraform
-        run: terraform init
 
       - name: Terraform apply
         working-directory: infra/terraform
