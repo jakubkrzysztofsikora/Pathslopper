@@ -58,6 +58,67 @@ function redactUrl(url: string): string {
 }
 
 /**
+ * Structural type for the ioredis options object form we construct.
+ * We deliberately pass options explicitly (host, port, password, tls)
+ * instead of a URL string so that the TLS settings cannot be silently
+ * overridden by ioredis's URL-string parser, which in practice has
+ * shallow-merge ambiguity around the `tls` key when a `rediss://` URL
+ * is combined with a constructor-level `tls` option. Passing options
+ * directly also lets us set `tls.servername` (SNI) to the parsed host,
+ * which some managed Redis endpoints require for the TLS handshake.
+ */
+interface IoRedisOptions {
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  db?: number;
+  tls?: {
+    rejectUnauthorized: boolean;
+    servername?: string;
+  };
+  maxRetriesPerRequest?: number;
+  enableReadyCheck?: boolean;
+  lazyConnect?: boolean;
+}
+
+function parseRedisUrl(raw: string): IoRedisOptions {
+  const parsed = new URL(raw);
+  const isTls = parsed.protocol === "rediss:";
+  const host = parsed.hostname;
+  const port = parsed.port ? Number(parsed.port) : 6379;
+  const username = parsed.username
+    ? decodeURIComponent(parsed.username)
+    : undefined;
+  const password = parsed.password
+    ? decodeURIComponent(parsed.password)
+    : undefined;
+  // pathname is e.g. "/0" — strip leading slash to get the db index
+  const dbStr = parsed.pathname.replace(/^\//, "");
+  const db = dbStr.length > 0 ? Number(dbStr) : undefined;
+
+  const opts: IoRedisOptions = {
+    host,
+    port,
+    maxRetriesPerRequest: 3,
+    enableReadyCheck: true,
+    lazyConnect: false,
+  };
+  if (username !== undefined) opts.username = username;
+  if (password !== undefined) opts.password = password;
+  if (db !== undefined && !Number.isNaN(db)) opts.db = db;
+  if (isTls) {
+    // Scaleway Managed Redis uses a self-signed TLS certificate signed
+    // by a private CA; trust is established by the password + network
+    // ACL rather than the public CA chain. rejectUnauthorized: false
+    // keeps the connection encrypted but skips cert verification.
+    // servername is set so Node's TLS stack sends the correct SNI.
+    opts.tls = { rejectUnauthorized: false, servername: host };
+  }
+  return opts;
+}
+
+/**
  * IoRedis-backed adapter. ioredis is pure JS (no native bindings), but
  * importing it eagerly would bundle the full module into the vitest
  * graph and open a real network client at first use. We instead use a
@@ -77,15 +138,10 @@ export function createIoRedisClient(url: string): RedisClient {
           const Ctor = (mod as unknown as { default?: unknown }).default ??
             (mod as unknown);
           const RedisCtor = Ctor as new (
-            url: string,
-            opts?: { tls?: { rejectUnauthorized: boolean } },
+            opts: IoRedisOptions,
           ) => IoRedisLike;
-          // Scaleway Managed Redis uses a self-signed TLS certificate.
-          // When the URL uses rediss:// we must accept it.
-          const tls = url.startsWith("rediss://")
-            ? { tls: { rejectUnauthorized: false } }
-            : undefined;
-          return new RedisCtor(url, tls);
+          const opts = parseRedisUrl(url);
+          return new RedisCtor(opts);
         } catch (err) {
           throw new Error(
             `Failed to connect to Redis at ${redactUrl(url)}: ${err instanceof Error ? err.message : String(err)}`
