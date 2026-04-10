@@ -112,10 +112,25 @@ function parseRedisUrl(raw: string): IoRedisOptions {
     // by a private CA; trust is established by the password + network
     // ACL rather than the public CA chain. rejectUnauthorized: false
     // keeps the connection encrypted but skips cert verification.
-    // servername is set so Node's TLS stack sends the correct SNI.
-    opts.tls = { rejectUnauthorized: false, servername: host };
+    //
+    // SNI servername is only set when the host is a DNS name. RFC 6066
+    // forbids sending an IP address as SNI, and Node currently warns
+    // (DEP0123) and will strip it in a future version, so setting it
+    // on an IP host is both incorrect and noisy.
+    opts.tls = { rejectUnauthorized: false };
+    if (!isIpLiteral(host)) {
+      opts.tls.servername = host;
+    }
   }
   return opts;
+}
+
+function isIpLiteral(host: string): boolean {
+  // IPv4: four dot-separated decimal octets.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+  // IPv6: contains a colon and is not a DNS name (DNS names have no colons).
+  if (host.includes(":")) return true;
+  return false;
 }
 
 /**
