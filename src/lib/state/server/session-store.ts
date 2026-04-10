@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import type {
+  ManagerOverrideTurn,
   NarrationTurn,
   ResolvedTurn,
   SessionState,
@@ -41,6 +42,13 @@ export interface SessionStore {
     id: string,
     character: CharacterSheetParsed
   ): Promise<SessionState | undefined>;
+  setActiveOverride(
+    id: string,
+    forcedOutcome: string,
+    summary: string,
+    turnsConsidered: number
+  ): Promise<SessionState | undefined>;
+  clearActiveOverride(id: string): Promise<SessionState | undefined>;
   size(): Promise<number>;
   /** Test-only: clear all sessions. */
   _reset(): Promise<void>;
@@ -96,6 +104,18 @@ export function buildNarrationTurn(
   };
 }
 
+export function buildManagerOverrideTurn(
+  input: { summary: string; forcedOutcome: string; turnsConsidered: number; at?: string }
+): ManagerOverrideTurn {
+  return {
+    kind: "manager-override",
+    at: input.at ?? nowIso(),
+    summary: input.summary,
+    forcedOutcome: input.forcedOutcome,
+    turnsConsidered: input.turnsConsidered,
+  };
+}
+
 export function appendTurnCapped<T extends { turns: SessionState["turns"] }>(
   state: T,
   turn: SessionState["turns"][number]
@@ -127,6 +147,7 @@ export class InMemorySessionStore implements SessionStore {
       updatedAt: now,
       turns: [],
       characters: [],
+      activeOverride: null,
     };
     this.sessions.set(id, state);
     return state;
@@ -199,6 +220,37 @@ export class InMemorySessionStore implements SessionStore {
       ...session,
       updatedAt: nowIso(),
       characters: [...session.characters, character],
+    };
+    this.sessions.set(id, next);
+    return next;
+  }
+
+  async setActiveOverride(
+    id: string,
+    forcedOutcome: string,
+    summary: string,
+    turnsConsidered: number
+  ): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    const overrideTurn = buildManagerOverrideTurn({ summary, forcedOutcome, turnsConsidered });
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      turns: appendTurnCapped(session, overrideTurn),
+      activeOverride: { forcedOutcome, setAt: nowIso() },
+    };
+    this.sessions.set(id, next);
+    return next;
+  }
+
+  async clearActiveOverride(id: string): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      activeOverride: null,
     };
     this.sessions.set(id, next);
     return next;

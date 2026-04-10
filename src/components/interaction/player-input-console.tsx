@@ -10,6 +10,8 @@ type State =
   | { status: "idle" }
   | { status: "loading-resolve" }
   | { status: "loading-narrate" }
+  | { status: "loading-summarize" }
+  | { status: "loading-override" }
   | { status: "error"; message: string }
   | { status: "success"; result: AdjudicationResult };
 
@@ -76,6 +78,22 @@ function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
       </li>
     );
   }
+  if (turn.kind === "manager-override") {
+    return (
+      <li
+        className="border-l-2 border-red-700 pl-3 py-2 text-xs text-zinc-200"
+        data-testid={`session-turn-${index}`}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-red-400 uppercase tracking-wide">
+            Manager Override
+          </span>
+        </div>
+        <p className="text-zinc-300 italic">{turn.summary}</p>
+        <p className="mt-1 text-zinc-100 font-medium">{turn.forcedOutcome}</p>
+      </li>
+    );
+  }
   const degree = turn.result.roll.degreeOfSuccess;
   return (
     <li
@@ -122,6 +140,11 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
   const [dcStr, setDcStr] = React.useState("15");
   const [characterName, setCharacterName] = React.useState<string>("");
   const [state, setState] = React.useState<State>({ status: "idle" });
+  const [fourthWallOpen, setFourthWallOpen] = React.useState(false);
+  const [lastN, setLastN] = React.useState("5");
+  const [deadlockSummary, setDeadlockSummary] = React.useState<string | null>(null);
+  const [forcedOutcome, setForcedOutcome] = React.useState("");
+  const [overrideActive, setOverrideActive] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
   const inFlightRef = React.useRef(false);
 
@@ -263,8 +286,89 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     setState({ status: "idle" });
   }
 
+  async function handleSummarize() {
+    if (inFlightRef.current) return;
+    const sid = sessionId;
+    if (!sid) return;
+    inFlightRef.current = true;
+    setState({ status: "loading-summarize" });
+    try {
+      const n = parseInt(lastN, 10);
+      const res = await fetch(`/api/sessions/${sid}/override`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "summarize", lastN: Number.isFinite(n) ? n : 5 }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setState({
+          status: "error",
+          message: formatApiError(json.error, "Summarization failed."),
+        });
+        return;
+      }
+      setDeadlockSummary(json.summary as string);
+      setState({ status: "idle" });
+    } catch (err) {
+      setState({
+        status: "error",
+        message: err instanceof Error ? err.message : "Summarization failed.",
+      });
+    } finally {
+      inFlightRef.current = false;
+    }
+  }
+
+  async function handleForceOutcome() {
+    if (inFlightRef.current) return;
+    if (forcedOutcome.trim().length === 0) return;
+    const sid = await ensureSession();
+    if (!sid) return;
+    inFlightRef.current = true;
+    setState({ status: "loading-override" });
+    try {
+      const n = parseInt(lastN, 10);
+      const turnsConsidered = Number.isFinite(n) ? n : 5;
+      const summary = deadlockSummary ?? "Manager override.";
+      const res = await fetch(`/api/sessions/${sid}/override`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "force",
+          forcedOutcome: forcedOutcome.trim(),
+          summary,
+          turnsConsidered,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setState({
+          status: "error",
+          message: formatApiError(json.error, "Override failed."),
+        });
+        return;
+      }
+      if (json.session) setSession(json.session as SessionState);
+      setOverrideActive(true);
+      setForcedOutcome("");
+      setDeadlockSummary(null);
+      setFourthWallOpen(false);
+      setState({ status: "idle" });
+    } catch (err) {
+      setState({
+        status: "error",
+        message: err instanceof Error ? err.message : "Override failed.",
+      });
+    } finally {
+      inFlightRef.current = false;
+    }
+  }
+
   const isLoading =
-    state.status === "loading-resolve" || state.status === "loading-narrate";
+    state.status === "loading-resolve" ||
+    state.status === "loading-narrate" ||
+    state.status === "loading-summarize" ||
+    state.status === "loading-override";
 
   return (
     <section
@@ -385,7 +489,86 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
           >
             {state.status === "loading-narrate" ? "Narrating..." : "Narrate Scene"}
           </button>
+          <button
+            type="button"
+            onClick={() => setFourthWallOpen((o) => !o)}
+            disabled={isLoading}
+            data-testid="player-input-fourth-wall-button"
+            className={cn(
+              "rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:border-zinc-700 disabled:text-zinc-500",
+              fourthWallOpen
+                ? "border-red-500 bg-red-900/20 text-red-300 hover:bg-red-900/30"
+                : "border-red-700 text-red-400 hover:bg-red-900/20"
+            )}
+          >
+            {overrideActive ? "Override Pending..." : "Break the Fourth Wall"}
+          </button>
         </div>
+
+        {fourthWallOpen && (
+          <div
+            className="mt-2 rounded-md border border-red-800 bg-red-950/20 p-4 flex flex-col gap-3"
+            data-testid="fourth-wall-panel"
+          >
+            <p className="text-xs text-red-300 font-medium uppercase tracking-wide">
+              Manager Mode — Override Next Resolution
+            </p>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-zinc-400">
+                Turns to summarize (lastN)
+              </span>
+              <input
+                type="number"
+                value={lastN}
+                onChange={(e) => setLastN(e.target.value)}
+                data-testid="fourth-wall-lastn"
+                min={1}
+                max={50}
+                className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-sm text-zinc-100 w-24 focus:border-red-500 focus:outline-none"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void handleSummarize()}
+              disabled={isLoading || !sessionId}
+              data-testid="fourth-wall-summarize-button"
+              className="self-start rounded-md border border-zinc-600 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
+            >
+              {state.status === "loading-summarize" ? "Summarizing..." : "Summarize Recent Turns"}
+            </button>
+            {deadlockSummary && (
+              <div
+                className="rounded border border-zinc-700 bg-zinc-900 p-3 text-xs text-zinc-200"
+                data-testid="fourth-wall-summary-display"
+              >
+                <p className="text-zinc-400 uppercase tracking-wide mb-1">Summary</p>
+                <p>{deadlockSummary}</p>
+              </div>
+            )}
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-zinc-400">
+                Forced outcome (replaces next dice roll)
+              </span>
+              <textarea
+                value={forcedOutcome}
+                onChange={(e) => setForcedOutcome(e.target.value)}
+                data-testid="fourth-wall-forced-outcome"
+                rows={3}
+                placeholder="Describe exactly what happens next..."
+                className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-red-500 focus:outline-none"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void handleForceOutcome()}
+              disabled={isLoading || forcedOutcome.trim().length === 0}
+              data-testid="fourth-wall-force-button"
+              className="self-start rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
+            >
+              {state.status === "loading-override" ? "Forcing..." : "Force Outcome"}
+            </button>
+          </div>
+        )}
 
         {state.status === "error" && (
           <p className="text-sm text-red-400" role="alert">

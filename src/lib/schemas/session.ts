@@ -40,9 +40,18 @@ export const NarrationTurnSchema = z.object({
   worldStateHash: z.string().min(8).max(64),
 });
 
+export const ManagerOverrideTurnSchema = z.object({
+  kind: z.literal("manager-override"),
+  at: z.string().datetime(),
+  summary: z.string().min(1).max(2000),
+  forcedOutcome: z.string().min(1).max(2000),
+  turnsConsidered: z.number().int().min(1).max(50),
+});
+
 export const TurnSchema = z.discriminatedUnion("kind", [
   ResolvedTurnSchema,
   NarrationTurnSchema,
+  ManagerOverrideTurnSchema,
 ]);
 
 export const MAX_CHARACTERS_PER_SESSION = 12;
@@ -54,11 +63,16 @@ export const SessionStateSchema = z.object({
   updatedAt: z.string().datetime(),
   turns: z.array(TurnSchema).max(500),
   characters: z.array(CharacterSheetParsedSchema).max(MAX_CHARACTERS_PER_SESSION).default([]),
+  activeOverride: z.object({
+    forcedOutcome: z.string().min(1).max(2000),
+    setAt: z.string().datetime(),
+  }).nullable().default(null),
 });
 
 export type SessionId = z.infer<typeof SessionIdSchema>;
 export type ResolvedTurn = z.infer<typeof ResolvedTurnSchema>;
 export type NarrationTurn = z.infer<typeof NarrationTurnSchema>;
+export type ManagerOverrideTurn = z.infer<typeof ManagerOverrideTurnSchema>;
 export type Turn = z.infer<typeof TurnSchema>;
 export type SessionState = z.infer<typeof SessionStateSchema>;
 

@@ -93,16 +93,47 @@ export async function resolveInteraction(
       };
     }
 
-    // Load the session to find the character if characterName is provided.
+    // Load the session to check for an active override and optionally derive
+    // modifier from the character sheet.
+    const currentSession = await deps.sessionStore.get(input.sessionId);
+    if (!currentSession) {
+      return {
+        ok: false,
+        stage: "session",
+        error: `Unknown session: ${input.sessionId}`,
+      };
+    }
+
+    // Check for active override — produce a synthetic result without rolling dice.
+    if (currentSession.activeOverride) {
+      const syntheticResult: AdjudicationResult = {
+        intent,
+        roll: {
+          formula: "",
+          rolls: [],
+          modifiers: [],
+          total: 0,
+          breakdown: "(manager override — no dice rolled)",
+        },
+        outcome: "resolved",
+        summary: currentSession.activeOverride.forcedOutcome,
+      };
+      // Clear the override and append a resolved turn.
+      await deps.sessionStore.clearActiveOverride(input.sessionId);
+      const updated = await deps.sessionStore.appendResolved(input.sessionId, {
+        intent,
+        result: syntheticResult,
+      });
+      return { ok: true, result: syntheticResult, session: updated ?? undefined };
+    }
+
+    // Find the character if characterName is provided.
     if (input.characterName) {
-      const currentSession = await deps.sessionStore.get(input.sessionId);
-      if (currentSession) {
-        const character = currentSession.characters.find(
-          (c) => c.name === input.characterName
-        );
-        if (character) {
-          adjudicateOptions = { ...adjudicateOptions, character };
-        }
+      const character = currentSession.characters.find(
+        (c) => c.name === input.characterName
+      );
+      if (character) {
+        adjudicateOptions = { ...adjudicateOptions, character };
       }
     }
   }
