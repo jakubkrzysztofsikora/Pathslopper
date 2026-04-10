@@ -20,7 +20,7 @@ export function VersionPicker() {
   const { version, setVersion } = useStoryDNAStore();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-testid="version-picker">
       <label className="text-xs font-semibold uppercase tracking-widest text-amber-500">
         Select Pathfinder Edition
       </label>

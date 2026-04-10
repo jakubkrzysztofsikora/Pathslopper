@@ -4,11 +4,15 @@ import {
   type ResolvedTurn,
   type SessionState,
 } from "@/lib/schemas/session";
+
+import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 import {
   appendTurnCapped,
+  buildManagerOverrideTurn,
   buildNarrationTurn,
   buildResolvedTurn,
   hashState,
+  MAX_CHARACTERS_PER_SESSION,
   newSessionId,
   nowIso,
   type SessionStore,
@@ -100,6 +104,8 @@ export class RedisSessionStore implements SessionStore {
       createdAt: now,
       updatedAt: now,
       turns: [],
+      characters: [],
+      activeOverride: null,
     };
     await this.writeSession(state);
     return state;
@@ -149,6 +155,63 @@ export class RedisSessionStore implements SessionStore {
   async worldStateHash(id: string): Promise<string | undefined> {
     const session = await this.readSession(id);
     return session ? hashState(session) : undefined;
+  }
+
+  async addCharacter(
+    id: string,
+    character: CharacterSheetParsed
+  ): Promise<SessionState | undefined> {
+    const session = await this.readSession(id);
+    if (!session) return undefined;
+    if (session.characters.length >= MAX_CHARACTERS_PER_SESSION) {
+      throw new Error(
+        `Character roster is full (max ${MAX_CHARACTERS_PER_SESSION}).`
+      );
+    }
+    const duplicate = session.characters.find(
+      (c) => c.name.toLowerCase() === character.name.toLowerCase()
+    );
+    if (duplicate) {
+      throw new Error(`A character named "${character.name}" already exists in this session.`);
+    }
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      characters: [...session.characters, character],
+    };
+    await this.writeSession(next);
+    return next;
+  }
+
+  async setActiveOverride(
+    id: string,
+    forcedOutcome: string,
+    summary: string,
+    turnsConsidered: number
+  ): Promise<SessionState | undefined> {
+    const session = await this.readSession(id);
+    if (!session) return undefined;
+    const overrideTurn = buildManagerOverrideTurn({ summary, forcedOutcome, turnsConsidered });
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      turns: appendTurnCapped(session, overrideTurn),
+      activeOverride: { forcedOutcome, setAt: nowIso() },
+    };
+    await this.writeSession(next);
+    return next;
+  }
+
+  async clearActiveOverride(id: string): Promise<SessionState | undefined> {
+    const session = await this.readSession(id);
+    if (!session) return undefined;
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      activeOverride: null,
+    };
+    await this.writeSession(next);
+    return next;
   }
 
   async size(): Promise<number> {

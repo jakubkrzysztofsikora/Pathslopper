@@ -1,10 +1,13 @@
 import { createHash, randomBytes } from "node:crypto";
 import type {
+  ManagerOverrideTurn,
   NarrationTurn,
   ResolvedTurn,
   SessionState,
 } from "@/lib/schemas/session";
+import { MAX_CHARACTERS_PER_SESSION } from "@/lib/schemas/session";
 import type { PathfinderVersion } from "@/lib/schemas/version";
+import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 
 /**
  * Server-only session store.
@@ -20,6 +23,7 @@ import type { PathfinderVersion } from "@/lib/schemas/version";
 
 export const MAX_TURNS_PER_SESSION = 200;
 export const MAX_SESSIONS_TRACKED = 1000;
+export { MAX_CHARACTERS_PER_SESSION };
 
 export interface SessionStore {
   create(version: PathfinderVersion): Promise<SessionState>;
@@ -34,6 +38,17 @@ export interface SessionStore {
     opts?: { at?: string }
   ): Promise<SessionState | undefined>;
   worldStateHash(id: string): Promise<string | undefined>;
+  addCharacter(
+    id: string,
+    character: CharacterSheetParsed
+  ): Promise<SessionState | undefined>;
+  setActiveOverride(
+    id: string,
+    forcedOutcome: string,
+    summary: string,
+    turnsConsidered: number
+  ): Promise<SessionState | undefined>;
+  clearActiveOverride(id: string): Promise<SessionState | undefined>;
   size(): Promise<number>;
   /** Test-only: clear all sessions. */
   _reset(): Promise<void>;
@@ -89,6 +104,18 @@ export function buildNarrationTurn(
   };
 }
 
+export function buildManagerOverrideTurn(
+  input: { summary: string; forcedOutcome: string; turnsConsidered: number; at?: string }
+): ManagerOverrideTurn {
+  return {
+    kind: "manager-override",
+    at: input.at ?? nowIso(),
+    summary: input.summary,
+    forcedOutcome: input.forcedOutcome,
+    turnsConsidered: input.turnsConsidered,
+  };
+}
+
 export function appendTurnCapped<T extends { turns: SessionState["turns"] }>(
   state: T,
   turn: SessionState["turns"][number]
@@ -119,6 +146,8 @@ export class InMemorySessionStore implements SessionStore {
       createdAt: now,
       updatedAt: now,
       turns: [],
+      characters: [],
+      activeOverride: null,
     };
     this.sessions.set(id, state);
     return state;
@@ -168,6 +197,63 @@ export class InMemorySessionStore implements SessionStore {
   async worldStateHash(id: string): Promise<string | undefined> {
     const session = this.sessions.get(id);
     return session ? hashState(session) : undefined;
+  }
+
+  async addCharacter(
+    id: string,
+    character: CharacterSheetParsed
+  ): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    if (session.characters.length >= MAX_CHARACTERS_PER_SESSION) {
+      throw new Error(
+        `Character roster is full (max ${MAX_CHARACTERS_PER_SESSION}).`
+      );
+    }
+    const duplicate = session.characters.find(
+      (c) => c.name.toLowerCase() === character.name.toLowerCase()
+    );
+    if (duplicate) {
+      throw new Error(`A character named "${character.name}" already exists in this session.`);
+    }
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      characters: [...session.characters, character],
+    };
+    this.sessions.set(id, next);
+    return next;
+  }
+
+  async setActiveOverride(
+    id: string,
+    forcedOutcome: string,
+    summary: string,
+    turnsConsidered: number
+  ): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    const overrideTurn = buildManagerOverrideTurn({ summary, forcedOutcome, turnsConsidered });
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      turns: appendTurnCapped(session, overrideTurn),
+      activeOverride: { forcedOutcome, setAt: nowIso() },
+    };
+    this.sessions.set(id, next);
+    return next;
+  }
+
+  async clearActiveOverride(id: string): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      activeOverride: null,
+    };
+    this.sessions.set(id, next);
+    return next;
   }
 
   async size(): Promise<number> {

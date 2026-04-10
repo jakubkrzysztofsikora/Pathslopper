@@ -38,6 +38,15 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# RAG JSON files are loaded at runtime via fs.readFileSync (not static import)
+# so Next.js standalone does not bundle them automatically. Copy explicitly.
+# srd-embeddings.json ships as a placeholder stub when real vectors haven't been
+# computed yet; the app falls back to uniform-score retrieval in that case.
+# Re-run `compute-srd-embeddings` whenever srd-chunks.json changes and commit
+# the updated srd-embeddings.json before the next Docker build.
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/rag/srd-chunks.json ./src/lib/rag/srd-chunks.json
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/rag/srd-embeddings.json ./src/lib/rag/srd-embeddings.json
+
 USER nextjs
 EXPOSE 3000
 

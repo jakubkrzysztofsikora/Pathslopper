@@ -47,6 +47,17 @@ interface IoRedisLike {
 }
 
 /**
+ * Redact the password portion of a Redis URL so it cannot leak into
+ * error messages or container logs.
+ *
+ * Before: rediss://default:s3cr3t@hostname:6379
+ * After:  rediss://***@hostname:6379
+ */
+function redactUrl(url: string): string {
+  return url.replace(/\/\/[^@]+@/, "//***@");
+}
+
+/**
  * IoRedis-backed adapter. ioredis is pure JS (no native bindings), but
  * importing it eagerly would bundle the full module into the vitest
  * graph and open a real network client at first use. We instead use a
@@ -61,11 +72,17 @@ export function createIoRedisClient(url: string): RedisClient {
   async function getClient(): Promise<IoRedisLike> {
     if (!clientPromise) {
       clientPromise = (async () => {
-        const mod = await import("ioredis");
-        const Ctor = (mod as unknown as { default?: unknown }).default ??
-          (mod as unknown);
-        const RedisCtor = Ctor as new (url: string) => IoRedisLike;
-        return new RedisCtor(url);
+        try {
+          const mod = await import("ioredis");
+          const Ctor = (mod as unknown as { default?: unknown }).default ??
+            (mod as unknown);
+          const RedisCtor = Ctor as new (url: string) => IoRedisLike;
+          return new RedisCtor(url);
+        } catch (err) {
+          throw new Error(
+            `Failed to connect to Redis at ${redactUrl(url)}: ${err instanceof Error ? err.message : String(err)}`
+          );
+        }
       })();
     }
     return clientPromise;

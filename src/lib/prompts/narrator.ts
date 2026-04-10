@@ -37,6 +37,9 @@ function formatTurnForContext(turn: Turn, index: number): string {
   if (turn.kind === "narration") {
     return `(${index + 1}) [narration @ ${turn.at}]\n${turn.markdown.slice(0, 600)}`;
   }
+  if (turn.kind === "manager-override") {
+    return `(${index + 1}) [manager-override @ ${turn.at}]\n  Override: ${turn.forcedOutcome.slice(0, 300)}`;
+  }
   const intent = turn.intent;
   const roll = turn.result.roll;
   const rollLine = roll.breakdown ? `Roll: ${roll.breakdown}` : "Roll: (no roll)";

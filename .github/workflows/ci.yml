@@ -21,32 +21,54 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  app:
-    name: App (lint, typecheck, test, build)
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
 
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
 
-      - name: Lint
-        run: npm run lint
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test -- --run
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm run test -- --run
-
-      - name: Build
-        run: npm run build
+  build:
+    name: Build
+    needs: [lint, typecheck, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
 
   terraform:
     name: Terraform (fmt + validate)
@@ -77,3 +99,66 @@ jobs:
         run: |
           terraform init -backend=false
           terraform validate
+
+  integration:
+    name: Integration Tests (real LLM + Redis)
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      LLM_API_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      LLM_BASE_URL: https://api.scaleway.ai/v1
+      LLM_TEXT_MODEL: llama-3.1-70b-instruct
+      LLM_EMBEDDING_MODEL: bge-multilingual-gemma2
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+
+      - name: Run integration tests
+        run: npm run test:integration
+        timeout-minutes: 5
+
+  e2e:
+    name: E2E Smoke (Playwright)
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install chromium
+
+      - name: Run E2E against live deployment
+        env:
+          PLAYWRIGHT_BASE_URL: https://pathfindernexus5821adad-app.functions.fnc.fr-par.scw.cloud
+        run: npx playwright test --reporter=list
+        timeout-minutes: 10
+
+  srd-embeddings-check:
+    name: SRD Embeddings Staleness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify embeddings match chunks
+        run: |
+          if [ ! -f src/lib/rag/srd-embeddings.json ]; then
+            echo "::warning::srd-embeddings.json not found — SRD retrieval will use zero-vector fallback"
+            exit 0
+          fi
+          CHUNKS_HASH=$(sha256sum src/lib/rag/srd-chunks.json | cut -d' ' -f1)
+          EMBEDDED_HASH=$(python3 -c "import json; print(json.load(open('src/lib/rag/srd-embeddings.json')).get('chunksHash',''))" 2>/dev/null || echo "")
+          if [ "$CHUNKS_HASH" != "$EMBEDDED_HASH" ]; then
+            echo "::error::srd-embeddings.json is stale — chunksHash ($EMBEDDED_HASH) does not match srd-chunks.json ($CHUNKS_HASH). Run: npx tsx scripts/compute-srd-embeddings.ts"
+            exit 1
+          fi
+          CHUNK_COUNT=$(python3 -c "import json; print(len(json.load(open('src/lib/rag/srd-chunks.json'))))")
+          EMBED_COUNT=$(python3 -c "import json; print(len(json.load(open('src/lib/rag/srd-embeddings.json')).get('embeddings',[])))")
+          echo "Chunks: $CHUNK_COUNT, Embeddings: $EMBED_COUNT — hashes match ✓"

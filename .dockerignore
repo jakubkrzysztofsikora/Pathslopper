@@ -6,6 +6,10 @@ npm-debug.log
 .env*.local
 .env
 coverage
+e2e
+playwright.config.ts
+test-results
+playwright-report
 .vscode
 .idea
 README.md

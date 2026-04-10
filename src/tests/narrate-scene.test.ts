@@ -9,6 +9,8 @@ function makeSession(overrides: Partial<SessionState> = {}): SessionState {
     createdAt: "2026-04-09T00:00:00.000Z",
     updatedAt: "2026-04-09T00:00:00.000Z",
     turns: [],
+    characters: [],
+    activeOverride: null,
     ...overrides,
   };
 }
