@@ -1,282 +1,3632 @@
 [
   {
-    "id": "skill-acrobatics",
-    "text": "Acrobatics (Dex): Used for balance, tumbling, and avoiding obstacles. Trained actions: Balance, Tumble Through. Key ability: Dexterity.",
-    "metadata": { "category": "skill", "name": "Acrobatics", "version": "pf2e" }
+    "id": "dos-check-structure",
+    "text": "Struktura testu: Każdy test w PF2e to rzut k20 + modyfikatory przeciwko Stopniowi Trudności (ST). Wynik porównujesz z ST by określić stopień sukcesu: krytyczny sukces (ST+10), sukces (≥ST), porażka (<ST), krytyczna porażka (ST-10). Modyfikatory dzielą się na bonusy okoliczności, statusu i przedmiotu — tylko najwyższy z każdego typu się liczy.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Struktura testu (Check Structure)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-arcana",
-    "text": "Arcana (Int): Knowledge of magic, arcane theory, and identification of magical phenomena and items. Trained actions: Borrow an Arcane Spell, Decipher Writing, Identify Magic. Key ability: Intelligence.",
-    "metadata": { "category": "skill", "name": "Arcana", "version": "pf2e" }
+    "id": "dos-misfortune",
+    "text": "Pech (Misfortune): Efekt z cechą Pech zmusza cię do rzucenia k20 dwa razy i wybrania gorszego wyniku. Nie możesz mieć więcej niż jednego efektu Pecha na ten sam test. Jeśli masz jednocześnie Szczęście i Pech, rzucasz normalnie (raz).",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Pech (Misfortune)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-athletics",
-    "text": "Athletics (Str): Used for climbing, swimming, and feats of physical strength. Trained actions: Disarm, Grapple, Shove, Trip, Climb (trained for difficult surfaces), Swim (trained for difficult conditions). Key ability: Strength.",
-    "metadata": { "category": "skill", "name": "Athletics", "version": "pf2e" }
+    "id": "dos-fortune",
+    "text": "Szczęście (Fortune): Efekt z cechą Szczęście pozwala rzucić k20 dwa razy i wybrać lepszy wynik. Nie możesz korzystać z więcej niż jednego efektu Szczęścia na ten sam test. Efekty Szczęścia i Pecha wzajemnie się znoszą.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Szczęście (Fortune)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-crafting",
-    "text": "Crafting (Int): Used to create, repair, and identify items. Trained actions: Craft, Earn Income (crafting), Identify Alchemy. Key ability: Intelligence.",
-    "metadata": { "category": "skill", "name": "Crafting", "version": "pf2e" }
+    "id": "dos-degree-adjustment-saves",
+    "text": "Korekta stopnia sukcesu (rzuty obronne): Niektóre efekty i zdolności korygują stopień sukcesu w górę lub w dół. Na przykład zdolność Junak daje sukces zamiast porażki na rzutach Refleksu. Korekty nakładają się do maksimum jednego poziomu w górę lub w dół, chyba że efekt mówi inaczej.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Korekta stopnia sukcesu — Rzuty obronne (Degree Adjustment — Saves)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-deception",
-    "text": "Deception (Cha): Used to mislead others through lies, disguises, and misdirection. Actions: Create a Diversion, Impersonate, Lie. Key ability: Charisma.",
-    "metadata": { "category": "skill", "name": "Deception", "version": "pf2e" }
+    "id": "dos-natural-1",
+    "text": "Naturalna 1: Gdy na k20 wypadnie 1, stopień sukcesu obniża się o jeden poziom. Sukces staje się porażką, porażka staje się krytyczną porażką. Naturalna 1 nie gwarantuje krytycznej porażki — jeśli wynik nadal osiąga ST, jest to zwykła porażka.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Naturalna 1 (Natural 1)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-diplomacy",
-    "text": "Diplomacy (Cha): Used to influence others through honest negotiation. Actions: Gather Information, Make an Impression, Request. Key ability: Charisma.",
-    "metadata": { "category": "skill", "name": "Diplomacy", "version": "pf2e" }
+    "id": "dos-natural-20",
+    "text": "Naturalna 20: Gdy na k20 wypadnie 20, stopień sukcesu podnosi się o jeden poziom. Porażka staje się sukcesem, sukces staje się krytycznym sukcesem. Naturalna 20 nie gwarantuje krytycznego sukcesu — jeśli wynik nadal nie osiąga ST, jest to zwykły sukces.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Naturalna 20 (Natural 20)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-intimidation",
-    "text": "Intimidation (Cha): Used to coerce others through threats and menace. Actions: Coerce, Demoralize. Key ability: Charisma.",
-    "metadata": { "category": "skill", "name": "Intimidation", "version": "pf2e" }
+    "id": "dos-critical-failure",
+    "text": "Krytyczna porażka: Wynik testu jest mniejszy od ST o 10 lub więcej. To najgorszy możliwy wynik, często z poważnymi negatywnymi konsekwencjami. Naturalna 1 na k20 obniża stopień sukcesu o jeden poziom.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Krytyczna porażka (Critical Failure)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-medicine",
-    "text": "Medicine (Wis): Used to treat wounds and diseases. Actions: Administer First Aid, Treat Disease, Treat Poison, Treat Wounds (trained). Key ability: Wisdom.",
-    "metadata": { "category": "skill", "name": "Medicine", "version": "pf2e" }
+    "id": "dos-failure",
+    "text": "Porażka: Wynik testu jest mniejszy niż ST. Akcja nie udaje się lub udaje się jedynie częściowo, z negatywnymi konsekwencjami opisanymi w danym efekcie.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Porażka (Failure)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-nature",
-    "text": "Nature (Wis): Knowledge of the natural world, plants, animals, and primal magic. Trained actions: Command an Animal, Identify Magic (primal). Key ability: Wisdom.",
-    "metadata": { "category": "skill", "name": "Nature", "version": "pf2e" }
+    "id": "dos-success",
+    "text": "Sukces: Wynik testu jest równy lub przekracza ST. Akcja udaje się zgodnie z opisem. To standardowy pozytywny wynik większości testów i rzutów obronnych.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Sukces (Success)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-occultism",
-    "text": "Occultism (Int): Knowledge of occult traditions, esoteric topics, and metaphysics. Trained actions: Decipher Writing, Identify Magic (occult). Key ability: Intelligence.",
-    "metadata": { "category": "skill", "name": "Occultism", "version": "pf2e" }
+    "id": "dos-critical-success",
+    "text": "Krytyczny sukces: Wynik testu przekracza ST o 10 lub więcej. Krytyczny sukces jest najlepszym możliwym rezultatem, dającym efekt lepszy niż zwykły sukces. Naturalna 20 na k20 podnosi stopień sukcesu o jeden poziom.",
+    "metadata": {
+      "category": "degree-of-success",
+      "name": "Krytyczny sukces (Critical Success)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-performance",
-    "text": "Performance (Cha): Used to entertain audiences through music, dance, acting, or other arts. Actions: Perform, Earn Income. Key ability: Charisma.",
-    "metadata": { "category": "skill", "name": "Performance", "version": "pf2e" }
+    "id": "condition-wyczerpany-zasoby",
+    "text": "Wyczerpany (Doomed): Twoja dusza jest bliżej śmierci. Wartość liczbowa zmniejsza próg, przy którym stan Umierający powoduje śmierć. Przy Wyczerpany 1 giniesz przy Umierający 3 zamiast 4. Usunięcie wymaga potężnej magii lub pełnego odpoczynku.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wyczerpany / Skazany (Doomed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-religion",
-    "text": "Religion (Wis): Knowledge of divine beings, religious practices, and divine magic. Trained actions: Decipher Writing, Identify Magic (divine). Key ability: Wisdom.",
-    "metadata": { "category": "skill", "name": "Religion", "version": "pf2e" }
+    "id": "condition-otumaniony",
+    "text": "Otumaniony: Twoja zręczność i koordynacja ruchowa są zaburzone. Otumaniony posiada wartość liczbową. Dostajesz karę statusu do testów i ST opartych na Zręczności oraz do KP równą wartości Otumanienia.",
+    "metadata": {
+      "category": "condition",
+      "name": "Otumaniony (Clumsy)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-society",
-    "text": "Society (Int): Knowledge of culture, law, governments, and people. Trained actions: Create Forgery, Decipher Writing, Subsist. Key ability: Intelligence.",
-    "metadata": { "category": "skill", "name": "Society", "version": "pf2e" }
+    "id": "condition-niezdolny",
+    "text": "Niezdolny: Twoje umysłowe zdolności są poważnie ograniczone. Niezdolny posiada wartość liczbową. Dostajesz karę statusu do testów i ST opartych na Inteligencji, Mądrości i Charyzmie równą wartości Niezdolności.",
+    "metadata": {
+      "category": "condition",
+      "name": "Niezdolny (Clumsy)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-stealth",
-    "text": "Stealth (Dex): Used to avoid detection by hiding and moving silently. Actions: Conceal an Object, Hide, Sneak. Key ability: Dexterity.",
-    "metadata": { "category": "skill", "name": "Stealth", "version": "pf2e" }
+    "id": "condition-osłabiony",
+    "text": "Osłabiony: Twoja siła fizyczna jest zmniejszona. Osłabiony posiada wartość liczbową. Dostajesz karę statusu do testów i ST opartych na Sile oraz do obrażeń wręcz równą wartości Osłabienia.",
+    "metadata": {
+      "category": "condition",
+      "name": "Osłabiony (Enfeebled)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-survival",
-    "text": "Survival (Wis): Used to navigate and survive in the wild. Actions: Sense Direction, Subsist, Track (trained). Key ability: Wisdom.",
-    "metadata": { "category": "skill", "name": "Survival", "version": "pf2e" }
+    "id": "condition-zaskoczony",
+    "text": "Zaskoczony: Nie jesteś w pełni gotowy do obrony. Dostajesz karę okoliczności -2 do KP. Nie możesz wykonywać Reakcji. Stan zaskoczony wynika z Chwycenia, Oślepienia, Niewidzialności przeciwnika i wielu innych efektów.",
+    "metadata": {
+      "category": "condition",
+      "name": "Zaskoczony (Off-Guard / Flat-Footed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "skill-thievery",
-    "text": "Thievery (Dex): Used for picking locks, pickpocketing, and disabling traps. Trained actions: Disable Device, Pick a Lock, Palm an Object, Steal. Key ability: Dexterity.",
-    "metadata": { "category": "skill", "name": "Thievery", "version": "pf2e" }
+    "id": "condition-niewidzialny",
+    "text": "Niewidzialny: Nie można cię zobaczyć. Jesteś Niewykryty wobec wszystkich stworzeń. Stworzenia mogą próbować cię zlokalizować za pomocą akcji Szukaj. Ataki wobec ciebie wymagają testu ST 11 (szansa pudła), nawet jeśli przeciwnik zna twoje pole.",
+    "metadata": {
+      "category": "condition",
+      "name": "Niewidzialny (Invisible)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-blinded",
-    "text": "Blinded: You cannot see. You are flat-footed and take a –4 status penalty to Perception checks that require sight. Spell attacks and ranged attacks against you have a 50% miss chance.",
-    "metadata": { "category": "condition", "name": "Blinded", "version": "pf2e" }
+    "id": "condition-nieprzytomny",
+    "text": "Nieprzytomny: Nie jesteś świadomy otoczenia. Dostajesz stan Leżący i Zaskoczony, nie możesz działać. Twoja KP spada do minimalnej wartości. Otrzymanie obrażeń gdy jesteś nieprzytomny nakłada stan Umierający lub zwiększa jego wartość.",
+    "metadata": {
+      "category": "condition",
+      "name": "Nieprzytomny (Unconscious)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-confused",
-    "text": "Confused: You are confused about your surroundings and take random actions each turn. You are flat-footed. Each round you must use one action to Strike a random adjacent creature, or Stride in a random direction if none are adjacent.",
-    "metadata": { "category": "condition", "name": "Confused", "version": "pf2e" }
+    "id": "condition-umierajacy",
+    "text": "Umierający: Jesteś nieprzytomny i bliski śmierci. Umierający posiada wartość liczbową (zaczynając zwykle od 1). Na początku każdej tury wykonujesz test przeciw śmierci. Porażka zwiększa wartość o 1, krytyczna porażka o 2. Sukces zmniejsza o 1. Przy Umierający 4 — giniesz.",
+    "metadata": {
+      "category": "condition",
+      "name": "Umierający (Dying)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-dazzled",
-    "text": "Dazzled: Your vision is compromised. All creatures are treated as being concealed from you. You take a –2 circumstance penalty to sight-based Perception checks.",
-    "metadata": { "category": "condition", "name": "Dazzled", "version": "pf2e" }
+    "id": "condition-ranny",
+    "text": "Ranny: Byłeś już bliski śmierci. Stan Ranny posiada wartość liczbową. Za każdym razem gdy zyskujesz stan Umierający, jego wartość zwiększa się o wartość stanu Ranny. Ranny zwiększa się o 1 za każdym razem gdy odzyskujesz przytomność ze stanu Umierający.",
+    "metadata": {
+      "category": "condition",
+      "name": "Ranny (Wounded)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-frightened",
-    "text": "Frightened X: You are gripped with fear. You take a –X status penalty to all checks and DCs. At the end of your turn, the X value decreases by 1 until the condition ends.",
-    "metadata": { "category": "condition", "name": "Frightened", "version": "pf2e" }
+    "id": "condition-zamroczony",
+    "text": "Zamroczony: Twoje zmysły są przytłumione. Dostajesz karę statusu -2 do Percepcji i inicjatywy. Nie możesz podjąć Reakcji.",
+    "metadata": {
+      "category": "condition",
+      "name": "Zamroczony (Dazzled)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-grabbed",
-    "text": "Grabbed: You are held by another creature. You are flat-footed and immobilized. If the creature grabbing you moves, you move with it.",
-    "metadata": { "category": "condition", "name": "Grabbed", "version": "pf2e" }
+    "id": "condition-spowolniony",
+    "text": "Spowolniony: Masz mniej akcji w turze. Spowolniony posiada wartość liczbową. Na początku tury tracisz tyle akcji ile wynosi wartość Spowolnienia. Nie wpływa na Reakcje ani Darmowe Akcje.",
+    "metadata": {
+      "category": "condition",
+      "name": "Spowolniony (Slowed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-hidden",
-    "text": "Hidden: Your presence is known but exact location is not. Opponents can target you but take a –2 circumstance penalty to Strike you and must succeed on a DC 11 flat check to target you with any action.",
-    "metadata": { "category": "condition", "name": "Hidden", "version": "pf2e" }
+    "id": "condition-zmeczony",
+    "text": "Zmęczony: Jesteś wyczerpany i potrzebujesz odpoczynku. Dostajesz karę statusu -1 do KP i rzutów obronnych. Nie możesz wykonywać działań eksploracyjnych wymagających wysiłku. Stan znika po pełnym nocnym odpoczynku.",
+    "metadata": {
+      "category": "condition",
+      "name": "Zmęczony (Fatigued)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-immobilized",
-    "text": "Immobilized: You cannot voluntarily move from your current space. Effects that would move you are blocked unless they specify they work on immobilized creatures.",
-    "metadata": { "category": "condition", "name": "Immobilized", "version": "pf2e" }
+    "id": "condition-chory-4",
+    "text": "Chory 4: Skrajne mdłości na granicy przytomności. Dostajesz karę statusu -4 do wszystkich testów i ST. Wymiotowanie wymaga akcji i udanego rzutu Wytrzymałości.",
+    "metadata": {
+      "category": "condition",
+      "name": "Chory 4 (Sickened 4)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-paralyzed",
-    "text": "Paralyzed: Your body is frozen in place. You have the flat-footed condition and cannot move or take any physical actions. Mental actions are still possible.",
-    "metadata": { "category": "condition", "name": "Paralyzed", "version": "pf2e" }
+    "id": "condition-chory-3",
+    "text": "Chory 3: Bardzo poważne mdłości. Dostajesz karę statusu -3 do wszystkich testów i ST. Wymiotowanie wymaga akcji i udanego rzutu Wytrzymałości, by obniżyć wartość.",
+    "metadata": {
+      "category": "condition",
+      "name": "Chory 3 (Sickened 3)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-prone",
-    "text": "Prone: You are lying on the ground. You are flat-footed, take a –2 circumstance penalty to attack rolls, and must spend an action to Stand before moving normally.",
-    "metadata": { "category": "condition", "name": "Prone", "version": "pf2e" }
+    "id": "condition-chory-2",
+    "text": "Chory 2: Silne nudności i wymioty. Dostajesz karę statusu -2 do wszystkich testów i ST. Możesz wydać akcję na wymiotowanie, by obniżyć wartość przy udanym rzucie Wytrzymałości.",
+    "metadata": {
+      "category": "condition",
+      "name": "Chory 2 (Sickened 2)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "condition-stunned",
-    "text": "Stunned X: You are temporarily incapacitated. You lose X actions at the start of your turn, then reduce the value by the number of actions lost. Stunned 1 removes 1 action.",
-    "metadata": { "category": "condition", "name": "Stunned", "version": "pf2e" }
+    "id": "condition-chory-1",
+    "text": "Chory 1: Czujesz nudności i mdłości. Dostajesz karę statusu -1 do wszystkich testów i ST. Możesz wydać akcję na wymiotowanie (rzut Wytrzymałości), by obniżyć wartość o 1 przy sukcesie lub usunąć stan przy krytycznym sukcesie.",
+    "metadata": {
+      "category": "condition",
+      "name": "Chory 1 (Sickened 1)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-strike",
-    "text": "Strike (1 action): Make a melee or ranged attack against a creature. Roll your attack modifier vs. the target's AC. Each additional Strike in your turn takes a –5 multiple attack penalty (–10 on a third).",
-    "metadata": { "category": "combat-action", "name": "Strike", "version": "pf2e" }
+    "id": "condition-wystraszony-4",
+    "text": "Wystraszony 4: Maksymalny poziom przerażenia. Dostajesz karę statusu -4 do wszystkich testów i ST. Na końcu każdej tury wartość Wystraszenia spada o 1.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wystraszony 4 (Frightened 4)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-step",
-    "text": "Step (1 action): Move 5 feet without triggering reactions that are triggered by movement. You cannot Step if you are encumbered.",
-    "metadata": { "category": "combat-action", "name": "Step", "version": "pf2e" }
+    "id": "condition-wystraszony-3",
+    "text": "Wystraszony 3: Jesteś przerażony do głębi. Dostajesz karę statusu -3 do wszystkich testów i ST. Na końcu każdej tury wartość Wystraszenia spada o 1.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wystraszony 3 (Frightened 3)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-stride",
-    "text": "Stride (1 action): Move up to your Speed. Moving through hazardous terrain or difficult terrain costs additional movement. Triggers movement reactions.",
-    "metadata": { "category": "combat-action", "name": "Stride", "version": "pf2e" }
+    "id": "condition-wystraszony-2",
+    "text": "Wystraszony 2: Strach silnie cię paraliżuje. Dostajesz karę statusu -2 do wszystkich testów i ST. Na końcu każdej tury wartość Wystraszenia spada o 1.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wystraszony 2 (Frightened 2)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-raise-a-shield",
-    "text": "Raise a Shield (1 action): Hold your shield to gain its bonus to AC until the start of your next turn. Required before you can use the Shield Block reaction.",
-    "metadata": { "category": "combat-action", "name": "Raise a Shield", "version": "pf2e" }
+    "id": "condition-wystraszony-1",
+    "text": "Wystraszony 1: Jesteś przejęty strachem. Dostajesz karę statusu -1 do wszystkich testów i ST. Na końcu każdej tury wartość Wystraszenia spada o 1.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wystraszony 1 (Frightened 1)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-seek",
-    "text": "Seek (1 action): Attempt a Perception check to detect hidden or undetected creatures in a 30-foot cone or 15-foot burst. On success the creature becomes hidden instead of undetected.",
-    "metadata": { "category": "combat-action", "name": "Seek", "version": "pf2e" }
+    "id": "condition-lezacy",
+    "text": "Leżący: Leżysz na ziemi. Jesteś Zaskoczony i dostajesz karę okoliczności -2 do rzutów na atak. Jedyny Ruch jaki możesz wykonać to Czołganie. Powstanie wymaga 1 akcji. Ataki dystansowe mają karę -2 do trafienia ciebie, ale ataki wręcz mają bonus +2.",
+    "metadata": {
+      "category": "condition",
+      "name": "Leżący (Prone)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-interact",
-    "text": "Interact (1 action): Grab an item, open or close a door, draw a weapon, pick up an object, or perform a similar interaction with an item or the environment.",
-    "metadata": { "category": "combat-action", "name": "Interact", "version": "pf2e" }
+    "id": "condition-sparalizowany",
+    "text": "Sparaliżowany: Twoje ciało jest całkowicie znieruchomiałe. Masz stan Zaskoczony i nie możesz podejmować akcji fizycznych. Twoja KP spada, ponieważ nie możesz się bronić ani unikać ataków.",
+    "metadata": {
+      "category": "condition",
+      "name": "Sparaliżowany (Paralyzed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-cast-a-spell",
-    "text": "Cast a Spell (1–3 actions): Activate a prepared or spontaneous spell. The number of actions depends on the spell's casting time. Requires verbal, somatic, or material components as specified.",
-    "metadata": { "category": "combat-action", "name": "Cast a Spell", "version": "pf2e" }
+    "id": "condition-unieruchomiony",
+    "text": "Unieruchomiony: Nie możesz użyć żadnych akcji z cechą Ruchu. Jeśli efekt zmuszający powoduje Ruch, źródło efektu musi zdać test ST 5, inaczej Ruch nie zachodzi.",
+    "metadata": {
+      "category": "condition",
+      "name": "Unieruchomiony (Immobilized)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-escape",
-    "text": "Escape (1 action): Attempt to free yourself from being grabbed, restrained, or immobilized. Roll your unarmed attack modifier vs. the effect's DC. On success you are no longer grabbed.",
-    "metadata": { "category": "combat-action", "name": "Escape", "version": "pf2e" }
+    "id": "condition-ukryty",
+    "text": "Ukryty: Stworzenia wiedzą, w którym polu się znajdujesz, ale nie mogą cię dokładnie zobaczyć. Jesteś Ukryty wobec stworzenia, jeśli masz zasłonę lub osłonę. Ataki przeciwko tobie mają szansę pudła 11 na k20.",
+    "metadata": {
+      "category": "condition",
+      "name": "Ukryty (Concealed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-grapple",
-    "text": "Grapple (1 action): Attempt an Athletics check vs. the target's Fortitude DC to grab a creature. Success gives the grabbed condition; critical success also restrained. Requires a free hand.",
-    "metadata": { "category": "combat-action", "name": "Grapple", "version": "pf2e" }
+    "id": "condition-chwycony",
+    "text": "Chwycony: Jesteś trzymany w miejscu przez stworzenie, efekt lub pułapkę. Jesteś Unieruchomiony i Zaskoczony. Jeśli spróbujesz wykonać akcję z cechą manipulacji, musisz zdać test ST 5 lub akcja jest stracona.",
+    "metadata": {
+      "category": "condition",
+      "name": "Chwycony (Grabbed)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "action-trip",
-    "text": "Trip (1 action): Attempt an Athletics check vs. the target's Reflex DC to knock a creature prone. Requires a free hand. Critical failure makes you flat-footed until end of turn.",
-    "metadata": { "category": "combat-action", "name": "Trip", "version": "pf2e" }
+    "id": "condition-wyczerpany",
+    "text": "Wyczerpany: Jesteś niesamowicie zmęczony. Dostajesz karę statusu -1 do KP i rzutów obronnych. Nie możesz odzyskać Punktów Wytrzymałości przez odpoczynek dopóki stan nie zostanie usunięty. Wyczerpanie można usunąć pełnym nocnym odpoczynkiem.",
+    "metadata": {
+      "category": "condition",
+      "name": "Wyczerpany (Drained)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-power-attack",
-    "text": "Power Attack (Fighter 1, 2 actions): Make a powerful melee Strike. You take a –2 penalty on the attack roll but deal an extra damage die. Does not apply the normal multiple attack penalty until after this action.",
-    "metadata": { "category": "feat", "name": "Power Attack", "version": "pf2e" }
+    "id": "condition-gluchy",
+    "text": "Głuchy: Nie słyszysz. Automatycznie ponosisz porażkę w testach Percepcji wymagających słuchu. Dostajesz karę statusu -2 do Percepcji. Jeśli wykonujesz akcję ze składnikiem werbalnym, musisz zdać test ST 5 lub akcja jest stracona.",
+    "metadata": {
+      "category": "condition",
+      "name": "Głuchy (Deafened)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-shield-block",
-    "text": "Shield Block (General 1, reaction): Trigger: you have your shield raised and take physical damage. Use your shield to block the blow. The shield takes the damage instead of you, split equally between you and the shield.",
-    "metadata": { "category": "feat", "name": "Shield Block", "version": "pf2e" }
+    "id": "condition-ogluszony",
+    "text": "Ogłuszony: Masz ograniczony czas reakcji i zdolność myślenia. Ogłuszony posiada wartość liczbową. Przy każdym rzucie na inicjatywę dostajesz karę statusu równą wartości Ogłuszenia.",
+    "metadata": {
+      "category": "condition",
+      "name": "Ogłuszony (Stupefied)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-sudden-charge",
-    "text": "Sudden Charge (Fighter 1, 2 actions): Stride twice, then make a melee Strike. If you moved at least 10 feet you can move through difficult terrain during this action.",
-    "metadata": { "category": "feat", "name": "Sudden Charge", "version": "pf2e" }
+    "id": "condition-oszolomiony",
+    "text": "Oszołomiony: Nie możesz w pełni korzystać ze swoich umysłowych zdolności. Oszołomiony posiada wartość liczbową. Za każdym razem gdy zaczniesz swoją turę, tracisz tyle akcji ile wynosi wartość Oszołomienia (minimum 0 pozostałych akcji).",
+    "metadata": {
+      "category": "condition",
+      "name": "Oszołomiony (Stunned)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-reactive-strike",
-    "text": "Reactive Strike (Fighter 6, reaction): Trigger: a creature within your reach uses a manipulate action, move action, or ranged attack while in your reach. Make a melee Strike against the triggering creature.",
-    "metadata": { "category": "feat", "name": "Reactive Strike", "version": "pf2e" }
+    "id": "condition-zdezorientowany",
+    "text": "Zdezorientowany: Twoje zmysły są zaburzone i masz trudności z myśleniem. Nie możesz podejmować Reakcji. Jesteś Zaskoczony i dostajesz karę statusu -2 do Percepcji i testów umiejętności wymagających koncentracji.",
+    "metadata": {
+      "category": "condition",
+      "name": "Zdezorientowany (Confused)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-intimidating-strike",
-    "text": "Intimidating Strike (Fighter 2, 2 actions): Make a melee Strike. If it hits, the target must succeed at a Will save vs. your class DC or become frightened 1 (frightened 2 on a critical hit).",
-    "metadata": { "category": "feat", "name": "Intimidating Strike", "version": "pf2e" }
+    "id": "condition-oslepiony",
+    "text": "Oślepiony: Nie widzisz. Wszystkie normalne tereny są dla ciebie trudnym terenem. Automatycznie ponosisz porażkę w testach Percepcji wymagających wzroku. Jesteś odporny na efekty wizualne i jesteś Zaskoczony wobec wszystkich stworzeń.",
+    "metadata": {
+      "category": "condition",
+      "name": "Oślepiony (Blinded)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-sneak-attack",
-    "text": "Sneak Attack (Rogue 1, passive): Deal extra precision damage to a flat-footed enemy: 1d6 at level 1, increasing by 1d6 every 2 levels. Only works with agile or finesse melee weapons, thrown weapons, or ranged weapons.",
-    "metadata": { "category": "feat", "name": "Sneak Attack", "version": "pf2e" }
+    "id": "skill-zlodziejstwo",
+    "text": "Złodziejstwo (Zręczność): Używana do otwierania zamków, rozbrajania pułapek i kradzieży kieszonkowej. Akcje wytrenowane: Otwieranie Zamka, Rozbrojenie Urządzenia, Kradzież Kieszonkowa. Wymaga wytrenowania, aby korzystać z zestawu wytrychów. Kluczowa cecha: Zręczność.",
+    "metadata": {
+      "category": "skill",
+      "name": "Złodziejstwo (Thievery)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-flurry-of-blows",
-    "text": "Flurry of Blows (Monk 1, 1 action): Make two unarmed Strikes. If both hit the same creature, combine their damage for the purpose of resistances and weaknesses. Apply the multiple attack penalty normally.",
-    "metadata": { "category": "feat", "name": "Flurry of Blows", "version": "pf2e" }
+    "id": "skill-przetrwanie",
+    "text": "Przetrwanie (Mądrość): Używana do orientacji w terenie, tropienia i zdobywania pożywienia na dzikiej naturze. Akcje wytrenowane: Tropienie, Zdobywanie Pożywienia, Rozpoznanie Kierunku. Kluczowa cecha: Mądrość.",
+    "metadata": {
+      "category": "skill",
+      "name": "Przetrwanie (Survival)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-electric-arc",
-    "text": "Electric Arc (Cantrip 1, 2 actions): Strike up to two targets in range with electricity. Each target must succeed at a Reflex save vs. your spell DC or take 1d4 electricity damage (heightened +1d4 per rank).",
-    "metadata": { "category": "feat", "name": "Electric Arc", "version": "pf2e" }
+    "id": "skill-skradanie",
+    "text": "Skradanie (Zręczność): Używana do cichego poruszania się i ukrywania przed wrogami. Akcje: Ukrycie się (1 akcja), Skradanie (1 akcja). Aby się Ukryć, musisz mieć osłonę lub zasłonę. Skradanie pozwala poruszać się pozostając Ukrytym. Kluczowa cecha: Zręczność.",
+    "metadata": {
+      "category": "skill",
+      "name": "Skradanie (Stealth)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-heal",
-    "text": "Heal (Spell 1, 1–3 actions): Positive energy heals the living and harms undead. 1 action: 1d8+mod to self. 2 actions: 1d8+mod to touched target. 3 actions: 1d8+mod in 30-ft burst.",
-    "metadata": { "category": "feat", "name": "Heal", "version": "pf2e" }
+    "id": "skill-spoleczenstwo",
+    "text": "Społeczeństwo (Inteligencja): Używana do wiedzy o kulturach, rządach, prawie i życiu w miastach. Akcje wytrenowane: Tworzenie Fałszywej Tożsamości, Odszyfrowanie Pisma, Podsłuchiwanie. Kluczowa cecha: Inteligencja.",
+    "metadata": {
+      "category": "skill",
+      "name": "Społeczeństwo (Society)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "feat-fireball",
-    "text": "Fireball (Spell 3, 2 actions): A burst of fire in a 20-foot radius at a point within 500 feet. Creatures must succeed at a Reflex save vs. your spell DC or take 6d6 fire damage (half on success).",
-    "metadata": { "category": "feat", "name": "Fireball", "version": "pf2e" }
+    "id": "skill-religia",
+    "text": "Religia (Mądrość): Używana do wiedzy o bogach, doktrynach religijnych i nieumarłych. Akcje wytrenowane: Rozpoznanie Magii (zaklęcia boskie), Odszyfrowanie Pisma, Identyfikacja Magii. Kluczowa cecha: Mądrość.",
+    "metadata": {
+      "category": "skill",
+      "name": "Religia (Religion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-longsword",
-    "text": "Longsword: 1d8 slashing, Bulk 1, Hands 1. Traits: Versatile P. A versatile one-handed sword that can be used with great precision or as a cleaving weapon.",
-    "metadata": { "category": "weapon", "name": "Longsword", "version": "pf2e" }
+    "id": "skill-wystep",
+    "text": "Występ (Charyzma): Używana do zabawiania publiczności grą aktorską, muzyką, tańcem lub innymi formami sztuki. Akcje: Występ (1 akcja). Akcje wytrenowane: Zarabianie na Życie (przerwa). Kluczowa cecha: Charyzma.",
+    "metadata": {
+      "category": "skill",
+      "name": "Występ (Performance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-shortbow",
-    "text": "Shortbow: 1d6 piercing, Bulk 1, Hands 2, Range 60 ft. Traits: Deadly d10, Propulsive. A compact bow favoured by scouts and mobile archers.",
-    "metadata": { "category": "weapon", "name": "Shortbow", "version": "pf2e" }
+    "id": "skill-okultyzm",
+    "text": "Okultyzm (Inteligencja): Używana do wiedzy o tajemnych tradycjach, duchach, przekleństwach i magii okultystycznej. Akcje wytrenowane: Rozpoznanie Magii (zaklęcia okultystyczne), Odszyfrowanie Pisma, Identyfikacja Magii. Kluczowa cecha: Inteligencja.",
+    "metadata": {
+      "category": "skill",
+      "name": "Okultyzm (Occultism)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-dagger",
-    "text": "Dagger: 1d4 piercing, Bulk L, Hands 1, Range 10 ft (thrown). Traits: Agile, Finesse, Thrown 10 ft, Versatile S. A light and versatile blade useful both in melee and as a thrown weapon.",
-    "metadata": { "category": "weapon", "name": "Dagger", "version": "pf2e" }
+    "id": "skill-natura",
+    "text": "Natura (Mądrość): Używana do identyfikowania stworzeń naturalnych, roślin i przetrwania na dzikiej naturze. Akcje wytrenowane: Rozpoznanie Magii (zaklęcia pierwotne), Dowodzenie Zwierzęciem, Identyfikacja Magii. Kluczowa cecha: Mądrość.",
+    "metadata": {
+      "category": "skill",
+      "name": "Natura (Nature)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-greataxe",
-    "text": "Greataxe: 1d12 slashing, Bulk 2, Hands 2. Traits: Sweep, Forceful. A heavy two-handed axe that cleaves through enemies with tremendous force.",
-    "metadata": { "category": "weapon", "name": "Greataxe", "version": "pf2e" }
+    "id": "skill-medycyna",
+    "text": "Medycyna (Mądrość): Używana do leczenia ran, stabilizowania umierających i diagnozowania chorób. Akcje wytrenowane: Leczenie Ran (eksploracja, przywraca PW), Leczenie Choroby, Leczenie Trucizny. Pierwsza Pomoc stabilizuje umierającą postać. Kluczowa cecha: Mądrość.",
+    "metadata": {
+      "category": "skill",
+      "name": "Medycyna (Medicine)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-wiedza",
+    "text": "Wiedza (Inteligencja): Grupa umiejętności obejmujących konkretne dziedziny wiedzy (np. Wiedza: Historia, Wiedza: Religia). Akcje wytrenowane: Przypomnienie Wiedzy (darmowa akcja, raz na rundę). Każda podkategoria jest oddzielną umiejętnością. Kluczowa cecha: Inteligencja.",
+    "metadata": {
+      "category": "skill",
+      "name": "Wiedza (Lore)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-zastraszanie",
+    "text": "Zastraszanie (Charyzma): Używana do wymuszania posłuszeństwa i demoralizowania wrogów. Akcje: Demoralizacja (1 akcja, nakłada stan Wystraszony). Akcje wytrenowane: Wymuszenie. Kluczowa cecha: Charyzma.",
+    "metadata": {
+      "category": "skill",
+      "name": "Zastraszanie (Intimidation)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-dyplomacja",
+    "text": "Dyplomacja (Charyzma): Używana do negocjacji, perswazji i zbierania informacji. Akcje wytrenowane: Zbieranie Informacji, Prośba. Prośba wymaga co najmniej 1 minuty rozmowy i może zmienić nastawienie NPC. Kluczowa cecha: Charyzma.",
+    "metadata": {
+      "category": "skill",
+      "name": "Dyplomacja (Diplomacy)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-oszustwo",
+    "text": "Oszustwo (Charyzma): Używana do kłamstwa, tworzenia przebrań i fałszerstw. Akcje wytrenowane: Tworzenie Przebrania, Fałszerstwo. Test Oszustwa przeciwko Percepcji celu określa, czy kłamstwo jest wiarygodne. Kluczowa cecha: Charyzma.",
+    "metadata": {
+      "category": "skill",
+      "name": "Oszustwo (Deception)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-rzemioslo",
+    "text": "Rzemiosło (Inteligencja): Używana do tworzenia, naprawiania i identyfikowania przedmiotów. Akcje wytrenowane: Tworzenie Przedmiotu, Naprawa, Identyfikacja Alchemii. Wymaga wyboru specjalizacji (np. kowalstwo, alchemia). Kluczowa cecha: Inteligencja.",
+    "metadata": {
+      "category": "skill",
+      "name": "Rzemiosło (Crafting)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-atletyka",
+    "text": "Atletyka (Siła): Używana do wspinaczki, pływania, skoków i wyczynów siłowych. Akcje wytrenowane: Rozbrojenie, Pchnięcie, Powalenie, Chwyt. Kluczowa cecha: Siła.",
+    "metadata": {
+      "category": "skill",
+      "name": "Atletyka (Athletics)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-arkana",
+    "text": "Arkana (Inteligencja): Używana do identyfikowania magii, rozpoznawania zaklęć i przywoływania wiedzy o magicznych tradycjach. Akcje wytrenowane: Rozpoznanie Magii, Odszyfrowanie Pisma, Identyfikacja Magii, Zapożyczenie Zaklęcia Arkanicznego. Kluczowa cecha: Inteligencja.",
+    "metadata": {
+      "category": "skill",
+      "name": "Arkana (Arcana)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "skill-akrobatyka",
+    "text": "Akrobatyka (Zręczność): Używana do utrzymywania równowagi, akrobatycznych uników i omijania przeszkód. Akcje wytrenowane: Balansowanie, Prześlizgnięcie się. Kluczowa cecha: Zręczność.",
+    "metadata": {
+      "category": "skill",
+      "name": "Akrobatyka (Acrobatics)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-atak",
+    "text": "Atak (Strike) [1 akcja]: Wykonujesz atak bronią lub atakiem wręcz przeciwko stworzeniu w zasięgu. Rzuć na atak i porównaj z KP celu. Każdy kolejny atak w turze ma kumulatywną karę wielokrotnych ataków: -5 za drugi, -10 za trzeci i kolejne (lub -4/-8 z cechą agile).",
+    "metadata": {
+      "category": "action",
+      "name": "Atak (Strike)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-krok",
+    "text": "Krok (Step) [1 akcja]: Poruszasz się o 5 stóp bez prowokowania reakcji. Nie możesz wykonać Kroku w trudnym terenie.",
+    "metadata": {
+      "category": "action",
+      "name": "Krok (Step)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-ruch",
+    "text": "Ruch (Stride) [1 akcja]: Poruszasz się o liczbę stóp równą twojej Szybkości. Ruch przez trudny teren kosztuje podwójnie. Ruch może prowokować reakcje takie jak Reaktywny Atak.",
+    "metadata": {
+      "category": "action",
+      "name": "Ruch (Stride)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-podniesienie-tarczy",
+    "text": "Podniesienie Tarczy (Raise a Shield) [1 akcja]: Unosisz swoją tarczę, zyskując jej bonus okolicznościowy do KP do początku twojej następnej tury. Typowa tarcza daje +2 do KP. Musisz trzymać tarczę w jednej ręce.",
+    "metadata": {
+      "category": "action",
+      "name": "Podniesienie Tarczy (Raise a Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-szukanie",
+    "text": "Szukanie (Seek) [1 akcja]: Przeszukujesz obszar w poszukiwaniu ukrytych stworzeń lub przedmiotów. MG określa, czy rzucasz Percepcję przeciw ST Skradania ukrytego stworzenia, czy ST ustalony. Sukces oznacza wykrycie celu — nie jest już ukryty przed tobą.",
+    "metadata": {
+      "category": "action",
+      "name": "Szukanie (Seek)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-interakcja",
+    "text": "Interakcja (Interact) [1 akcja]: Używasz przedmiotu lub wchodzisz w interakcję z elementem otoczenia. Obejmuje: wyciąganie lub chowanie broni, otwieranie drzwi, podnoszenie przedmiotu, podawanie przedmiotu sojusznikowi. Niektóre interakcje wymagają więcej niż jednej akcji.",
+    "metadata": {
+      "category": "action",
+      "name": "Interakcja (Interact)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-ucieczka",
+    "text": "Ucieczka (Escape) [1 akcja]: Próbujesz się uwolnić z chwytu, unieruchomienia lub innego efektu ograniczającego ruch. Rzuć na atak wręcz, Akrobatykę lub Atletykę (twój wybór) przeciw ST efektu lub ST Atletyki chwytającego.",
+    "metadata": {
+      "category": "action",
+      "name": "Ucieczka (Escape)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-chwyt",
+    "text": "Chwyt (Grapple) [1 akcja]: Cecha: atak. Próbujesz pochwycić stworzenie za pomocą sprawdzianu Atletyki przeciw ST Otuchy celu. Krytyczny sukces: cel jest unieruchomiony. Sukces: cel jest chwycony. Krytyczna porażka: możesz skończyć leżąc.",
+    "metadata": {
+      "category": "action",
+      "name": "Chwyt (Grapple)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-powalenie",
+    "text": "Powalenie (Trip) [1 akcja]: Cecha: atak. Próbujesz przewrócić stworzenie za pomocą sprawdzianu Atletyki przeciw ST Otuchy celu. Sukces: cel upada i jest leżący. Krytyczny sukces: cel także otrzymuje 1k6 obrażeń od upadku. Krytyczna porażka: ty upadasz i stajesz się leżący.",
+    "metadata": {
+      "category": "action",
+      "name": "Powalenie (Trip)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-odepchnięcie",
+    "text": "Odepchnięcie (Shove) [1 akcja]: Cecha: atak. Odpychasz stworzenie za pomocą sprawdzianu Atletyki przeciw ST Otuchy celu. Sukces: odpychasz cel o 5 stóp od siebie lub — jeśli miałeś krytyczny sukces — o 10 stóp. Możesz podążyć za celem Krokiem. Cel musi być w twoim zasięgu i nie więcej niż o dwa rozmiary większy.",
+    "metadata": {
+      "category": "action",
+      "name": "Odepchnięcie (Shove)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-rozbrojenie",
+    "text": "Rozbrojenie (Disarm) [1 akcja]: Cecha: atak. Próbujesz wytrącić broń lub przedmiot z rąk stworzenia za pomocą sprawdzianu Atletyki przeciw ST Otuchy celu. Sukces: cel otrzymuje karę -2 okolicznościową do ataków i sprawdzianów z użyciem tego przedmiotu. Krytyczny sukces: przedmiot upada na ziemię.",
+    "metadata": {
+      "category": "action",
+      "name": "Rozbrojenie (Disarm)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-rzucenie-zaklecia",
+    "text": "Rzucenie Zaklęcia (Cast a Spell) [zmienne]: Rzucasz zaklęcie, wydając wymaganą liczbę akcji. Większość zaklęć wymaga 2 akcji (komponent werbalny + somatyczny). Niektóre zaklęcia mają czas rzucania 1 akcji, 3 akcji, lub dłużej. Komponent materialny wymaga wolnej ręki z ogniskiem zaklęć lub torebką komponentów.",
+    "metadata": {
+      "category": "action",
+      "name": "Rzucenie Zaklęcia (Cast a Spell)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-opoznienie",
+    "text": "Opóźnienie (Delay) [wolna akcja]: Opóźniasz swoją turę, decydując się działać później w rundzie. Nie wykonujesz żadnych akcji w obecnej pozycji inicjatywy. W dowolnym późniejszym momencie rundy możesz wznowić swoją turę (używając reakcji). Twoja nowa pozycja inicjatywy staje się tą, w której wznowiłeś turę.",
+    "metadata": {
+      "category": "action",
+      "name": "Opóźnienie (Delay)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-przygotowanie",
+    "text": "Przygotowanie (Ready) [2 akcje]: Przygotowujesz akcję do wykonania poza swoją turą. Określasz wyzwalacz i jedną akcję, którą wykonasz. Gdy wyzwalacz się spełni, używasz reakcji, by wykonać przygotowaną akcję. Przygotowana akcja musi być pojedynczą akcją, nie aktywnością.",
+    "metadata": {
+      "category": "action",
+      "name": "Przygotowanie (Ready)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-pomoc",
+    "text": "Pomoc (Aid) [reakcja]: Wyzwalacz: Sojusznik ma wykonać atak, sprawdzian umiejętności lub rzut obronny. Przygotowujesz się, by pomóc sojusznikowi. Rzuć sprawdzian (zwykle ST 20). Krytyczny sukces: sojusznik dostaje bonus okolicznościowy +2. Sukces: sojusznik dostaje bonus +1. Krytyczna porażka: sojusznik dostaje karę -1.",
+    "metadata": {
+      "category": "action",
+      "name": "Pomoc (Aid)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-unik",
+    "text": "Unik (Dodge) [1 akcja]: Skupiasz się na unikaniu ataków do początku twojej następnej tury. Zyskujesz bonus okolicznościowy +1 do KP. Ten bonus nie kumuluje się z bonusem z Podniesienia Tarczy.",
+    "metadata": {
+      "category": "action",
+      "name": "Unik (Dodge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-feint",
+    "text": "Feint [1 akcja]: Cecha: mentalna. Używasz zwodniczego manewru, by otworzyć obronę wroga. Wykonaj sprawdzian Oszustwa przeciw ST Percepcji celu. Sukces: cel jest nieprzygotowany (flat-footed, -2 KP) przeciw twoim atakom wręcz do końca twojej bieżącej tury. Krytyczny sukces: nieprzygotowany do końca twojej następnej tury.",
+    "metadata": {
+      "category": "action",
+      "name": "Feint",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-demoralizacja",
+    "text": "Demoralizacja (Demoralize) [1 akcja]: Cecha: emocja, mentalna, słuchowa. Zastraszasz wroga sprawdzianem Zastraszania przeciw ST Woli celu. Sukces: cel jest przestraszony 1. Krytyczny sukces: przestraszony 2. Cel jest odporny na twoje Demoralizacje przez 10 minut.",
+    "metadata": {
+      "category": "action",
+      "name": "Demoralizacja (Demoralize)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-bon-mot",
+    "text": "Bon Mot [1 akcja]: Cecha: emocja, mentalna, słuchowa, lingwistyczna. Wypowiadasz zgryźliwą ripostę, by rozpraszać wroga sprawdzianem Dyplomacji przeciw ST Woli celu. Sukces: cel otrzymuje karę -2 statusu do Percepcji i rzutów Woli przez 1 minutę. Krytyczny sukces: kara -3.",
+    "metadata": {
+      "category": "action",
+      "name": "Bon Mot",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-wezwanie",
+    "text": "Wezwanie (Recall Knowledge) [1 akcja]: Cecha: sekretna, koncentracja. Próbujesz przypomnieć sobie informację o temacie pokrewnym umiejętności Wiedzy. MG ustala ST i odpowiednią umiejętność. Sukces: przypominasz sobie przydatną informację. Krytyczny sukces: dodatkowe szczegóły. Porażka: brak informacji. Krytyczna porażka: błędna informacja.",
+    "metadata": {
+      "category": "action",
+      "name": "Wezwanie (Recall Knowledge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-podtrzymanie",
+    "text": "Podtrzymanie (Sustain) [1 akcja]: Utrzymujesz trwający efekt zaklęcia lub zdolności, które wymaga podtrzymania. Efekt trwa do końca twojej następnej tury. Bez podtrzymania, efekt kończy się. Niektóre zaklęcia pozwalają na dodatkowy efekt przy podtrzymaniu.",
+    "metadata": {
+      "category": "action",
+      "name": "Podtrzymanie (Sustain)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-ukrycie",
+    "text": "Ukrycie się (Hide) [1 akcja]: Ukrywasz się za osłoną lub w ukryciu. Wykonaj sprawdzian Skradania przeciw ST Percepcji obserwujących stworzeń. Sukces: jesteś ukryty (hidden) — wrogowie wiedzą, w jakim jesteś obszarze, ale nie znają twojej dokładnej pozycji. Musisz mieć osłonę lub ukrycie wobec stworzenia, przed którym się ukrywasz.",
+    "metadata": {
+      "category": "action",
+      "name": "Ukrycie się (Hide)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-zakradanie",
+    "text": "Zakradanie (Sneak) [1 akcja]: Poruszasz się ukradkiem o połowę Szybkości. Wykonaj sprawdzian Skradania przeciw ST Percepcji obserwujących. Sukces: jesteś niewykryty (undetected) przez te stworzenia. Porażka: stajesz się ukryty (hidden). Musisz mieć osłonę lub ukrycie na końcu ruchu, inaczej automatycznie stajesz się obserwowany.",
+    "metadata": {
+      "category": "action",
+      "name": "Zakradanie (Sneak)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-skok",
+    "text": "Skok (Leap) [1 akcja]: Wykonujesz ostrożny skok. Skaczesz poziomo o 10 stóp (jeśli Szybkość ≥ 15) lub 5 stóp, albo pionowo o 3 stopy i poziomo o 5 stóp. Nie prowokuje reakcji. Dłuższe skoki wymagają sprawdzianu Atletyki z Skokiem w Dal lub Skokiem w Górę (2 akcje).",
+    "metadata": {
+      "category": "action",
+      "name": "Skok (Leap)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-wspinaczka",
+    "text": "Wspinaczka (Climb) [1 akcja]: Poruszasz się w górę, w dół lub po poziomej powierzchni, wymagającej wspinania, o 5 stóp (lub więcej przy krytycznym sukcesie). Wykonaj sprawdzian Atletyki przeciw ST wspinaczki. Porażka: nie ruszasz się. Krytyczna porażka: spadasz.",
+    "metadata": {
+      "category": "action",
+      "name": "Wspinaczka (Climb)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-plywanie",
+    "text": "Pływanie (Swim) [1 akcja]: Poruszasz się w wodzie o 10 stóp (lub 5 stóp w trudnych warunkach). Wykonaj sprawdzian Atletyki przeciw ST pływania. Sukces: poruszasz się. Krytyczny sukces: poruszasz się 10 stóp dalej. Krytyczna porażka: nie ruszasz się i tracisz 1 rundę powietrza.",
+    "metadata": {
+      "category": "action",
+      "name": "Pływanie (Swim)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-balansowanie",
+    "text": "Balansowanie (Balance) [1 akcja]: Poruszasz się po wąskiej lub niestabilnej powierzchni. Wykonaj sprawdzian Akrobatyki przeciw ST balansowania. Sukces: poruszasz się o połowę Szybkości. Krytyczny sukces: poruszasz się o pełną Szybkość. Porażka: nie ruszasz się. Krytyczna porażka: upadasz.",
+    "metadata": {
+      "category": "action",
+      "name": "Balansowanie (Balance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-przechwycenie",
+    "text": "Przechwycenie (Tumble Through) [1 akcja]: Poruszasz się przez przestrzeń wrogiego stworzenia. Wykonaj sprawdzian Akrobatyki przeciw ST Otuchy celu. Sukces: przechodzisz przez przestrzeń stworzenia. Porażka: ruch kończy się przed stworzeniem, a ruch jest stracony.",
+    "metadata": {
+      "category": "action",
+      "name": "Przechwycenie (Tumble Through)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-tworzenie-dywersji",
+    "text": "Tworzenie Dywersji (Create a Diversion) [1 akcja]: Cecha: mentalna. Używasz Oszustwa, by odwrócić uwagę wrogów, tworząc okazję do ukrycia się. Wykonaj sprawdzian Oszustwa przeciw ST Percepcji obserwujących. Sukces: jesteś ukryty wobec tych stworzeń. Możesz celować w jedno stworzenie lub wszystkie w zasięgu (gest lub słowo).",
+    "metadata": {
+      "category": "action",
+      "name": "Tworzenie Dywersji (Create a Diversion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-leczenie-ran",
+    "text": "Leczenie Ran (Treat Wounds) [10 minut]: Cecha: eksploracja, manipulacja. Leczysz rany sprawdzianem Medycyny. ST 15: leczy 2k8 HP. ST 20: leczy 2k8+10. ST 30: leczy 2k8+30. ST 40: leczy 2k8+50. Krytyczny sukces podwaja leczenie. Cel jest odporny na Leczenie Ran przez 1 godzinę.",
+    "metadata": {
+      "category": "action",
+      "name": "Leczenie Ran (Treat Wounds)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-identyfikacja-magii",
+    "text": "Identyfikacja Magii (Identify Magic) [10 minut]: Cecha: sekretna, koncentracja. Identyfikujesz magiczny przedmiot, efekt lub lokację za pomocą sprawdzianu odpowiedniej tradycji magicznej (Arkana, Natura, Okultyzm lub Religia). ST zależy od poziomu efektu.",
+    "metadata": {
+      "category": "action",
+      "name": "Identyfikacja Magii (Identify Magic)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-naprawianie",
+    "text": "Naprawianie (Repair) [10 minut]: Cecha: eksploracja, manipulacja. Naprawiasz uszkodzony przedmiot za pomocą sprawdzienu Rzemiosła. ST zależy od poziomu przedmiotu. Sukces: przywracasz 5 HP przedmiotowi. Krytyczny sukces: przywracasz 10 HP. Potrzebujesz zestawu naprawczego.",
+    "metadata": {
+      "category": "action",
+      "name": "Naprawianie (Repair)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-rozbrajanie-urzadzenia",
+    "text": "Rozbrajanie Urządzenia (Disable a Device) [2 akcje]: Próbujesz wyłączyć pułapkę lub mechanizm za pomocą sprawdzianu Złodziejstwa. ST zależy od złożoności urządzenia. Sukces: wyłączasz urządzenie. Krytyczna porażka: uruchamiasz pułapkę.",
+    "metadata": {
+      "category": "action",
+      "name": "Rozbrajanie Urządzenia (Disable a Device)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-otwieranie-zamka",
+    "text": "Otwieranie Zamka (Pick a Lock) [2 akcje]: Cecha: manipulacja. Próbujesz otworzyć zamek za pomocą sprawdzianu Złodziejstwa i zestawu wytrycherskich. ST zależy od jakości zamka. Sukces: otwierasz zamek. Krytyczna porażka: łamiesz wytrych.",
+    "metadata": {
+      "category": "action",
+      "name": "Otwieranie Zamka (Pick a Lock)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-kradziez",
+    "text": "Kradzież (Steal) [1 akcja]: Cecha: manipulacja. Próbujesz dyskretnie zabrać przedmiot z osoby sprawdzianem Złodziejstwa przeciw ST Percepcji celu. Sukces: zabierasz przedmiot niezauważony. Porażka: nie udaje ci się. Krytyczna porażka: cel zauważa próbę.",
+    "metadata": {
+      "category": "action",
+      "name": "Kradzież (Steal)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-wykonanie-przedstawienia",
+    "text": "Wykonanie Przedstawienia (Perform) [1 akcja]: Cecha: koncentracja. Wykonujesz występ za pomocą sprawdzienu Występów, by zachwycić lub zaimponować. ST zależy od trudności publiczności. Sukces: dobre wykonanie. Krytyczny sukces: porywające wykonanie, które może mieć dodatkowe efekty.",
+    "metadata": {
+      "category": "action",
+      "name": "Wykonanie Przedstawienia (Perform)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-zbieranie-informacji",
+    "text": "Zbieranie Informacji (Gather Information) [eksploracja]: Cecha: sekretna. Spędzasz czas w społeczności, zbierając plotki i informacje sprawdzianem Dyplomacji. ST zależy od dostępności informacji. Zajmuje zwykle co najmniej 1 godzinę.",
+    "metadata": {
+      "category": "action",
+      "name": "Zbieranie Informacji (Gather Information)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-robienie-wrazenia",
+    "text": "Robienie Wrażenia (Make an Impression) [eksploracja]: Próbujesz poprawić nastawienie NPC sprawdzianem Dyplomacji przeciw ST Woli celu. Trwa co najmniej 1 minutę rozmowy. Sukces: nastawienie poprawia się o jeden stopień (np. z obojętnego na przyjazne). Krytyczna porażka: nastawienie pogarsza się.",
+    "metadata": {
+      "category": "action",
+      "name": "Robienie Wrażenia (Make an Impression)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-prosby",
+    "text": "Prośba (Request) [1 akcja]: Cecha: słuchowa, lingwistyczna, mentalna, koncentracja. Prosisz NPC o przysługę sprawdzianem Dyplomacji. ST zależy od trudności prośby i nastawienia NPC. Przyjazny NPC jest bardziej skłonny pomóc. Wrogowie prawie na pewno odmówią.",
+    "metadata": {
+      "category": "action",
+      "name": "Prośba (Request)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-przymus",
+    "text": "Przymus (Coerce) [eksploracja]: Cecha: słuchowa, lingwistyczna, mentalna, emocja. Zmuszasz stworzenie do zrobienia czegoś za pomocą gróźb sprawdzianem Zastraszania przeciw ST Woli celu. Trwa co najmniej 1 minutę. Sukces: cel wykonuje twoją prośbę, ale może stać się wrogi potem. Krytyczna porażka: cel staje się wrogi i odporny na 1 tydzień.",
+    "metadata": {
+      "category": "action",
+      "name": "Przymus (Coerce)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-poszukiwanie",
+    "text": "Poszukiwanie (Search) [eksploracja]: Przeszukujesz obszar w poszukiwaniu ukrytych drzwi, pułapek, skrytek i innych sekretów. Poruszasz się o połowę Szybkości. MG wykonuje sekretne sprawdziany Percepcji, gdy wchodzisz w nowy obszar. Sukces pozwala zauważyć ukryte elementy.",
+    "metadata": {
+      "category": "action",
+      "name": "Poszukiwanie (Search)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-badanie",
+    "text": "Badanie (Investigate) [eksploracja]: Skupiasz się na badaniu otoczenia lub zagadki. Poruszasz się o połowę Szybkości, wykonując sprawdziany odpowiedniej umiejętności (Percepcja, Wiedza, itp.) za każdym razem, gdy napotkasz coś godnego uwagi. MG określa, jakie informacje możesz uzyskać.",
+    "metadata": {
+      "category": "action",
+      "name": "Badanie (Investigate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-tropienie",
+    "text": "Tropienie (Track) [eksploracja]: Cecha: koncentracja. Podążasz za śladami stworzenia sprawdzianem Przetrwania. ST zależy od terenu i wieku śladów. Poruszasz się o połowę Szybkości. Sukces: podążasz za tropem. Porażka: tracisz trop i musisz szukać na nowo.",
+    "metadata": {
+      "category": "action",
+      "name": "Tropienie (Track)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-obrona",
+    "text": "Obrona (Defend) [eksploracja]: Trzymasz tarczę podniesioną i pozostajesz czujny na atak. Jeśli inicjatywa jest rzucana, zaczynasz walkę z podniesioną tarczą. Poruszasz się o połowę Szybkości.",
+    "metadata": {
+      "category": "action",
+      "name": "Obrona (Defend)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-wykrywanie-magii",
+    "text": "Wykrywanie Magii (Detect Magic) [eksploracja]: Cecha: koncentracja. Skupiasz się na wykrywaniu aur magicznych w otoczeniu. Poruszasz się o połowę Szybkości. MG wykonuje sekretne sprawdziany w miarę poruszania się. Wykrywasz obecność magii, choć identyfikacja wymaga osobnej akcji.",
+    "metadata": {
+      "category": "action",
+      "name": "Wykrywanie Magii (Detect Magic)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-harcowanie",
+    "text": "Harcowanie (Scout) [eksploracja]: Poruszasz się na przedzie grupy, obserwując zagrożenia. Jeśli inicjatywa jest rzucana, ty i sojusznicy zyskują bonus okolicznościowy +1 do inicjatywy. Poruszasz się o połowę Szybkości.",
+    "metadata": {
+      "category": "action",
+      "name": "Harcowanie (Scout)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-unikanie-zauwazenia",
+    "text": "Unikanie Zauważenia (Avoid Notice) [eksploracja]: Poruszasz się dyskretnie, próbując nie zostać wykrytym. Jeśli inicjatywa jest rzucana, używasz sprawdzianu Skradania zamiast Percepcji. Poruszasz się o połowę Szybkości. Musisz mieć osłonę lub ukrycie, by pozostać niewykrytym.",
+    "metadata": {
+      "category": "action",
+      "name": "Unikanie Zauważenia (Avoid Notice)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-reaktywny-atak",
+    "text": "Reaktywny Atak (Reactive Strike) [reakcja]: Wyzwalacz: stworzenie w twoim zasięgu używa akcji manipulacji lub ruchu, wykonuje atak dystansowy, lub opuszcza pole, które graniczy z twoim. Wykonujesz Atak wręcz przeciw wyzwalającemu stworzeniu. Jeśli akcją wyzwalającą była manipulacja, celna przerwa zakłóca tę akcję. Tylko niektóre klasy mają tę reakcję (np. wojownik).",
+    "metadata": {
+      "category": "action",
+      "name": "Reaktywny Atak (Reactive Strike)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-blok-tarcza",
+    "text": "Blok Tarczą (Shield Block) [reakcja]: Wyzwalacz: Będąc z podniesioną tarczą, otrzymujesz obrażenia fizyczne. Wstawiasz tarczę, by zredukować obrażenia o Twardość tarczy. Tarcza i ty otrzymujecie resztę obrażeń. Jeśli obrażenia przekroczą Próg Złamania tarczy, tarcza jest uszkodzona lub zniszczona.",
+    "metadata": {
+      "category": "action",
+      "name": "Blok Tarczą (Shield Block)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "action-chwytanie-krawedzi",
+    "text": "Chwytanie Krawędzi (Grab an Edge) [reakcja]: Wyzwalacz: spadasz z krawędzi lub przechodzisz obok krawędzi podczas upadku. Wykonaj sprawdzian Otuchy lub Akrobatyki (ST zależy od powierzchni). Sukces: łapiesz się krawędzi, zatrzymując upadek. Musisz mieć wolną rękę lub odpowiednie zdolności do chwycenia się.",
+    "metadata": {
+      "category": "action",
+      "name": "Chwytanie Krawędzi (Grab an Edge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-leczenie",
+    "text": "Leczenie (Heal) [1-3 akcje, rang 1+]: Tradycje: boska, pradawna. 1 akcja: dotyk, leczy 1k8+mod HP na rang. 2 akcje: zasięg 30 stóp, 1k8+mod na rang. 3 akcje: emanacja 30 stóp, 1k8+mod na rang dla sojuszników. Heightened: +1k8 za każdy poziom powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Leczenie (Heal)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-tarcza",
+    "text": "Tarcza (Shield) [1 akcja, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna. Czas trwania: do początku twojej następnej tury. Tworzysz magiczną tarczę — zyskujesz bonus okolicznościowy +1 do KP. Możesz użyć Bloku Tarczą z tą tarczą (Twardość 5). Jeśli blokujesz, zaklęcie się kończy. Heightened (3. rang): Twardość 10. Heightened (5. rang): Twardość 15.",
+    "metadata": {
+      "category": "spell",
+      "name": "Tarcza (Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-magiczny-pocisk",
+    "text": "Magiczny Pocisk (Magic Missile) [1-3 akcje, rang 1+]: Tradycje: tajemna, okultystyczna. 1 akcja: wysyłasz pocisk energii siły — 1k4+1 obrażeń od siły, automatyczne trafienie (bez rzutu na atak). 2 akcje: 2 pociski. 3 akcje: 3 pociski. Każdy pocisk trafia niezależnie. Heightened: +1 pocisk za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Magiczny Pocisk (Magic Missile)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-kula-ognia",
+    "text": "Kula Ognia (Fireball) [2 akcje, rang 3]: Tradycje: tajemna, pradawna. Zasięg: 500 stóp. Obszar: eksplozja 20-stóp. Rzut obronny: podstawowy Odporność. Wyzwalasz eksplozję ognia zadającą 6k6 obrażeń od ognia wszystkim stworzeniom w obszarze. Heightened: +2k6 za każdy poziom powyżej 3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Kula Ognia (Fireball)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-lek",
+    "text": "Lęk (Fear) [2 akcje, rang 1]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Wpędzasz cel w strach. Porażka: przestraszony 2. Krytyczna porażka: przestraszony 3 i uciekający przez 1 rundę. Heightened (3. rang): celuje w do 5 stworzeń.",
+    "metadata": {
+      "category": "spell",
+      "name": "Lęk (Fear)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-niewidzialnosc",
+    "text": "Niewidzialność (Invisibility) [2 akcje, rang 2]: Tradycje: tajemna, okultystyczna. Dotyk, 1 stworzenie. Czas trwania: 10 minut. Cel staje się niewidzialny wraz z ekwipunkiem. Zaklęcie kończy się, gdy cel wykona wrogą akcję. Heightened (4. rang): czas trwania 1 minuta, ale nie kończy się przy wrogich akcjach (pełna niewidzialność).",
+    "metadata": {
+      "category": "spell",
+      "name": "Niewidzialność (Invisibility)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-rozproszenie-magii",
+    "text": "Rozproszenie Magii (Dispel Magic) [2 akcje, rang 2]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 120 stóp. Cel: 1 zaklęcie lub efekt magiczny. Wykonaj kontratakujący sprawdzian (twój mod rzucania zaklęć + rzut k20) przeciw ST zaklęcia. Sukces: zaklęcie zostaje rozwiane.",
+    "metadata": {
+      "category": "spell",
+      "name": "Rozproszenie Magii (Dispel Magic)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-piorun",
+    "text": "Piorun (Lightning Bolt) [2 akcje, rang 3]: Tradycje: tajemna, pradawna. Obszar: linia 120 stóp. Rzut obronny: podstawowy Odporność. Wystrzeliwujesz piorun w linii prostej, zadając 4k12 obrażeń od elektryczności wszystkim w linii. Heightened: +1k12 za każdy poziom powyżej 3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Piorun (Lightning Bolt)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przyspieszenie",
+    "text": "Przyspieszenie (Haste) [2 akcje, rang 3]: Tradycje: tajemna, okultystyczna, pradawna. Zasięg: 30 stóp. Cel: 1 sojusznik. Czas trwania: 1 minuta. Cel zyskuje dodatkową akcję na każdą turę, której może użyć wyłącznie na Ruch lub Atak.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przyspieszenie (Haste)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-spowolnienie",
+    "text": "Spowolnienie (Slow) [2 akcje, rang 3]: Tradycje: tajemna, okultystyczna, pradawna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Czas trwania: 1 minuta. Porażka: cel traci 1 akcję na turę (ma 2 zamiast 3). Krytyczna porażka: cel ma tylko 1 akcję na turę. Heightened (6. rang): celuje w do 10 stworzeń.",
+    "metadata": {
+      "category": "spell",
+      "name": "Spowolnienie (Slow)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-lot",
+    "text": "Lot (Fly) [2 akcje, rang 4]: Tradycje: tajemna, okultystyczna, pradawna. Cel: ty. Czas trwania: 5 minut. Zyskujesz szybkość lotu równą twojej Szybkości lub 20 stóp (wyższa z dwóch). Gdy zaklęcie się kończy, spadasz — chyba że możesz użyć Podtrzymania.",
+    "metadata": {
+      "category": "spell",
+      "name": "Lot (Fly)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-teleportacja",
+    "text": "Teleportacja (Teleport) [10 minut, rang 6]: Tradycje: tajemna, okultystyczna. Cel: do 4 chętnych stworzeń w dotyku + ty. Teleportujesz siebie i cele do znanej lokalizacji na tym samym kontynencie. Im lepiej znasz cel, tym dokładniejsza teleportacja. Nieznane miejsca mogą powodować odchylenie.",
+    "metadata": {
+      "category": "spell",
+      "name": "Teleportacja (Teleport)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-wskrzeszenie",
+    "text": "Wskrzeszenie (Raise Dead) [10 minut, rang 6]: Tradycje: boska. Zasięg: 10 stóp. Cel: 1 martwe stworzenie (14. poziomu lub niższe). Przywracasz cel do życia z 1 HP. Cel musi być martwy nie dłużej niż 3 dni. Cel zyskuje stan osłabiony 2 na 1 tydzień. Wymaga diamentów o wartości 200 sz.",
+    "metadata": {
+      "category": "spell",
+      "name": "Wskrzeszenie (Raise Dead)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mur-ognia",
+    "text": "Mur Ognia (Wall of Fire) [3 akcje, rang 4]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Czas trwania: 1 minuta. Tworzysz ścianę ognia (do 20 stóp wysokości, 120 stóp długości, 1 cal grubości). Stworzenia, które przejdą przez ścianę, otrzymują 4k6 obrażeń od ognia. Jedna strona muru (twój wybór) zadaje 1k6 obrażeń od ognia stworzeniom w zasięgu 10 stóp. Heightened: +1k6 za każdy poziom powyżej 4.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mur Ognia (Wall of Fire)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-sugestia",
+    "text": "Sugestia (Suggestion) [2 akcje, rang 4]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Czas trwania: zmienne. Sugerujesz rozsądne działanie. Porażka: cel wykonuje sugestię przez do 1 minuty. Krytyczna porażka: cel wykonuje sugestię przez pełny czas trwania. Oczywiście szkodliwe sugestie automatycznie zawodzą.",
+    "metadata": {
+      "category": "spell",
+      "name": "Sugestia (Suggestion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-oczarowanie",
+    "text": "Oczarowanie (Charm) [2 akcje, rang 1]: Tradycje: tajemna, okultystyczna, pradawna. Zasięg: 30 stóp. Cel: 1 humanoid. Rzut obronny: Wola. Czas trwania: 1 godzina. Porażka: cel traktuje cię jako przyjaznego znajomego. Zyskujesz bonus okolicznościowy +4 do sprawdzianów Dyplomacji wobec celu. Cel zyskuje bonus +4 do rzutu, jeśli ty lub twoi sojusznicy zaatakowaliście go. Po zakończeniu zaklęcia cel wie, że był oczarowany.",
+    "metadata": {
+      "category": "spell",
+      "name": "Oczarowanie (Charm)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-sen",
+    "text": "Sen (Sleep) [2 akcje, rang 1]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Obszar: eksplozja 5 stóp. Rzut obronny: Wola. Każde stworzenie w obszarze o 4. poziomie lub niższym jest dotknięte. Porażka: stworzenie zasypia (nieprzytomne). Krytyczna porażka: jak porażka, ale stworzenie nie budzi się przez 1 rundę. Głośny hałas lub obrażenia budzą cel.",
+    "metadata": {
+      "category": "spell",
+      "name": "Sen (Sleep)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mgla",
+    "text": "Mgła (Fog Cloud) [3 akcje, rang 2]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Obszar: eksplozja 20 stóp. Czas trwania: 1 minuta. Tworzysz gęstą chmurę mgły. Stworzenia wewnątrz i patrzące przez mgłę są ukryte (concealed). Wiatr może rozwiać mgłę.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mgła (Fog Cloud)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-obraz",
+    "text": "Obraz (Mirror Image) [2 akcje, rang 2]: Tradycje: tajemna, okultystyczna. Cel: ty. Czas trwania: 1 minuta. Tworzysz 3 iluzoryczne kopie siebie. Gdy zostaniesz trafiony atakiem, kopia może pochłonąć trafienie (MG rzuca k20: kopie są trafione na odpowiedni zakres). Trafiona kopia znika. Zaklęcie kończy się, gdy wszystkie kopie zostaną zniszczone.",
+    "metadata": {
+      "category": "spell",
+      "name": "Obraz (Mirror Image)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-rozmycie",
+    "text": "Rozmycie (Blur) [2 akcje, rang 2]: Tradycje: tajemna, okultystyczna. Cel: ty. Czas trwania: 1 minuta. Twój wygląd staje się rozmazany. Jesteś ukryty (concealed) — atakujący muszą przejść sprawdzian ukrycia ST 5 (na k20, porażka = pudło) za każdym razem, gdy cię celują.",
+    "metadata": {
+      "category": "spell",
+      "name": "Rozmycie (Blur)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mroczna-wizja",
+    "text": "Mroczna Wizja (Darkvision) [2 akcje, rang 2]: Tradycje: tajemna, boska, okultystyczna, pradawna. Cel: 1 chętne stworzenie. Czas trwania: 1 godzina. Cel zyskuje ciemne widzenie — widzi w ciemności jak w jasnym świetle (ale w czerni i bieli). Heightened (3. rang): celuje w do 5 stworzeń.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mroczna Wizja (Darkvision)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-widzenie-niewidzialnego",
+    "text": "Widzenie Niewidzialnego (See Invisibility) [2 akcje, rang 2]: Tradycje: tajemna, boska, okultystyczna. Cel: ty. Czas trwania: 10 minut. Widzisz niewidzialne stworzenia i przedmioty jako półprzezroczyste kształty. Są one ukryte (concealed) przed tobą, ale nie niewidoczne.",
+    "metadata": {
+      "category": "spell",
+      "name": "Widzenie Niewidzialnego (See Invisibility)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-wiadomosc",
+    "text": "Wiadomość (Message) [1 akcja, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 120 stóp. Cel: 1 stworzenie. Szepczesz wiadomość, którą słyszy tylko cel. Cel może ci odpowiedzieć szeptem. Inne stworzenia mogą wykryć czar sprawdzianem Percepcji.",
+    "metadata": {
+      "category": "spell",
+      "name": "Wiadomość (Message)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-swiatlo",
+    "text": "Światło (Light) [2 akcje, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: dotyk. Cel: 1 przedmiot. Czas trwania: do następnego codziennego przygotowania. Przedmiot emituje jasne światło w promieniu 20 stóp i przyćmione światło w kolejnych 20 stopach. Heightened (4. rang): jasne światło 60 stóp.",
+    "metadata": {
+      "category": "spell",
+      "name": "Światło (Light)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-taniec-swiatel",
+    "text": "Taniec Świateł (Dancing Lights) [2 akcje, czar 1 rangi]: Tradycje: tajemna, okultystyczna, pradawna. Zasięg: 120 stóp. Czas trwania: podtrzymanie. Tworzysz do 4 świateł w promieniu 10 stóp od siebie. Każde światło emituje przyćmione światło w promieniu 10 stóp. Przy każdym Podtrzymaniu możesz przesunąć światła o 60 stóp.",
+    "metadata": {
+      "category": "spell",
+      "name": "Taniec Świateł (Dancing Lights)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-prestidigitacja",
+    "text": "Prestidigitacja (Prestidigitation) [2 akcje, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 10 stóp. Czas trwania: podtrzymanie. Wykonujesz drobne magiczne sztuczki: zapalasz lub gasisz świecę, czyścisz brud, podgrzewasz lub chłodzisz jedzenie, tworzysz drobne efekty sensoryczne. Bez praktycznego zastosowania bojowego.",
+    "metadata": {
+      "category": "spell",
+      "name": "Prestidigitacja (Prestidigitation)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-detekcja-magii",
+    "text": "Detekcja Magii (Detect Magic) [2 akcje, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna, pradawna. Obszar: emanacja 30 stóp. Wykrywasz obecność magii w obszarze. Nie identyfikujesz natury magii, tylko jej obecność i lokalizację. Heightened (3. rang): emanacja 60 stóp. Heightened (5. rang): emanacja 120 stóp, wykrywasz też tradycję magii.",
+    "metadata": {
+      "category": "spell",
+      "name": "Detekcja Magii (Detect Magic)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-odczytanie-aury",
+    "text": "Odczytanie Aury (Read Aura) [1 minuta, czar 1 rangi]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 30 stóp. Cel: 1 przedmiot. Odczytujesz aurę magiczną przedmiotu, dowiadując się, czy jest magiczny, i identyfikujesz tradycje magii, z których korzysta. Nie dowiadujesz się, jakie to zaklęcie.",
+    "metadata": {
+      "category": "spell",
+      "name": "Odczytanie Aury (Read Aura)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-elektryczny-luk",
+    "text": "Elektryczny Łuk (Electric Arc) [2 akcje, czar 1 rangi]: Tradycje: tajemna, pradawna. Zasięg: 30 stóp. Cel: 1-2 stworzenia. Rzut obronny: podstawowy Odporność. Łuk elektryczności przeskakuje między celami, zadając 1k4+mod obrażeń od elektryczności. Heightened: +1k4 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Elektryczny Łuk (Electric Arc)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-promien-mrozu",
+    "text": "Promień Mrozu (Ray of Frost) [2 akcje, czar 1 rangi]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Cel: 1 stworzenie. Rzut na atak. Wysyłasz promień mrozu. Trafienie: 1k4+mod obrażeń od zimna. Krytyczne trafienie: podwójne obrażenia. Heightened: +1k4 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Promień Mrozu (Ray of Frost)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-trucizna",
+    "text": "Trucizna (Poison Spray) [2 akcje, czar 1 rangi]: Tradycje: tajemna, pradawna. Obszar: stożek 15 stóp. Rzut obronny: podstawowy Wytrzymałość. Rozpylasz trującą mgłę zadającą 1k6+mod obrażeń od trucizny. Heightened: +1k6 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Trucizna (Poison Spray)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ciernie",
+    "text": "Ciernie (Entangle) [2 akcje, rang 2]: Tradycje: pradawna. Zasięg: 120 stóp. Obszar: eksplozja 20 stóp. Czas trwania: 1 minuta. Teren w obszarze staje się trudny z powodu chwytających roślin. Stworzenie, które zacznie turę w obszarze, musi zdać rzut Otuchy lub staje się unieruchomione. Może się uwolnić akcją Ucieczka.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ciernie (Entangle)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-blogoslawienstwo",
+    "text": "Błogosławieństwo (Bless) [2 akcje, rang 1]: Tradycje: boska, okultystyczna. Obszar: emanacja 5 stóp. Czas trwania: 1 minuta. Ty i sojusznicy w obszarze zyskujecie bonus statusu +1 do rzutów na atak. Sojusznik traci bonus, gdy opuści obszar. Heightened (intensyfikacja do rang wyższych nie zmienia efektu — większa emanacja w wariantach MG).",
+    "metadata": {
+      "category": "spell",
+      "name": "Błogosławieństwo (Bless)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-klatwa",
+    "text": "Klątwa (Bane) [2 akcje, rang 1]: Tradycje: boska, okultystyczna. Obszar: emanacja 5 stóp. Czas trwania: 1 minuta. Wrogowie w obszarze otrzymują karę statusu -1 do rzutów na atak. Wróg traci karę, gdy opuści obszar.",
+    "metadata": {
+      "category": "spell",
+      "name": "Klątwa (Bane)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-tarcza-wiary",
+    "text": "Tarcza Wiary (Shield of Faith) [2 akcje, rang 1]: Tradycje: boska. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 1 minuta. Cel zyskuje bonus statusu +1 do KP. Heightened (3. rang): bonus +2 do KP.",
+    "metadata": {
+      "category": "spell",
+      "name": "Tarcza Wiary (Shield of Faith)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-duchowy-orez",
+    "text": "Duchowy Oręż (Spiritual Weapon) [2 akcje, rang 2]: Tradycje: boska, okultystyczna. Zasięg: 120 stóp. Czas trwania: podtrzymanie. Przywołujesz duchową broń, która atakuje wrogów. Broń wykonuje atak wręcz z twoim modyfikatorem rzucania zaklęć, zadając 1k8 obrażeń od siły. Przy Podtrzymaniu: broń atakuje ponownie i może się przesunąć o 10 stóp. Heightened: +1k8 za każde 2 rangi powyżej 2.",
+    "metadata": {
+      "category": "spell",
+      "name": "Duchowy Oręż (Spiritual Weapon)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ognista-kula",
+    "text": "Ognista Kula (Produce Flame) [2 akcje, czar 1 rangi]: Tradycje: tajemna, pradawna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut na atak. Ciskasz kulą ognia. Trafienie: 1k4+mod obrażeń od ognia. Krytyczne trafienie: podwójne obrażenia i cel płonie 1k4 trwałych obrażeń od ognia. Heightened: +1k4 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ognista Kula (Produce Flame)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-piekielny-ogien",
+    "text": "Piekielny Ogień (Hellfire) [2 akcje, rang 5]: Tradycje: boska. Zasięg: 120 stóp. Obszar: eksplozja 20 stóp. Rzut obronny: podstawowy Odporność. Wzywasz ogień piekielny zadający 6k6 obrażeń od ognia i 2k6 obrażeń od zła (lub wyłożenia, obchodzące odporność na ogień). Heightened: +1k6 ognia za każdy poziom powyżej 5.",
+    "metadata": {
+      "category": "spell",
+      "name": "Piekielny Ogień (Hellfire)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-leczenie-grupowe",
+    "text": "Leczenie Grupowe (Heal — wariant 3-akcyjny, rang 1+): Tradycje: boska, pradawna. 3 akcje: emanacja 30 stóp. Leczy 1k8+mod HP wszystkim sojusznikom w obszarze. Jednocześnie zadaje 1k8+mod obrażeń od pozytywnej energii niemartwym wrogom (podstawowy rzut Wytrzymałości). Heightened: +1k8 za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Leczenie Grupowe (Heal area)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ochrona",
+    "text": "Ochrona (Protection) [2 akcje, rang 1]: Tradycje: boska, okultystyczna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 1 minuta. Cel zyskuje bonus statusu +1 do rzutów obronnych. Heightened (3. rang): bonus +2.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ochrona (Protection)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-wiatr",
+    "text": "Wiatr (Gust of Wind) [2 akcje, rang 1]: Tradycje: tajemna, pradawna. Obszar: linia 60 stóp. Rzut obronny: Wytrzymałość. Silny podmuch wiatru. Porażka: stworzenia Małe lub mniejsze są odrzucone o 5 stóp i leżące. Środkowe stworzenia muszą zatrzymać się. Rozwiewuje mgły, gazy i inne efekty powietrzne. Heightened (3. rang): siła wiatru wzrasta, wpływa na Średnie stworzenia.",
+    "metadata": {
+      "category": "spell",
+      "name": "Wiatr (Gust of Wind)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ciemnosc",
+    "text": "Ciemność (Darkness) [3 akcje, rang 2]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: 120 stóp. Obszar: eksplozja 20 stóp. Czas trwania: 1 minuta. Tworzysz magiczną ciemność w obszarze. Nie-magiczne źródła światła nie działają w ciemności. Stworzenia bez ciemnego widzenia nie widzą. Heightened (4. rang): ciemność tłumi magiczne światło niższej rangi.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ciemność (Darkness)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-cisza",
+    "text": "Cisza (Silence) [2 akcje, rang 2]: Tradycje: boska, okultystyczna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 1 minuta. Cel nie wydaje żadnych dźwięków, włącznie z mową. Cel nie może używać akcji ze znacznikiem słuchowy ani rzucać zaklęć z komponentem werbalnym. Jest też niewykrywalny słuchowo.",
+    "metadata": {
+      "category": "spell",
+      "name": "Cisza (Silence)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-strefa-prawdy",
+    "text": "Strefa Prawdy (Zone of Truth) [2 akcje, rang 3]: Tradycje: boska, okultystyczna. Obszar: eksplozja 20 stóp. Czas trwania: 10 minut. Rzut obronny: Wola. Stworzenia w obszarze muszą mówić prawdę. Porażka: cel nie może świadomie kłamać. Sukces: cel jest odporny. Cel wie, że jest w strefie. Cel może unikać odpowiedzi lub być wymijający, ale nie może kłamać.",
+    "metadata": {
+      "category": "spell",
+      "name": "Strefa Prawdy (Zone of Truth)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-transmutacja-polimorf",
+    "text": "Transmutacja / Polimorf (Pest Form / Animal Form / Humanoid Form / Dragon Form): Zaklęcia polimorficzne w PF2e należą do cechy polimorf. Ogólne zasady: zastępujesz swoje statystyki statystykami formy. Tracisz dostęp do większości swoich zdolności, ale zyskujesz ataki i zdolności formy. Nie możesz rzucać zaklęć w formie polimorficznej (chyba że masz specjalne zdolności). Heightened wersje dają silniejsze formy z lepszymi statystykami.",
+    "metadata": {
+      "category": "spell",
+      "name": "Transmutacja (Polymorph overview)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-forma-zwierzecia",
+    "text": "Forma Zwierzęcia (Animal Form) [2 akcje, rang 2]: Tradycje: pradawna. Czas trwania: 1 minuta. Przybierasz formę zwierzęcia (niedźwiedzia, byka, kota, jelenia, rekina, węża itp.). Zyskujesz ataki formy, tymczasowe HP, i specjalne zdolności (np. Zapach). Twój mod ataku to +9, obrażenia zależą od formy. Heightened (3-5. rang): silniejsze formy z lepszymi statystykami.",
+    "metadata": {
+      "category": "spell",
+      "name": "Forma Zwierzęcia (Animal Form)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-iluzja",
+    "text": "Iluzja (Illusory Object) [2 akcje, rang 1]: Tradycje: tajemna, okultystyczna. Zasięg: 500 stóp. Obszar: eksplozja 20 stóp. Czas trwania: 10 minut. Tworzysz iluzję wizualną nieruchomego obiektu. Stworzenie może Szukać (ST twojego zaklęcia), by rozpoznać iluzję. Nie wydaje dźwięków, zapachu ani nie reaguje dotykowo. Heightened (2. rang): dodaje dźwięk. Heightened (5. rang): dodaje wszystkie zmysły.",
+    "metadata": {
+      "category": "spell",
+      "name": "Iluzja (Illusory Object)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przywolanie-zwierzecia",
+    "text": "Przywołanie Zwierzęcia (Summon Animal) [3 akcje, rang 1]: Tradycje: pradawna. Zasięg: 30 stóp. Czas trwania: podtrzymanie. Przywołujesz stworzenie o poziomie równym -1 lub niższe. Stworzenie działa w twojej turze, gdy Podtrzymujesz zaklęcie, i ma 2 akcje. Heightened: +1 maksymalny poziom stworzenia za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przywołanie Zwierzęcia (Summon Animal)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przywolanie-konstruktu",
+    "text": "Przywołanie Konstruktu (Summon Construct) [3 akcje, rang 1]: Tradycje: tajemna. Zasięg: 30 stóp. Czas trwania: podtrzymanie. Przywołujesz konstrukt o poziomie -1 lub niższe. Działa przy Podtrzymaniu, ma 2 akcje na turę. Heightened: +1 maksymalny poziom za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przywołanie Konstruktu (Summon Construct)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przywolanie-nieumarłego",
+    "text": "Przywołanie Nieumarłego (Summon Undead) [3 akcje, rang 1]: Tradycje: boska, okultystyczna. Zasięg: 30 stóp. Czas trwania: podtrzymanie. Przywołujesz nieumarłego o poziomie -1 lub niższe. Działa przy Podtrzymaniu, ma 2 akcje na turę. Heightened: +1 maksymalny poziom za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przywołanie Nieumarłego (Summon Undead)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-uzdrowienie-choroby",
+    "text": "Uzdrowienie Choroby (Remove Disease) [10 minut, rang 3]: Tradycje: boska, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Próbujesz usunąć chorobę z celu. Wykonaj kontratakujący sprawdzian przeciw ST choroby. Sukces: choroba jest usunięta.",
+    "metadata": {
+      "category": "spell",
+      "name": "Uzdrowienie Choroby (Remove Disease)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-neutralizacja-trucizny",
+    "text": "Neutralizacja Trucizny (Neutralize Poison) [2 akcje, rang 3]: Tradycje: boska, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Próbujesz zneutralizować truciznę w celu. Wykonaj kontratakujący sprawdzian przeciw ST trucizny. Sukces: trucizna jest zneutralizowana.",
+    "metadata": {
+      "category": "spell",
+      "name": "Neutralizacja Trucizny (Neutralize Poison)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przywrocenie",
+    "text": "Przywrócenie (Restoration) [1 minuta, rang 2]: Tradycje: boska, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Usuwasz stany z celu. Rang 2: usuwasz 1 poziom osłabienia (enfeebled) lub obezwładnienia (clumsy), lub 1 chorobę, lub 1 poziom wycieńczenia (drained). Heightened: za wyższe rangi usuwasz silniejsze efekty.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przywrócenie (Restoration)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-odpornosc",
+    "text": "Odporność (Resist Energy) [2 akcje, rang 2]: Tradycje: tajemna, boska, okultystyczna, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Czas trwania: 10 minut. Cel zyskuje odporność 5 na wybrany typ energii (ogień, zimno, elektryczność, kwas lub dźwięk). Heightened (4. rang): odporność 10. Heightened (7. rang): odporność 15.",
+    "metadata": {
+      "category": "spell",
+      "name": "Odporność (Resist Energy)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-oswiecenie",
+    "text": "Oświecenie (Heroism) [2 akcje, rang 3]: Tradycje: boska, okultystyczna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 10 minut. Cel zyskuje bonus statusu +1 do rzutów na atak, Percepcji i rzutów obronnych, oraz sprawdzianów umiejętności. Heightened (6. rang): bonus +2. Heightened (9. rang): bonus +3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Oświecenie (Heroism)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-swoboda-ruchu",
+    "text": "Swoboda Ruchu (Freedom of Movement) [2 akcje, rang 4]: Tradycje: tajemna, boska, pradawna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 10 minut. Cel ignoruje trudny teren i nie może być chwycony, unieruchomiony ani spowolniony przez magiczne efekty niższej rangi. Zyskuje bonus statusu +4 do Ucieczki.",
+    "metadata": {
+      "category": "spell",
+      "name": "Swoboda Ruchu (Freedom of Movement)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-kamieniana-skora",
+    "text": "Kamienna Skóra (Stoneskin) [2 akcje, rang 4]: Tradycje: tajemna, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Czas trwania: 20 minut. Cel zyskuje odporność 5 na obrażenia fizyczne (z wyjątkiem adamantynowych). Heightened (6. rang): odporność 10. Heightened (8. rang): odporność 15.",
+    "metadata": {
+      "category": "spell",
+      "name": "Kamienna Skóra (Stoneskin)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mur-wiatru",
+    "text": "Mur Wiatru (Wall of Wind) [3 akcje, rang 3]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Czas trwania: 1 minuta. Tworzysz ścianę silnego wiatru (do 60 stóp długości, 30 stóp wysokości). Ataki dystansowe przechodzące przez ścianę mają -2 okolicznościowy do trafienia. Małe latające stworzenia nie mogą przejść. Rozwiewuje mgły i gazy.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mur Wiatru (Wall of Wind)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mur-lodu",
+    "text": "Mur Lodu (Wall of Ice) [3 akcje, rang 5]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Czas trwania: 1 minuta. Tworzysz lodową ścianę (do 15 stóp wysokości, 60 stóp długości). Każdy 10-stopowy odcinek ma 30 HP i odporność na ogień 10. Stworzenie przechodzące przez ścianę otrzymuje 2k6 obrażeń od zimna. Heightened: +5 HP na odcinek i +1k6 zimna za każdy rang powyżej 5.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mur Lodu (Wall of Ice)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-zyczenie",
+    "text": "Życzenie (Wish) [3 akcje, rang 10]: Tradycje: tajemna. Najbardziej potężne zaklęcie. Duplikuje dowolne zaklęcie tajemne 9. rangi lub niższe, lub dowolne zaklęcie innej tradycji 7. rangi lub niższe. MG może pozwolić na inne efekty na swoje uznanie. Życzenia wykraczające poza duplikację zaklęć mogą mieć nieprzewidywalne konsekwencje.",
+    "metadata": {
+      "category": "spell",
+      "name": "Życzenie (Wish)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-zmiana-ksztaltu",
+    "text": "Zmiana Kształtu (Humanoid Form) [2 akcje, rang 2]: Tradycje: tajemna, okultystyczna. Czas trwania: 10 minut. Przybierasz formę humanoidalną Małego lub Średniego rozmiaru. Zyskujesz wygląd konkretnego humanoidalnego stworzenia lub ogólny wygląd wybranego ancestry. Zachowujesz swoje statystyki, ale wygląd zmienia się. Nie oszukuje dotyku ani szczegółowej inspekcji.",
+    "metadata": {
+      "category": "spell",
+      "name": "Zmiana Kształtu (Humanoid Form)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-krag-ochrony",
+    "text": "Krąg Ochrony (Circle of Protection) [3 akcje, rang 3]: Tradycje: boska, okultystyczna. Obszar: emanacja 10 stóp wokół ciebie. Czas trwania: 1 minuta. Sojusznicy w kręgu zyskują bonus statusu +1 do KP i rzutów obronnych przeciw stworzeniom o wybranym cechowaniu (np. byt, fiend, undead). Heightened (4. rang): bonus +2.",
+    "metadata": {
+      "category": "spell",
+      "name": "Krąg Ochrony (Circle of Protection)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-wymiarowe-drzwi",
+    "text": "Wymiarowe Drzwi (Dimension Door) [2 akcje, rang 4]: Tradycje: tajemna, okultystyczna. Zasięg: 120 stóp. Teleportujesz się natychmiastowo do widocznego punktu w zasięgu. Heightened (5. rang): zasięg 1 mila i możesz zabrać 1 chętne stworzenie w dotyku.",
+    "metadata": {
+      "category": "spell",
+      "name": "Wymiarowe Drzwi (Dimension Door)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-regeneracja",
+    "text": "Regeneracja (Regenerate) [2 akcje, rang 7]: Tradycje: boska, pradawna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 1 minuta. Cel regeneruje 15 HP na początku każdej swojej tury. Utracone kończyny odrastają po 10 minutach. Heightened (9. rang): regeneracja 20 HP na turę.",
+    "metadata": {
+      "category": "spell",
+      "name": "Regeneracja (Regenerate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-mur-sily",
+    "text": "Mur Siły (Wall of Force) [3 akcje, rang 6]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Czas trwania: 1 minuta. Tworzysz niewidzialną ścianę z czystej siły (do 50 stóp długości, 20 stóp wysokości). Ściana jest niezniszczalna dla fizycznych ataków i większości zaklęć. Tylko Rozproszenie Magii (rang 6+) lub Dezintegracja mogą ją zniszczyć.",
+    "metadata": {
+      "category": "spell",
+      "name": "Mur Siły (Wall of Force)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-dezintegracja",
+    "text": "Dezintegracja (Disintegrate) [2 akcje, rang 6]: Tradycje: tajemna. Zasięg: 120 stóp. Cel: 1 stworzenie lub przedmiot. Rzut obronny: Wytrzymałość. Zielony promień dezintegruje cel. Trafienie: 12k10 obrażeń. Krytyczna porażka w rzucie: cel o 0 HP zostaje całkowicie dezintegrowany (nie może być wskrzeszony poza Życzeniem). Heightened: +2k10 za każdy rang powyżej 6.",
+    "metadata": {
+      "category": "spell",
+      "name": "Dezintegracja (Disintegrate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-lanca-swiata",
+    "text": "Łańcuch Piorunów (Chain Lightning) [2 akcje, rang 6]: Tradycje: tajemna, pradawna. Zasięg: 500 stóp. Cel: 1 stworzenie, następnie przeskakuje na kolejne cele. Rzut obronny: podstawowy Odporność. Zadaje 8k12 obrażeń od elektryczności pierwszemu celowi, następnie przeskakuje na kolejne (do 4 dodatkowych celów, każdy w odległości 30 stóp od poprzedniego). Heightened: +1k12 za każdy rang powyżej 6.",
+    "metadata": {
+      "category": "spell",
+      "name": "Łańcuch Piorunów (Chain Lightning)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-prawdziwe-widzenie",
+    "text": "Prawdziwe Widzenie (True Seeing) [2 akcje, rang 6]: Tradycje: tajemna, boska, okultystyczna, pradawna. Cel: ty. Czas trwania: 10 minut. Widzisz przez iluzje, polimorfie, transmutacje i niewidzialność. Automatycznie otrzymujesz wynik krytycznego sukcesu na sprawdzianach nieufności wobec iluzji.",
+    "metadata": {
+      "category": "spell",
+      "name": "Prawdziwe Widzenie (True Seeing)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-widmowa-dlom",
+    "text": "Widmowa Dłoń (Mage Hand) [2 akcje, czar 1 rangi]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Czas trwania: podtrzymanie. Tworzysz widmową dłoń, która może podnosić, przesuwać i manipulować przedmiotami o wadze do 5 funtów. Przy Podtrzymaniu możesz przesunąć dłoń o 20 stóp i wykonać nową Interakcję.",
+    "metadata": {
+      "category": "spell",
+      "name": "Widmowa Dłoń (Mage Hand)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-lodowy-sztorm",
+    "text": "Lodowy Sztorm (Cone of Cold) [2 akcje, rang 5]: Tradycje: tajemna, pradawna. Obszar: stożek 60 stóp. Rzut obronny: podstawowy Odporność. Wyzwalasz falę mrozu zadającą 12k6 obrażeń od zimna. Heightened: +2k6 za każdy rang powyżej 5.",
+    "metadata": {
+      "category": "spell",
+      "name": "Lodowy Sztorm (Cone of Cold)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-chmura-smierci",
+    "text": "Chmura Śmierci (Cloudkill) [3 akcje, rang 5]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Obszar: eksplozja 20 stóp. Czas trwania: 1 minuta. Tworzysz trującą chmurę. Stworzenia w chmurze na początku swojej tury muszą zdać rzut Wytrzymałości lub otrzymują 6k8 obrażeń od trucizny. Chmura przesuwa się o 10 stóp od ciebie w każdej twojej turze. Heightened: +1k8 za każdy rang powyżej 5.",
+    "metadata": {
+      "category": "spell",
+      "name": "Chmura Śmierci (Cloudkill)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-boski-plomien",
+    "text": "Boski Płomień (Divine Lance) [2 akcje, czar 1 rangi]: Tradycje: boska. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut na atak. Ciskasz boskim ogniem zgodnym z twoim bóstwem. Trafienie: 1k4+mod obrażeń (typ zależy od bóstwa: ogień, dobro, zło, prawo, chaos). Heightened: +1k4 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Boski Płomień (Divine Lance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-szybkie-leczenie",
+    "text": "Szybkie Leczenie (Soothe) [2 akcje, rang 1]: Tradycje: okultystyczna. Zasięg: 30 stóp. Cel: 1 chętne stworzenie. Czas trwania: 1 minuta. Leczy 1k10+4 HP i daje celowi bonus statusu +2 do rzutów obronnych przeciw efektom z cechą mentalna przez czas trwania. Heightened: +1k10+4 za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Szybkie Leczenie (Soothe)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-meteor",
+    "text": "Rój Meteorów (Meteor Swarm) [2 akcje, rang 9]: Tradycje: tajemna, pradawna. Zasięg: 500 stóp. Obszar: 4 eksplozje 40 stóp (mogą się nakładać). Rzut obronny: podstawowy Odporność. Cztery ogniste meteory uderzają w ziemię, każdy zadając 6k10 obrażeń od uderzenia i 14k6 obrażeń od ognia.",
+    "metadata": {
+      "category": "spell",
+      "name": "Rój Meteorów (Meteor Swarm)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przerażenie",
+    "text": "Przerażenie (Phantasmal Killer) [2 akcje, rang 4]: Tradycje: tajemna, okultystyczna. Zasięg: 120 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Tworzysz iluzoryczną manifestację najgorszych lęków celu. Porażka: 8k6 obrażeń mentalnych i przestraszony 2. Krytyczna porażka: 12k6 obrażeń, przestraszony 4, cel ucieka przez 1 rundę. Przy 0 HP cel umiera ze strachu. Heightened: +2k6 za każdy rang powyżej 4.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przerażenie (Phantasmal Killer)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-obezwladnienie",
+    "text": "Obezwładnienie (Paralyze) [2 akcje, rang 3]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Czas trwania: zmienne. Porażka: cel jest sparaliżowany na 1 rundę. Krytyczna porażka: sparaliżowany na 4 rundy. Na końcu każdej tury cel może powtórzyć rzut. Heightened (7. rang): do 10 stworzeń.",
+    "metadata": {
+      "category": "spell",
+      "name": "Obezwładnienie (Paralyze)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-przewidywanie",
+    "text": "Jasnowidzenie (Clairvoyance) [1 minuta, rang 4]: Tradycje: tajemna, okultystyczna. Zasięg: 500 stóp. Czas trwania: 10 minut. Tworzysz niewidzialny czujnik w wybranym miejscu w zasięgu. Widzisz i słyszysz z lokalizacji czujnika. Stworzenia mogą wykryć czujnik sprawdzianem Percepcji przeciw ST twojego zaklęcia.",
+    "metadata": {
+      "category": "spell",
+      "name": "Jasnowidzenie (Clairvoyance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-polimorfia-baleful",
+    "text": "Złowroga Polimorfia (Baleful Polymorph) [2 akcje, rang 6]: Tradycje: tajemna, pradawna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wytrzymałość. Próbujesz zamienić cel w małe, bezbronne zwierzę. Porażka: cel jest zamieniony w wybrane zwierzę na 1 minutę. Krytyczna porażka: efekt trwały. Cel zachowuje umysł, ale traci zdolności fizyczne.",
+    "metadata": {
+      "category": "spell",
+      "name": "Złowroga Polimorfia (Baleful Polymorph)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-petryfikacja",
+    "text": "Petryfikacja (Flesh to Stone) [2 akcje, rang 6]: Tradycje: tajemna, pradawna. Zasięg: 120 stóp. Cel: 1 stworzenie. Rzut obronny: Wytrzymałość. Próbujesz zamienić cel w kamień. Porażka: cel jest spowolniony 1 i musi powtarzać rzuty na końcu każdej tury. Trzy kolejne porażki = petryfikacja trwała. Trzy sukcesy = efekt kończy się. Krytyczna porażka: natychmiastowa petryfikacja.",
+    "metadata": {
+      "category": "spell",
+      "name": "Petryfikacja (Flesh to Stone)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-sfera-telelokacji",
+    "text": "Telekinetyczny Pocisk (Telekinetic Projectile) [2 akcje, czar 1 rangi]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut na atak. Telekinetycznie ciskasz przedmiotem w celu. Trafienie: 1k6+mod obrażeń od uderzenia (typ zależy od przedmiotu). Heightened: +1k6 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Telekinetyczny Pocisk (Telekinetic Projectile)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-grom",
+    "text": "Grom (Sound Burst) [2 akcje, rang 2]: Tradycje: boska, okultystyczna. Zasięg: 30 stóp. Obszar: eksplozja 10 stóp. Rzut obronny: Wytrzymałość. Fala dźwięku zadaje 2k10 obrażeń od dźwięku. Porażka: ogłuszony 1. Krytyczna porażka: ogłuszony na 1 minutę. Heightened: +1k10 za każdy rang powyżej 2.",
+    "metadata": {
+      "category": "spell",
+      "name": "Grom (Sound Burst)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-splatanie",
+    "text": "Spętanie (Command) [2 akcje, rang 1]: Tradycje: tajemna, boska, okultystyczna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut obronny: Wola. Wydajesz pojedyncze polecenie (podejdź, uciekaj, upuść przedmiot, padnij, stój w miejscu). Porażka: cel wykonuje polecenie w swojej następnej turze. Heightened (5. rang): do 10 stworzeń.",
+    "metadata": {
+      "category": "spell",
+      "name": "Spętanie (Command)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-zaslona",
+    "text": "Zasłona (Veil) [2 akcje, rang 4]: Tradycje: tajemna, okultystyczna. Zasięg: 30 stóp. Cel: do 10 stworzeń. Czas trwania: 1 godzina. Zmieniasz wygląd celów, by wyglądały jak inne humanoidalne stworzenia tego samego rozmiaru. Obejmuje ubrania i ekwipunek. Stworzenia mogą rozpoznać iluzję sprawdzianem Percepcji przeciw ST zaklęcia.",
+    "metadata": {
+      "category": "spell",
+      "name": "Zasłona (Veil)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-budzenie-zmarłych",
+    "text": "Rozmowa ze Zmarłymi (Talking Corpse) [10 minut, rang 4]: Tradycje: boska, okultystyczna. Zasięg: dotyk. Cel: 1 martwe ciało. Zadajesz ciału do 3 pytań. Ciało odpowiada krótko na podstawie wiedzy, którą miało za życia. Odpowiedzi mogą być kryptyczne. Ciało może odmówić odpowiedzi.",
+    "metadata": {
+      "category": "spell",
+      "name": "Rozmowa ze Zmarłymi (Talking Corpse)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-morowy-dotyk",
+    "text": "Dotyk Wampira (Vampiric Touch) [2 akcje, rang 3]: Tradycje: tajemna, boska, okultystyczna. Zasięg: dotyk. Cel: 1 żywe stworzenie. Rzut obronny: Wytrzymałość. Wysysasz życiową energię z celu. Trafienie: 6k6 obrażeń od negatywnej energii. Zyskujesz tymczasowe HP równe połowie zadanych obrażeń. Heightened: +2k6 za każdy rang powyżej 3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Dotyk Wampira (Vampiric Touch)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-uderzenie-swietlistego",
+    "text": "Uderzenie Świetliste (Searing Light) [2 akcje, rang 3]: Tradycje: boska, pradawna. Zasięg: 120 stóp. Cel: 1 stworzenie. Rzut na atak. Promień ognistego światła. Trafienie: 5k6 obrażeń od ognia. Przeciw nieumarłym i piekielnym: 5k6 obrażeń od dobra (dodatkowe). Heightened: +1k6 za każdy rang powyżej 3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Uderzenie Świetliste (Searing Light)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ziemia-niczyja",
+    "text": "Trawienie Kwasem (Acid Splash) [2 akcje, czar 1 rangi]: Tradycje: tajemna, pradawna. Zasięg: 30 stóp. Cel: 1 stworzenie. Rzut na atak. Ciskasz kulą kwasu. Trafienie: 1d6+mod obrażeń od kwasu. Krytyczne trafienie: 1 trwałe obrażenie od kwasu i odpryskami 1 obrażenie od kwasu stworzeniom sąsiadującym. Heightened: +1k6 za każde 2 rangi powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Trawienie Kwasem (Acid Splash)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-wskrzeszanie-prawdziwe",
+    "text": "Prawdziwe Wskrzeszenie (True Resurrection) [rang 10, 1 godzina]: Tradycje: boska. Zasięg: 10 stóp. Przywracasz do życia stworzenie martwe od dowolnie długiego czasu. Cel odzyskuje pełne HP. Nie wymaga ciała — nawet całkowicie zniszczone stworzenie może być wskrzeszone. Wymaga diamentów o wartości 10 000 sz. Nie działa na stworzenia, które umarły ze starości.",
+    "metadata": {
+      "category": "spell",
+      "name": "Prawdziwe Wskrzeszenie (True Resurrection)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ochrona-przed-energia",
+    "text": "Ochrona przed Energią (Protection from Energy) [2 akcje, rang 3]: Tradycje: tajemna, boska, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Czas trwania: 10 minut. Cel zyskuje odporność 10 na wybrany typ energii (ogień, zimno, elektryczność, kwas lub dźwięk). Gdy zaklęcie pochłonie łącznie 40 obrażeń, kończy się. Heightened (4. rang): odporność 15, limit 60.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ochrona przed Energią (Protection from Energy)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-komunikat",
+    "text": "Przesłanie (Sending) [3 akcje, rang 5]: Tradycje: tajemna, boska, okultystyczna. Zasięg: nieograniczony (ten sam plan). Cel: 1 znane ci stworzenie. Wysyłasz krótką (25 słów) mentalną wiadomość do celu. Cel natychmiastowo ją otrzymuje i może odpowiedzieć 25 słowami.",
+    "metadata": {
+      "category": "spell",
+      "name": "Przesłanie (Sending)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-bieg-powietrzny",
+    "text": "Bieg Powietrzny (Air Walk) [2 akcje, rang 4]: Tradycje: boska, pradawna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 5 minut. Cel może chodzić po powietrzu jak po stałym gruncie. Porusza się normalną Szybkością (nie ma szybkości lotu). Jeśli zaklęcie się kończy w powietrzu, cel bezpiecznie opada 60 stóp na rundę.",
+    "metadata": {
+      "category": "spell",
+      "name": "Bieg Powietrzny (Air Walk)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-plaga-owadow",
+    "text": "Plaga Owadów (Insect Form → Pest Form) [2 akcje, rang 1]: Tradycje: pradawna. Cel: ty. Czas trwania: 10 minut. Przybierasz formę drobnego owada (mrówki, pszczoły, chrząszcza, itp.). Jesteś Drobny, zyskujesz szybkość lotu 20 stóp i stawasz się praktycznie niezauważalny. Nie możesz atakować w tej formie.",
+    "metadata": {
+      "category": "spell",
+      "name": "Forma Owada (Pest Form)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-zbroja-magiczna",
+    "text": "Magiczna Zbroja (Mystic Armor) [2 akcje, rang 1]: Tradycje: tajemna, boska, okultystyczna, pradawna. Cel: ty. Czas trwania: do następnego codziennego przygotowania. Zyskujesz bonus przedmiotowy +1 do KP (jeśli nie nosisz zbroi). Zaklęcie zastępuje potrzebę fizycznej zbroi. Heightened (4. rang): bonus +2. Heightened (7. rang): bonus +3.",
+    "metadata": {
+      "category": "spell",
+      "name": "Magiczna Zbroja (Mystic Armor)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-chod-po-wodzie",
+    "text": "Chód po Wodzie (Water Walk) [2 akcje, rang 2]: Tradycje: tajemna, boska, pradawna. Zasięg: dotyk. Cel: 1 chętne stworzenie. Czas trwania: 10 minut. Cel może chodzić po powierzchni wody (lub innej cieczy) jak po stałym gruncie. Cel nie zapada się nawet stojąc w miejscu.",
+    "metadata": {
+      "category": "spell",
+      "name": "Chód po Wodzie (Water Walk)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-oplecenie",
+    "text": "Oplecenie (Web) [3 akcje, rang 2]: Tradycje: tajemna. Zasięg: 30 stóp. Obszar: eksplozja 10 stóp. Czas trwania: 1 minuta. Wypełniasz obszar lepkimi sieciami. Teren w obszarze jest trudny. Stworzenia, które zaczną turę w sieci, muszą zdać rzut Otuchy lub staną się unieruchomione. Sieci są łatwopalne — ogień niszczy 5-stopowy odcinek w 1 rundę.",
+    "metadata": {
+      "category": "spell",
+      "name": "Oplecenie (Web)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-piorunujacy-cios",
+    "text": "Piorunujący Cios (Shocking Grasp) [2 akcje, rang 1]: Tradycje: tajemna, pradawna. Zasięg: dotyk. Cel: 1 stworzenie. Rzut na atak. Trafienie: 2k12 obrażeń od elektryczności. Cel noszący metalową zbroję otrzymuje bonus okolicznościowy +1 do trafienia i cel jest nieprzygotowany. Heightened: +1k12 za każdy rang powyżej 1.",
+    "metadata": {
+      "category": "spell",
+      "name": "Piorunujący Cios (Shocking Grasp)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-ogien-feniksa",
+    "text": "Ognisty Promień (Scorching Ray) [1-3 akcje, rang 2]: Tradycje: tajemna, pradawna. Zasięg: 60 stóp. 1 akcja: 1 promień, 2k6 ognia. 2 akcje: 2 promienie (mogą celować w to samo stworzenie lub różne). 3 akcje: 3 promienie. Każdy promień wymaga osobnego rzutu na atak. Heightened: +1k6 na promień za każde 2 rangi powyżej 2.",
+    "metadata": {
+      "category": "spell",
+      "name": "Ognisty Promień (Scorching Ray)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-upadek-piora",
+    "text": "Upadek Pióra (Feather Fall) [reakcja, rang 1]: Tradycje: tajemna, pradawna. Wyzwalacz: stworzenie w zasięgu 60 stóp spada. Cel: 1 spadające stworzenie. Spowalniasz upadek celu. Cel opada 60 stóp na rundę i nie otrzymuje obrażeń od upadku, dopóki zaklęcie trwa (do 1 minuty).",
+    "metadata": {
+      "category": "spell",
+      "name": "Upadek Pióra (Feather Fall)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-oddech-zycia",
+    "text": "Oddech Życia (Breath of Life) [reakcja, rang 5]: Tradycje: boska, pradawna. Wyzwalacz: stworzenie w zasięgu 60 stóp zostaje zredukowane do 0 HP. Cel: to stworzenie. Natychmiast przywracasz celowi 4d8 HP. Jeśli to wystarcza, by podnieść cel powyżej 0 HP, cel nie upada nieprzytomny. Heightened (6. rang): 5d8. Heightened (7. rang): 6d8.",
+    "metadata": {
+      "category": "spell",
+      "name": "Oddech Życia (Breath of Life)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "spell-jezyk",
+    "text": "Język (Tongues) [2 akcje, rang 5]: Tradycje: tajemna, boska, okultystyczna. Cel: 1 stworzenie. Czas trwania: 1 godzina. Cel rozumie i mówi wszystkimi językami. Heightened (7. rang): czas trwania 8 godzin.",
+    "metadata": {
+      "category": "spell",
+      "name": "Język (Tongues)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-potezny-atak",
+    "text": "Potężny Atak (Power Attack) [2 akcje, Wojownik 1]: Wykonujesz potężny atak bronią. Zadajesz dodatkową kostkę obrażeń broni (lub 2 dodatkowe kostki jeśli broń ma 2+ kostek). Liczy się jako 2 ataki przy obliczaniu kary wielokrotnych ataków.",
+    "metadata": {
+      "category": "feat",
+      "name": "Potężny Atak (Power Attack)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-blok-tarcza",
+    "text": "Blok Tarczą (Shield Block) [reakcja, Wojownik 1]: Kiedy otrzymujesz obrażenia od ataku fizycznego, możesz użyć tarczy aby zablokować cios. Tarcza absorbuje obrażenia równe swojej Twardości, a nadwyżka przechodzi na ciebie i na tarczę.",
+    "metadata": {
+      "category": "feat",
+      "name": "Blok Tarczą (Shield Block)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-nagly-szarz",
+    "text": "Nagły Szarż (Sudden Charge) [2 akcje, Wojownik 1]: Ruszasz z impetem na wroga. Wykonujesz podwójny Krok (Stride), a następnie atak wręcz. Pozwala szybko pokonać dystans i uderzyć w jednej turze bez kary wielokrotnych ataków za ruch.",
+    "metadata": {
+      "category": "feat",
+      "name": "Nagły Szarż (Sudden Charge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-reaktywny-atak",
+    "text": "Reaktywny Atak (Reactive Strike) [reakcja, Wojownik 1]: Gdy stworzenie w twoim zasięgu wykonuje akcję manipulowania, ruchu lub ataku dystansowego, możesz wykonać atak wręcz przeciwko niemu. To potężna zdolność kontrolowania pola bitwy.",
+    "metadata": {
+      "category": "feat",
+      "name": "Reaktywny Atak (Reactive Strike)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-zastraszajacy-cios",
+    "text": "Zastraszający Cios (Intimidating Strike) [2 akcje, Wojownik 2]: Wykonujesz atak wręcz z taką siłą, że wróg traci morale. Jeśli trafisz, cel staje się Przestraszony 1 (lub Przestraszony 2 przy krytycznym trafieniu). Łączy obrażenia z demoralizacją.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zastraszający Cios (Intimidating Strike)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-podwojny-cios",
+    "text": "Podwójny Cios (Double Slice) [2 akcje, Wojownik 1]: Atakujesz dwoma broniami jednocześnie. Wykonujesz atak każdą bronią — drugi atak nie podlega normalnej karze wielokrotnych ataków. Łączysz obrażenia dla pokonania odporności.",
+    "metadata": {
+      "category": "feat",
+      "name": "Podwójny Cios (Double Slice)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-blizniacza-parada",
+    "text": "Bliźniacza Parada (Twin Parry) [1 akcja, Wojownik 4]: Używasz obu broni do obrony. Gdy trzymasz dwie bronie, zyskujesz premię okolicznościową +1 do KP do początku swojej następnej tury. Jeśli obie bronie mają cechę parowania, premia wynosi +2.",
+    "metadata": {
+      "category": "feat",
+      "name": "Bliźniacza Parada (Twin Parry)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-brutalny-cios",
+    "text": "Brutalny Cios (Brutal Finish) [1 akcja, Wojownik 8]: Wykonujesz potężne wykańczające uderzenie. Jeśli trafisz, atak zadaje maksymalne obrażenia z kostek broni. Niezależnie od wyniku, kara wielokrotnych ataków resetuje się do -5.",
+    "metadata": {
+      "category": "feat",
+      "name": "Brutalny Cios (Brutal Finish)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-natarcie",
+    "text": "Natarcie (Swipe) [2 akcje, Wojownik 4]: Wykonujesz szeroki zamach bronią wręcz, atakując dwóch sąsiadujących wrogów jednocześnie. Wykonujesz jeden rzut na atak i porównujesz wynik z KP obu celów osobno.",
+    "metadata": {
+      "category": "feat",
+      "name": "Natarcie (Swipe)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-wytracenie",
+    "text": "Wytrącenie (Knockdown) [2 akcje, Wojownik 4]: Wykonujesz atak wręcz, a jeśli trafisz, automatycznie próbujesz Przewrócić (Trip) cel bez dodatkowego rzutu. Przy krytycznym trafieniu cel jest Przewrócony i otrzymuje dodatkowe obrażenia.",
+    "metadata": {
+      "category": "feat",
+      "name": "Wytrącenie (Knockdown)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-atak-z-zaskoczenia",
+    "text": "Atak z Zaskoczenia (Sneak Attack) [Łotrzyk 1]: Gdy atakujesz wroga, który jest Nieprzytomny (Flat-Footed), zadajesz dodatkowe 1k6 obrażeń precyzyjnych. Obrażenia rosną o 1k6 co kilka poziomów. Działa z broniami finezyjnymi i dystansowymi.",
+    "metadata": {
+      "category": "feat",
+      "name": "Atak z Zaskoczenia (Sneak Attack)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-sprytny-unik",
+    "text": "Sprytny Unik (Nimble Dodge) [reakcja, Łotrzyk 1]: Gdy wróg atakuje cię w walce wręcz, możesz się uchylić, zyskując premię okolicznościową +2 do KP przeciwko temu atakowi. Wymaga świadomości nadchodzącego ciosu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Sprytny Unik (Nimble Dodge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-szybkie-dlonie",
+    "text": "Szybkie Dłonie (Pickpocket) [Łotrzyk 1]: Jesteś biegły w kradzieży kieszonkowej. Możesz Ukraść (Steal) przedmiot jako 1 akcję zamiast wymagania ukrycia. Nie prowokujesz reakcji przy próbie kradzieży kieszonkowej.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkie Dłonie (Pickpocket)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-podstepny-atak",
+    "text": "Podstępny Atak (Surprise Attack) [Łotrzyk 1]: Jesteś mistrzem pierwszego uderzenia. Podczas pierwszej rundy walki, jeśli rzuciłeś Podstęp lub Dyplomację na inicjatywę, wrogowie którzy jeszcze nie działali są Nieprzytomni (Flat-Footed) wobec ciebie.",
+    "metadata": {
+      "category": "feat",
+      "name": "Podstępny Atak (Surprise Attack)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-mobilnosc",
+    "text": "Mobilność (Mobility) [Łotrzyk 2]: Poruszasz się płynnie po polu bitwy. Gdy wykonujesz akcję Krok (Stride) o połowę lub więcej swojej Prędkości, nie prowokujesz reakcji od wrogów, których mijasz podczas ruchu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Mobilność (Mobility)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-mistrzowskie-uderzenie",
+    "text": "Mistrzowskie Uderzenie (Precise Strike) [Łotrzyk 4]: Twoje ataki są chirurgicznie precyzyjne. Gdy cel jest Nieprzytomny (Flat-Footed), dodajesz dodatkowe obrażenia precyzyjne do ataku. Staje się potężniejsze na wyższych poziomach.",
+    "metadata": {
+      "category": "feat",
+      "name": "Mistrzowskie Uderzenie (Precise Strike)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-zwinnosc",
+    "text": "Zwinność (Evasion) [Łotrzyk 7]: Twoje refleksy pozwalają unikać niebezpieczeństw. Gdy rzucasz na Rzut Obronny Refleksu i wynik to sukces, traktujesz go jako krytyczny sukces. Znacząco zmniejsza obrażenia od efektów obszarowych.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zwinność (Evasion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-uzdrowicielskie-dlonie",
+    "text": "Uzdrowicielskie Dłonie (Healing Hands) [Kleryk 1]: Twoje zaklęcie Uzdrawiania (Heal) jest wyjątkowo skuteczne. Gdy rzucasz Uzdrawianie, kostki leczenia zmieniają się z k8 na k10. Działa zarówno na zaklęcie dotykowe jak i obszarowe.",
+    "metadata": {
+      "category": "feat",
+      "name": "Uzdrowicielskie Dłonie (Healing Hands)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-kanalizacja",
+    "text": "Kanalizacja (Channel Smite) [2 akcje, Kleryk 4]: Kierujesz boską energię przez swoją broń. Wydajesz jedno przygotowane zaklęcie Uzdrawiania lub Krzywdy (Harm) i wykonujesz atak wręcz. Jeśli trafisz, dodajesz obrażenia zaklęcia do ataku.",
+    "metadata": {
+      "category": "feat",
+      "name": "Kanalizacja (Channel Smite)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-ochronna-tarcza",
+    "text": "Ochronna Tarcza (Protective Ward) [1 akcja, Kleryk 1]: Tworzysz boską barierę chroniącą sojusznika w zasięgu 30 stóp. Cel zyskuje premię statusową +1 do KP do początku twojej następnej tury. Wymaga skupienia boskiej energii.",
+    "metadata": {
+      "category": "feat",
+      "name": "Ochronna Tarcza (Protective Ward)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-swiety-obronca",
+    "text": "Święty Obrońca (Holy Castigation) [Kleryk 1]: Twoja wiara karze istoty nieczyste. Gdy zadajesz obrażenia zaklęciem stworzeniu o cesze Zło lub Nieumarły, zadajesz dodatkowe dobre obrażenia równe poziomowi zaklęcia.",
+    "metadata": {
+      "category": "feat",
+      "name": "Święty Obrońca (Holy Castigation)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-magiczna-tarcza",
+    "text": "Magiczna Tarcza (Arcane Shield) [reakcja, Czarodziej 1]: Gdy masz zostać trafiony atakiem, możesz wydać przygotowany slot zaklęcia aby stworzyć magiczną barierę. Zyskujesz premię okolicznościową do KP równą poziomowi wydanego slotu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Magiczna Tarcza (Arcane Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-wiedza-tajemna",
+    "text": "Wiedza Tajemna (Arcane Sense) [Czarodziej 1]: Twoje wyczulenie na magię jest stale aktywne. Możesz wyczuwać obecność magii w zasięgu 30 stóp jako nieustanną aurę. Na wyższych poziomach możesz identyfikować szkoły magii.",
+    "metadata": {
+      "category": "feat",
+      "name": "Wiedza Tajemna (Arcane Sense)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-szybkie-przygotowanie",
+    "text": "Szybkie Przygotowanie (Quick Preparation) [Czarodziej 4]: Potrzebujesz mniej czasu na przygotowanie zaklęć. Twoje codzienne przygotowania wymagają tylko 10 minut zamiast standardowej godziny. Pozwala szybko dostosować arsenał magiczny.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkie Przygotowanie (Quick Preparation)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-znajomosc-zaklec",
+    "text": "Znajomość Zaklęć (Spell Blending) [Czarodziej 1]: Potrafisz poświęcić niższe sloty zaklęć aby zyskać dodatkowe wyższe. Podczas przygotowania możesz zamienić dwa sloty tego samego poziomu na jeden slot o poziom wyższy. Wymaga strategicznego planowania.",
+    "metadata": {
+      "category": "feat",
+      "name": "Znajomość Zaklęć (Spell Blending)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-polowanie",
+    "text": "Polowanie (Hunt Prey) [1 akcja, Łowca 1]: Oznaczasz jedno stworzenie jako swoją zdobycz. Zyskujesz premię okolicznościową +2 do testów Przetrwania aby je tropić i ignorujesz karę za trudny teren gdy się ku niemu zbliżasz.",
+    "metadata": {
+      "category": "feat",
+      "name": "Polowanie (Hunt Prey)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-precyzyjny-strzal",
+    "text": "Precyzyjny Strzał (Precision) [Łowca 1]: Twój pierwszy atak w każdej turze przeciwko oznaczonej zdobyczy zadaje dodatkowe obrażenia precyzyjne. Na 1. poziomie to 1k8, rosnąc wraz z poziomem. Działa z bronią wręcz i dystansową.",
+    "metadata": {
+      "category": "feat",
+      "name": "Precyzyjny Strzał (Precision)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-podwojny-strzal",
+    "text": "Podwójny Strzał (Double Shot) [2 akcje, Łowca 4]: Wypuszczasz dwie strzały w szybkiej sekwencji. Wykonujesz dwa ataki bronią dystansową przeciwko temu samemu celowi lub dwóm celom w zasięgu 10 stóp od siebie. Oba używają twojej aktualnej kary wielokrotnych ataków.",
+    "metadata": {
+      "category": "feat",
+      "name": "Podwójny Strzał (Double Shot)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-tropiciel",
+    "text": "Tropiciel (Tracker) [Łowca 1]: Jesteś ekspertem w tropieniu. Możesz Tropić (Track) z normalną prędkością bez kary. Na trudnym terenie tropiąc zdobycz możesz poruszać się z pełną prędkością zamiast połowy.",
+    "metadata": {
+      "category": "feat",
+      "name": "Tropiciel (Tracker)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-zwierzecy-towarzysz",
+    "text": "Zwierzęcy Towarzysz (Animal Companion) [Łowca 1]: Zyskujesz zwierzęcego towarzysza — lojalną bestię walczącą u twego boku. Towarzysz ma własne statystyki i działa w twojej turze. Możesz wydać 1 akcję aby towarzysz wykonał 2 akcje.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zwierzęcy Towarzysz (Animal Companion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-inspiracja-odwagi",
+    "text": "Inspiracja Odwagi (Inspire Courage) [1 akcja, Bard 1]: Rozpoczynasz inspirującą kompozycję bojową. Sojusznicy w emanacji 60 stóp zyskują premię statusową +1 do rzutów na atak i obrażeń. Utrzymujesz efekt wydając 1 akcję w kolejnych turach.",
+    "metadata": {
+      "category": "feat",
+      "name": "Inspiracja Odwagi (Inspire Courage)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-inspiracja-kompetencji",
+    "text": "Inspiracja Kompetencji (Inspire Competence) [1 akcja, Bard 1]: Grasz melodię wzmacniającą umiejętności sojuszników. Sojusznicy w emanacji 60 stóp zyskują premię statusową +1 do testów umiejętności. Szczególnie przydatna poza walką.",
+    "metadata": {
+      "category": "feat",
+      "name": "Inspiracja Kompetencji (Inspire Competence)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-inspiracja-obrony",
+    "text": "Inspiracja Obrony (Inspire Defense) [1 akcja, Bard 6]: Twoja muzyka wzmacnia obronę sojuszników. Sojusznicy w emanacji 60 stóp zyskują premię statusową +1 do KP i Rzutów Obronnych. Utrzymujesz efekt wydając 1 akcję w kolejnych turach.",
+    "metadata": {
+      "category": "feat",
+      "name": "Inspiracja Obrony (Inspire Defense)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-fascynacja",
+    "text": "Fascynacja (Fascinate) [1 akcja, Bard 1]: Tworzymuzyka hipnotyzuje jednego stworzenie w zasięgu 30 stóp. Cel musi wykonać Rzut Obronny Woli lub zostaje Zafascynowany — może jedynie cię obserwować i słuchać. Wrogość kończy efekt.",
+    "metadata": {
+      "category": "feat",
+      "name": "Fascynacja (Fascinate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-wytrzymalosc",
+    "text": "Wytrzymałość (Toughness) [Ogólny 1]: Twoje ciało jest niezwykle odporne. Zyskujesz dodatkowe Punkty Wytrzymałości równe twojemu poziomowi. Ponadto zmniejszasz wartość Umierania (Dying) wymaganą do śmierci z 4 do 5.",
+    "metadata": {
+      "category": "feat",
+      "name": "Wytrzymałość (Toughness)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-szybkosc",
+    "text": "Szybkość (Fleet) [Ogólny 1]: Poruszasz się szybciej niż przeciętna osoba. Twoja Prędkość zwiększa się o 5 stóp. Premia ta stosuje się do wszystkich twoich trybów ruchu lądowego.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkość (Fleet)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-niewiarygodna-inicjatywa",
+    "text": "Niewiarygodna Inicjatywa (Incredible Initiative) [Ogólny 1]: Reagujesz błyskawicznie na zagrożenia. Zyskujesz premię okolicznościową +2 do rzutów na inicjatywę. Pozwala ci częściej działać jako pierwszy w walce.",
+    "metadata": {
+      "category": "feat",
+      "name": "Niewiarygodna Inicjatywa (Incredible Initiative)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-blok-tarcza-ogolny",
+    "text": "Blok Tarczą (Shield Block - Ogólny) [reakcja, Ogólny 1]: Gdy otrzymujesz obrażenia od ataku fizycznego i masz podniesioną tarczę, możesz zablokować cios. Tarcza absorbuje obrażenia równe swojej Twardości, nadwyżka przechodzi na ciebie i tarczę.",
+    "metadata": {
+      "category": "feat",
+      "name": "Blok Tarczą (Shield Block - Ogólny)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-armor-proficiency",
+    "text": "Biegłość w Zbroi (Armor Proficiency) [Ogólny 1]: Zyskujesz biegłość w następnej kategorii zbroi. Jeśli byłeś wyszkolony w lekkich zbrojach, stajesz się wyszkolony w średnich. Pozwala klasom magicznym nosić cięższe zbroje.",
+    "metadata": {
+      "category": "feat",
+      "name": "Biegłość w Zbroi (Armor Proficiency)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-weapon-proficiency",
+    "text": "Biegłość w Broni (Weapon Proficiency) [Ogólny 1]: Zyskujesz biegłość w jednej grupie broni wojennych lub jednej broni zaawansowanej. Rozszerza twoje opcje bojowe bez wymogu klasy wojowniczej.",
+    "metadata": {
+      "category": "feat",
+      "name": "Biegłość w Broni (Weapon Proficiency)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-skill-training",
+    "text": "Trening Umiejętności (Skill Training) [Ogólny 1]: Stajesz się wyszkolony w jednej umiejętności, w której nie byłeś wyszkolony. Zwiększa liczbę umiejętności dostępnych twojej postaci.",
+    "metadata": {
+      "category": "feat",
+      "name": "Trening Umiejętności (Skill Training)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-assurance",
+    "text": "Pewność Siebie (Assurance) [Ogólny 1, Umiejętności]: Wybierz jedną umiejętność. Zamiast rzucać kostką, możesz przyjąć wynik 10 + twój bonus biegłości (bez modyfikatorów). Gwarantuje stały, przewidywalny rezultat.",
+    "metadata": {
+      "category": "feat",
+      "name": "Pewność Siebie (Assurance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-dubious-knowledge",
+    "text": "Wątpliwa Wiedza (Dubious Knowledge) [Ogólny 1, Umiejętności]: Gdy nie udaje ci się test Przypomnienia Wiedzy (Recall Knowledge), MG podaje ci fałszywą informację obok prawdziwej, ale nie wiesz która jest która. Przy porażce nigdy nie zostajesz z niczym.",
+    "metadata": {
+      "category": "feat",
+      "name": "Wątpliwa Wiedza (Dubious Knowledge)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-battle-medicine",
+    "text": "Medycyna Polowa (Battle Medicine) [1 akcja, Ogólny 1, Umiejętności]: Wykonujesz szybki test Medycyny aby uleczyć sojusznika na polu bitwy. Cel odzyskuje PW jak przy Leczeniu Ran, ale zajmuje to 1 akcję zamiast 10 minut. Możesz użyć na danym celu raz dziennie.",
+    "metadata": {
+      "category": "feat",
+      "name": "Medycyna Polowa (Battle Medicine)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-continual-recovery",
+    "text": "Ciągła Rekonwalescencja (Continual Recovery) [Ogólny 2, Umiejętności]: Twoje leczenie jest tak skuteczne, że możesz powtarzać je częściej. Czas oczekiwania między użyciami Leczenia Ran na tym samym celu spada z 1 godziny do 10 minut.",
+    "metadata": {
+      "category": "feat",
+      "name": "Ciągła Rekonwalescencja (Continual Recovery)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-ward-medic",
+    "text": "Medyk Oddziałowy (Ward Medic) [Ogólny 2, Umiejętności]: Możesz leczyć wielu rannych jednocześnie. Gdy używasz Leczenia Ran podczas odpoczynku, możesz leczyć do 2 stworzeń na raz (4 jeśli jesteś mistrzem, 8 jeśli legendą w Medycynie).",
+    "metadata": {
+      "category": "feat",
+      "name": "Medyk Oddziałowy (Ward Medic)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-kip-up",
+    "text": "Szybkie Wstanie (Kip Up) [wolna akcja, Ogólny 7, Umiejętności]: Potrafisz wstać z ziemi błyskawicznie. Wstanie z Przewróconego (Prone) nie kosztuje cię akcji — robisz to jako wolną akcję na początku tury.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkie Wstanie (Kip Up)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-cat-fall",
+    "text": "Koci Spadek (Cat Fall) [Ogólny 1, Umiejętności]: Zmniejszasz efektywną wysokość upadku. Traktujesz upadek jakby był o 10 stóp krótszy (20 stóp jako ekspert, 25 jako mistrz, 50 jako legenda w Akrobatyce).",
+    "metadata": {
+      "category": "feat",
+      "name": "Koci Spadek (Cat Fall)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-steady-balance",
+    "text": "Pewna Równowaga (Steady Balance) [Ogólny 1, Umiejętności]: Poruszasz się pewnie po wąskich powierzchniach. Zyskujesz premię okolicznościową +2 do testów Akrobatyki na Równowagę i traktujesz sukces jako krytyczny sukces.",
+    "metadata": {
+      "category": "feat",
+      "name": "Pewna Równowaga (Steady Balance)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-quick-jump",
+    "text": "Szybki Skok (Quick Jump) [Ogólny 1, Umiejętności]: Możesz wykonać Skok w Dal (Long Jump) lub Skok w Górę (High Jump) jako 1 akcję zamiast 2. Nie potrzebujesz rozbiegu aby skakać efektywnie.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybki Skok (Quick Jump)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-powerful-leap",
+    "text": "Potężny Skok (Powerful Leap) [Ogólny 2, Umiejętności]: Twoje skoki są nadzwyczajnie daleki. Skacząc w dal, możesz skoczyć o 5 stóp dalej niż normalnie. Skok w górę zwiększa się o 5 stóp.",
+    "metadata": {
+      "category": "feat",
+      "name": "Potężny Skok (Powerful Leap)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-titan-wrestler",
+    "text": "Zapaśnik Tytanów (Titan Wrestler) [Ogólny 1, Umiejętności]: Możesz próbować Chwytać (Grapple), Podcinać (Trip) i Rozbrajać (Disarm) stworzenia większe od siebie o więcej niż jedną kategorię wielkości. Normalnie to ograniczenie uniemożliwia walkę z ogromnymi przeciwnikami.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zapaśnik Tytanów (Titan Wrestler)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-intimidating-glare",
+    "text": "Zastraszający Wzrok (Intimidating Glare) [Ogólny 1, Umiejętności]: Możesz Demoralizować bez mówienia — wystarczy twoje spojrzenie. Usuwasz karę za barierę językową przy Demoralizowaniu i możesz tego używać w sytuacjach wymagających ciszy.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zastraszający Wzrok (Intimidating Glare)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-group-coercion",
+    "text": "Grupowy Przymus (Group Coercion) [Ogólny 1, Umiejętności]: Możesz Wymusić (Coerce) na wielu osobach jednocześnie. Wykonujesz jeden test Zastraszania przeciwko maksymalnie 4 celom, porównując wynik z Wolą każdego z osobna.",
+    "metadata": {
+      "category": "feat",
+      "name": "Grupowy Przymus (Group Coercion)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-terrified-retreat",
+    "text": "Przerażona Ucieczka (Terrified Retreat) [Ogólny 7, Umiejętności]: Gdy krytycznie Demoralizujesz wroga, oprócz bycia Przestraszonym 2 musi on uciekać od ciebie przez 1 rundę. Nie może dobrowolnie zbliżać się do ciebie w swojej następnej turze.",
+    "metadata": {
+      "category": "feat",
+      "name": "Przerażona Ucieczka (Terrified Retreat)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-bon-mot",
+    "text": "Celna Riposta (Bon Mot) [1 akcja, Ogólny 1, Umiejętności]: Rzucasz dowcipną, obraźliwą uwagę pod adresem wroga w zasięgu 30 stóp. Wykonujesz test Dyplomacji przeciwko Woli celu. Przy sukcesie cel otrzymuje karę -2 do testów Percepcji i Woli.",
+    "metadata": {
+      "category": "feat",
+      "name": "Celna Riposta (Bon Mot)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-lie-to-me",
+    "text": "Spróbuj Mnie Okłamać (Lie to Me) [Ogólny 1, Umiejętności]: Potrafisz instynktownie wyczuwać kłamstwa. Gdy ktoś próbuje cię okłamać, wykonujesz aktywny test Percepcji zamiast pasywnego KP Percepcji. Zyskujesz premię okolicznościową +1 do wykrywania kłamstw.",
+    "metadata": {
+      "category": "feat",
+      "name": "Spróbuj Mnie Okłamać (Lie to Me)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-charming-liar",
+    "text": "Czarujący Kłamca (Charming Liar) [Ogólny 1, Umiejętności]: Twoje kłamstwa są tak przekonujące, że nawet gdy zostaną wykryte, nie tracisz sympatii rozmówcy. Przy krytycznej porażce test Kłamstwa traktowany jest jako zwykła porażka.",
+    "metadata": {
+      "category": "feat",
+      "name": "Czarujący Kłamca (Charming Liar)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-quick-disguise",
+    "text": "Szybkie Przebranie (Quick Disguise) [Ogólny 2, Umiejętności]: Potrafisz przygotować przebranie w ułamku normalnego czasu. Zakładanie prostego przebrania zajmuje ci 1 minutę zamiast 10. Skomplikowane przebranie wymaga 1 minuty zamiast godziny.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkie Przebranie (Quick Disguise)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-pickpocket-general",
+    "text": "Kieszonkowiec (Pickpocket) [Ogólny 1, Umiejętności]: Jesteś biegły w kradzieży kieszonkowej. Możesz Kraść (Steal) przedmioty ściślej trzymane, takie jak te w kieszeniach, nie tylko swobodnie zwisające.",
+    "metadata": {
+      "category": "feat",
+      "name": "Kieszonkowiec (Pickpocket)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-experienced-smuggler",
+    "text": "Doświadczony Przemytnik (Experienced Smuggler) [Ogólny 1, Umiejętności]: Potrafisz ukrywać przedmioty na sobie i przemycać je przez kontrole. Zyskujesz premię okolicznościową +2 do testów Ukrywania (Conceal an Object) przedmiotów na swoim ciele.",
+    "metadata": {
+      "category": "feat",
+      "name": "Doświadczony Przemytnik (Experienced Smuggler)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-nimble-crawl",
+    "text": "Zwinne Czołganie (Nimble Crawl) [Ogólny 2, Umiejętności]: Czołgasz się z niezwykłą prędkością. Poruszasz się z pełną Prędkością podczas Czołgania zamiast z połową. Przydatne gdy jesteś Przewrócony lub ukrywasz się za niską osłoną.",
+    "metadata": {
+      "category": "feat",
+      "name": "Zwinne Czołganie (Nimble Crawl)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-swift-sneak",
+    "text": "Szybkie Skradanie (Swift Sneak) [Ogólny 7, Umiejętności]: Poruszasz się z pełną prędkością podczas Skradania (Sneak) zamiast z połową. Nie musisz zwalniać aby pozostać niewykrytym.",
+    "metadata": {
+      "category": "feat",
+      "name": "Szybkie Skradanie (Swift Sneak)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-terrain-stalker",
+    "text": "Łowca Terenu (Terrain Stalker) [Ogólny 1, Umiejętności]: Wybierz jeden typ trudnego terenu (gruz, śnieg, podszyt). Poruszając się po tym terenie nie zostawiasz śladów i nie łamiesz Ukrycia ani Skradania przez odgłosy ruchu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Łowca Terenu (Terrain Stalker)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-experienced-tracker",
+    "text": "Doświadczony Tropiciel (Experienced Tracker) [Ogólny 1, Umiejętności]: Tropienie to dla ciebie rutyna. Nie musisz zwalniać aby Tropić (Track) na normalnym terenie. Na trudnym terenie tropiąc poruszasz się z połową Prędkości zamiast z ćwiartką.",
+    "metadata": {
+      "category": "feat",
+      "name": "Doświadczony Tropiciel (Experienced Tracker)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-survey-wildlife",
+    "text": "Badanie Fauny (Survey Wildlife) [Ogólny 1, Umiejętności]: Po spędzeniu 10 minut na obserwacji okolicy, dowiadujesz się jakie zwierzęta i bestie zamieszkują dany region. MG informuje cię o typowych i nietypowych stworzeniach w pobliżu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Badanie Fauny (Survey Wildlife)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "feat-legendary-sneak",
+    "text": "Legendarne Skradanie (Legendary Sneak) [Ogólny 15, Umiejętności]: Potrafisz ukryć się nawet bez osłony. Możesz Ukryć się (Hide) i Skradać (Sneak) nawet gdy jesteś obserwowany i nie masz osłony ani ukrycia. Wymagana legenda w Skradaniu.",
+    "metadata": {
+      "category": "feat",
+      "name": "Legendarne Skradanie (Legendary Sneak)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-dlugi-miecz",
+    "text": "Długi Miecz (Longsword): Obrażenia 1k8 S, Cecha: wszechstronny P. Cena 1 sz. Ręce: 1. Grupa: miecze. Popularna broń wojenna ceniona za wszechstronność — może zadawać obrażenia sieczne lub kłute.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Długi Miecz (Longsword)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-krotki-miecz",
+    "text": "Krótki Miecz (Shortsword): Obrażenia 1k6 K, Cechy: zwinny, finezyjny, wszechstronny S. Cena 9 ss. Ręce: 1. Grupa: miecze. Lekka broń wojenna idealna dla szybkich wojowników i łotrzyków preferujących precyzję nad siłę.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Krótki Miecz (Shortsword)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-sztylet",
+    "text": "Sztylet (Dagger): Obrażenia 1k4 K, Cechy: zwinny, finezyjny, rzucany 10 stóp, wszechstronny S. Cena 2 ss. Ręce: 1. Grupa: noże. Mała, ukrywalna broń prosta do walki wręcz i na dystans.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Sztylet (Dagger)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-wielki-miecz",
+    "text": "Wielki Miecz (Greatsword): Obrażenia 1k12 S, Cechy: wszechstronny P. Cena 2 sz. Ręce: 2. Grupa: miecze. Potężna dwuręczna broń wojenna o największych obrażeniach wśród mieczy.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Wielki Miecz (Greatsword)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-wielki-topor",
+    "text": "Wielki Topór (Greataxe): Obrażenia 1k12 S, Cecha: zamach. Cena 2 sz. Ręce: 2. Grupa: topory. Brutalna dwuręczna broń wojenna — cecha zamachu dodaje dodatkową kostkę obrażeń przy krytycznym trafieniu.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Wielki Topór (Greataxe)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
     "id": "weapon-rapier",
-    "text": "Rapier: 1d6 piercing, Bulk 1, Hands 1. Traits: Deadly d8, Disarm, Finesse. A slender thrusting blade prized for its precision and reach.",
-    "metadata": { "category": "weapon", "name": "Rapier", "version": "pf2e" }
+    "text": "Rapier (Rapier): Obrażenia 1k6 K, Cechy: rozbrojenie, finezyjny, śmiercionośny k8. Cena 2 sz. Ręce: 1. Grupa: miecze. Elegancka broń wojenna preferowana przez szermierzy — cecha śmiercionośna dodaje k8 przy krytyku.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Rapier (Rapier)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-warhammer",
-    "text": "Warhammer: 1d8 bludgeoning, Bulk 1, Hands 1. Traits: Shove. A heavy hammer used in battle, capable of knocking enemies off balance.",
-    "metadata": { "category": "weapon", "name": "Warhammer", "version": "pf2e" }
+    "id": "weapon-kusza",
+    "text": "Kusza (Crossbow): Obrażenia 1k8 K, Zasięg 120 stóp. Cena 3 sz. Ręce: 2. Grupa: łuki. Broń prosta dystansowa wymagająca przeładowania (1 akcja). Popularna wśród tych, którzy nie mają wyszkolenia w łukach.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Kusza (Crossbow)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-crossbow",
-    "text": "Crossbow: 1d8 piercing, Bulk 1, Hands 2, Range 120 ft. Traits: Reload 1. A mechanical ranged weapon with excellent range, requiring one action to reload between shots.",
-    "metadata": { "category": "weapon", "name": "Crossbow", "version": "pf2e" }
+    "id": "weapon-krotki-luk",
+    "text": "Krótki Łuk (Shortbow): Obrażenia 1k6 K, Zasięg 60 stóp, Cecha: śmiercionośny k10. Cena 3 sz. Ręce: 1+. Grupa: łuki. Lekka broń wojenna dystansowa, szybsza od kuszy i wygodna do walki konnej.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Krótki Łuk (Shortbow)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-staff",
-    "text": "Staff: 1d4 bludgeoning, Bulk 1, Hands 1 or 2. Traits: Two-Hand d8. A wooden walking staff that can be wielded as a simple melee weapon.",
-    "metadata": { "category": "weapon", "name": "Staff", "version": "pf2e" }
+    "id": "weapon-dlugi-luk",
+    "text": "Długi Łuk (Longbow): Obrażenia 1k8 K, Zasięg 100 stóp, Cechy: śmiercionośny k10, salwa 30 stóp. Cena 6 sz. Ręce: 1+. Grupa: łuki. Klasyczna broń wojenna dystansowa o dużym zasięgu i solidnych obrażeniach.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Długi Łuk (Longbow)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-shortspear",
-    "text": "Shortspear: 1d6 piercing, Bulk 1, Hands 1, Range 20 ft (thrown). Traits: Agile, Thrown 20 ft. A compact spear that can be thrown short distances or used in close combat.",
-    "metadata": { "category": "weapon", "name": "Shortspear", "version": "pf2e" }
+    "id": "weapon-wlocznia",
+    "text": "Włócznia (Spear): Obrażenia 1k6 K, Cechy: rzucany 20 stóp. Cena 1 ss. Ręce: 1. Grupa: włócznie. Uniwersalna broń prosta do walki wręcz i na dystans, jedna z najtańszych broni.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Włócznia (Spear)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
   },
   {
-    "id": "weapon-hand-crossbow",
-    "text": "Hand Crossbow: 1d6 piercing, Bulk L, Hands 1, Range 60 ft. Traits: Reload 1. A compact one-handed crossbow favoured by rogues and duelists.",
-    "metadata": { "category": "weapon", "name": "Hand Crossbow", "version": "pf2e" }
+    "id": "weapon-halabarda",
+    "text": "Halabarda (Halberd): Obrażenia 1k10 K, Cechy: zasięg, wszechstronny S. Cena 2 sz. Ręce: 2. Grupa: włócznie. Dwuręczna broń wojenna z zasięgiem 10 stóp, łącząca topór z włócznią.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Halabarda (Halberd)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-mlot-bojowy",
+    "text": "Młot Bojowy (Warhammer): Obrażenia 1k8 O, Cecha: przytłaczający. Cena 1 sz. Ręce: 1. Grupa: młoty. Solidna jednoręczna broń wojenna obuchowa, skuteczna przeciwko opancerzonym wrogom.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Młot Bojowy (Warhammer)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-bulawa",
+    "text": "Buława (Mace): Obrażenia 1k6 O, Cecha: przytłaczający. Cena 1 sz. Ręce: 1. Grupa: młoty. Prosta broń obuchowa popularna wśród kleryków, skuteczna przeciwko szkieletom.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Buława (Mace)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-korbacz",
+    "text": "Korbacz (Flail): Obrażenia 1k6 O, Cechy: rozbrojenie, przytłaczający, podcinanie. Cena 8 ss. Ręce: 1. Grupa: cepy. Broń wojenna z łańcuchem i ciężarem — cechy podcinania i rozbrojenia dają taktyczną wszechstronność.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Korbacz (Flail)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-kij-bojowy",
+    "text": "Kij Bojowy (Staff): Obrażenia 1k4 O, Cechy: oburęczny k8. Cena 0. Ręce: 1. Grupa: kije. Prosta broń dostępna za darmo — używana oburęcznie zadaje 1k8. Popularna wśród podróżników i czarodziejów.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Kij Bojowy (Staff)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-cep",
+    "text": "Cep (Heavy Flail): Obrażenia 1k10 O, Cechy: rozbrojenie, przytłaczający, podcinanie. Cena 2 sz. Ręce: 2. Grupa: cepy. Dwuręczna wersja korbacza o większych obrażeniach z tymi samymi cechami taktycznymi.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Cep (Heavy Flail)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-bicz",
+    "text": "Bicz (Whip): Obrażenia 1k4 S, Cechy: rozbrojenie, finezyjny, niezabójczy, zasięg, podcinanie. Cena 1 ss. Ręce: 1. Grupa: cepy. Broń wojenna o zasięgu 10 stóp z wieloma cechami taktycznymi, domyślnie zadaje obrażenia niezabójcze.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Bicz (Whip)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-szpon-bojowy",
+    "text": "Szpon Bojowy (Claw Blade): Obrażenia 1k4 S, Cechy: zwinny, finezyjny, wbudowany. Cena 3 ss. Ręce: 1. Grupa: noże. Ostrza mocowane na rękawicy — broń wbudowana pozostawia rękę częściowo wolną.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Szpon Bojowy (Claw Blade)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-kusza-reczna",
+    "text": "Kusza Ręczna (Hand Crossbow): Obrażenia 1k6 K, Zasięg 60 stóp. Cena 3 sz. Ręce: 1. Grupa: łuki. Jednoręczna broń prosta dystansowa, mniejsza od kuszy standardowej. Wymaga przeładowania (1 akcja).",
+    "metadata": {
+      "category": "weapon",
+      "name": "Kusza Ręczna (Hand Crossbow)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-proca",
+    "text": "Proca (Sling): Obrażenia 1k6 O, Zasięg 50 stóp, Cecha: impet. Cena 0. Ręce: 1. Grupa: proce. Darmowa broń prosta dystansowa — cecha impetu dodaje modyfikator Siły do obrażeń.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Proca (Sling)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-rzutka",
+    "text": "Rzutka (Dart): Obrażenia 1k4 K, Zasięg 20 stóp, Cechy: zwinny, rzucany. Cena 1 mm. Ręce: 1. Grupa: rzucane. Najtańsza broń dystansowa, lekka i zwinna, idealna jako zapasowa.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Rzutka (Dart)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-toporek",
+    "text": "Toporek (Hatchet): Obrażenia 1k6 S, Cechy: zwinny, zamach, rzucany 10 stóp. Cena 4 ss. Ręce: 1. Grupa: topory. Lekka broń prosta siecząca do walki wręcz i na dystans — cecha zamachu dodaje kostkę przy krytyku.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Toporek (Hatchet)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-morgensztern",
+    "text": "Morgensztern (Morningstar): Obrażenia 1k6 O, Cechy: wszechstronny K. Cena 1 sz. Ręce: 1. Grupa: młoty. Broń prosta obuchowa z kolcami — cecha wszechstronności pozwala zadawać obrażenia kłute.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Morgensztern (Morningstar)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-gwiazda-zaranna",
+    "text": "Gwiazda Zaranna (Spiked Chain): Obrażenia 1k8 S, Cechy: rozbrojenie, finezyjny, podcinanie. Cena 3 sz. Ręce: 2. Grupa: cepy. Egzotyczna dwuręczna broń wojenna z kolczastymi ogniwami, dająca doskonałą kontrolę pola bitwy.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Gwiazda Zaranna (Spiked Chain)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "weapon-trojzab",
+    "text": "Trójząb (Trident): Obrażenia 1k8 K, Cechy: rzucany 20 stóp. Cena 1 sz. Ręce: 1. Grupa: włócznie. Broń wojenna kłuta z trzema ostrzami, używana zarówno wręcz jak i jako broń rzucana.",
+    "metadata": {
+      "category": "weapon",
+      "name": "Trójząb (Trident)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-bez-zbroi",
+    "text": "Bez Zbroi (Unarmored): Premia KP +0, Maks. Zręczność —, Kara kontroli —, Prędkość —, Siła —, Grupa: —. Brak zbroi na ciele. Pełna premia ze Zręczności do KP bez żadnych ograniczeń ani kar.",
+    "metadata": {
+      "category": "armor",
+      "name": "Bez Zbroi (Unarmored)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-wyscielana",
+    "text": "Wyściełana (Padded Armor): Premia KP +1, Maks. Zręczność +3, Kara kontroli -1, Prędkość —, Grupa: tkanina. Cena 2 ss. Siła 10. Lekka zbroja z grubej tkaniny lub skóry, minimalna ochrona przy niewielkim ograniczeniu.",
+    "metadata": {
+      "category": "armor",
+      "name": "Wyściełana (Padded Armor)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-skorzana",
+    "text": "Skórzana (Leather Armor): Premia KP +1, Maks. Zręczność +4, Kara kontroli -1, Prędkość —, Grupa: skóra. Cena 2 sz. Siła 10. Podstawowa lekka zbroja z wyprawionej skóry, popularna wśród łotrzyków i łowców.",
+    "metadata": {
+      "category": "armor",
+      "name": "Skórzana (Leather Armor)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-cwiekowana-skorzana",
+    "text": "Ćwiekowana Skórzana (Studded Leather): Premia KP +2, Maks. Zręczność +3, Kara kontroli -1, Prędkość —, Grupa: skóra. Cena 3 sz. Siła 12. Lekka zbroja ze skóry wzmocnionej metalowymi ćwiekami, lepsza ochrona niż zwykła skórzana.",
+    "metadata": {
+      "category": "armor",
+      "name": "Ćwiekowana Skórzana (Studded Leather)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-kolczuga",
+    "text": "Kolczuga (Chain Shirt): Premia KP +2, Maks. Zręczność +3, Kara kontroli -1, Prędkość —, Grupa: łańcuch. Cena 5 sz. Siła 12. Lekka zbroja z plecionych metalowych ogniw, elastyczna i stosunkowo cicha.",
+    "metadata": {
+      "category": "armor",
+      "name": "Kolczuga (Chain Shirt)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-zbroja-luskowa",
+    "text": "Zbroja Łuskowa (Scale Mail): Premia KP +3, Maks. Zręczność +2, Kara kontroli -2, Prędkość -5 stóp, Grupa: płytkowa. Cena 4 sz. Siła 14. Średnia zbroja z metalowych łusek naszytych na skórzaną bazę.",
+    "metadata": {
+      "category": "armor",
+      "name": "Zbroja Łuskowa (Scale Mail)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-polzbroja",
+    "text": "Półzbroja (Half Plate): Premia KP +5, Maks. Zręczność +1, Kara kontroli -3, Prędkość -10 stóp, Grupa: płytkowa. Cena 18 sz. Siła 16. Ciężka zbroja z metalowych płyt chroniących tors i kończyny z kolczugą w szczelinach.",
+    "metadata": {
+      "category": "armor",
+      "name": "Półzbroja (Half Plate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-zbroja-plytowa",
+    "text": "Zbroja Płytowa (Full Plate): Premia KP +6, Maks. Zręczność +0, Kara kontroli -3, Prędkość -10 stóp, Grupa: płytkowa. Cena 30 sz. Siła 18. Najcięższa standardowa zbroja — pełna ochrona płytowa od głowy do stóp.",
+    "metadata": {
+      "category": "armor",
+      "name": "Zbroja Płytowa (Full Plate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "armor-pelna-zbroja-plytowa",
+    "text": "Pełna Zbroja Płytowa (Hellknight Plate): Premia KP +6, Maks. Zręczność +0, Kara kontroli -3, Prędkość -10 stóp, Grupa: płytkowa. Cena 35 sz. Siła 18. Specjalistyczna ciężka zbroja płytowa z dodatkowymi wzmocnieniami i ozdobami, noszona przez elitarnych wojowników.",
+    "metadata": {
+      "category": "armor",
+      "name": "Pełna Zbroja Płytowa (Hellknight Plate)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "shield-tarcza-drewniana",
+    "text": "Tarcza Drewniana (Wooden Shield): Twardość 3, PW 12, Próg Złamania 6. Cena 1 sz. Premia KP +2 (przy podniesieniu). Standardowa okrągła tarcza z drewna — tania i dostępna, ale mniej wytrzymała od stalowej.",
+    "metadata": {
+      "category": "shield",
+      "name": "Tarcza Drewniana (Wooden Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "shield-tarcza-stalowa",
+    "text": "Tarcza Stalowa (Steel Shield): Twardość 5, PW 20, Próg Złamania 10. Cena 2 sz. Premia KP +2 (przy podniesieniu). Wytrzymała tarcza z metalu — wyższa Twardość oznacza lepszą absorpcję obrażeń przy Bloku Tarczą.",
+    "metadata": {
+      "category": "shield",
+      "name": "Tarcza Stalowa (Steel Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "shield-tarcza-wiezowa",
+    "text": "Tarcza Wieżowa (Tower Shield): Twardość 5, PW 20, Próg Złamania 10. Cena 10 sz. Premia KP +2 (przy podniesieniu). Ogromna tarcza dająca standardową osłonę (+4 KP) jako 1 akcja. Kara Prędkości -5 stóp podczas noszenia.",
+    "metadata": {
+      "category": "shield",
+      "name": "Tarcza Wieżowa (Tower Shield)",
+      "version": "pf2e",
+      "source": "Player Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-aura",
+    "text": "Aura: Emanacja o określonym zasięgu wokół stworzenia. Dotknięte stworzenia podlegają efektowi aury na początku swojej tury lub gdy wchodzą w obszar. Aury działają automatycznie i nie wymagają akcji do podtrzymania.",
+    "metadata": {
+      "category": "trait",
+      "name": "Aura",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-chwyt",
+    "text": "Chwyt (Grab) [1 akcja]: Po trafieniu atakiem z cechą Chwyt, stworzenie może wykonać test Atletyki aby Schwytać cel jako wolną akcję. Nie wymaga wolnej ręki — stworzenie chwyta ofiarę szponami, szczęką lub mackami.",
+    "metadata": {
+      "category": "trait",
+      "name": "Chwyt (Grab)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-zgniatanie",
+    "text": "Zgniatanie (Constrict) [1 akcja]: Stworzenie ściska schwytaną ofiarę, zadając określone obrażenia obuchowe. Cel może spróbować Rzutu Obronnego na Wytrzymałość aby zmniejszyć obrażenia o połowę. Wymaga wcześniejszego Schwytania.",
+    "metadata": {
+      "category": "trait",
+      "name": "Zgniatanie (Constrict)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-regeneracja",
+    "text": "Regeneracja (Regeneration): Stworzenie odzyskuje określoną liczbę PW na początku każdej swojej tury. Regeneracja jest wyłączana przez określony typ obrażeń (np. ogień, kwas). Gdy wyłączona, stworzenie może normalnie umrzeć.",
+    "metadata": {
+      "category": "trait",
+      "name": "Regeneracja (Regeneration)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-odpornosc",
+    "text": "Odporność (Resistance): Stworzenie zmniejsza otrzymywane obrażenia danego typu o wartość odporności. Np. Odporność na ogień 10 oznacza, że każde obrażenia od ognia są zmniejszone o 10 (minimum 0).",
+    "metadata": {
+      "category": "trait",
+      "name": "Odporność (Resistance)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-slabosc",
+    "text": "Słabość (Weakness): Stworzenie otrzymuje dodatkowe obrażenia danego typu równe wartości słabości. Np. Słabość na zimno 5 oznacza +5 obrażeń przy każdym trafieniu zadającym obrażenia od zimna.",
+    "metadata": {
+      "category": "trait",
+      "name": "Słabość (Weakness)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-immunitet",
+    "text": "Immunitet (Immunity): Stworzenie jest całkowicie odporne na dany typ obrażeń lub stan. Immunitet na truciznę oznacza zerowe obrażenia od trucizn i brak efektów stanów trujących.",
+    "metadata": {
+      "category": "trait",
+      "name": "Immunitet (Immunity)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-zmysl-wibracji",
+    "text": "Zmysł Wibracji (Tremorsense): Stworzenie wyczuwa drgania podłoża w określonym zasięgu. Pozwala wykrywać stworzenia dotykające tej samej powierzchni, nawet niewidoczne. Nie działa przeciwko latającym stworzeniom.",
+    "metadata": {
+      "category": "trait",
+      "name": "Zmysł Wibracji (Tremorsense)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-ciemne-widzenie",
+    "text": "Ciemne Widzenie (Darkvision): Stworzenie widzi w całkowitej ciemności równie dobrze jak w jasnym świetle, choć jedynie w czerni i bieli. Ciemne Widzenie ignoruje stan Ukryty wynikający z ciemności.",
+    "metadata": {
+      "category": "trait",
+      "name": "Ciemne Widzenie (Darkvision)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-telepatia",
+    "text": "Telepatia (Telepathy): Stworzenie może komunikować się mentalnie z innymi stworzeniami w określonym zasięgu. Telepatia nie wymaga wspólnego języka — przekazuje myśli i obrazy bezpośrednio do umysłu.",
+    "metadata": {
+      "category": "trait",
+      "name": "Telepatia (Telepathy)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-oddech",
+    "text": "Oddech (Breath Weapon) [2 akcje]: Stworzenie wyzwala potężny atak obszarowy ze swojej paszczy — ogień, kwas, zimno, błyskawica lub inny typ energii. Po użyciu wymaga przeładowania (zazwyczaj 1k4 rund). Cel wykonuje Rzut Obronny.",
+    "metadata": {
+      "category": "trait",
+      "name": "Oddech (Breath Weapon)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-trucizna",
+    "text": "Trucizna (Poison): Efekt trujący zadawany przy ataku lub kontakcie. Ofiara wykonuje Rzut Obronny na Wytrzymałość. Trucizny mają etapy — przy każdej nieudanej próbie ofiara przechodzi na gorszy etap z narastającymi efektami.",
+    "metadata": {
+      "category": "trait",
+      "name": "Trucizna (Poison)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-choroba",
+    "text": "Choroba (Disease): Infekcja przenoszona przez atak, kontakt lub oddech stworzenia. Podobnie jak trucizna, choroby mają etapy narastające przy nieudanych Rzutach Obronnych. W przeciwieństwie do trucizn, choroby wymagają czasu na leczenie.",
+    "metadata": {
+      "category": "trait",
+      "name": "Choroba (Disease)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-roj",
+    "text": "Rój (Swarm): Stworzenie jest masą mniejszych istot działających jako jeden organizm. Roje są odporne na obrażenia od pojedynczych ataków i wrażliwe na efekty obszarowe. Nie mogą być Schwytane ani Przewrócone.",
+    "metadata": {
+      "category": "trait",
+      "name": "Rój (Swarm)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wlaczenie",
+    "text": "Włączenie (Engulf) [2 akcje]: Stworzenie porusza się przez przestrzenie zajmowane przez mniejsze stworzenia, wchłaniając je do swojego ciała. Ofiary muszą wykonać Rzut Obronny na Refleks lub zostają schwytane wewnątrz stworzenia.",
+    "metadata": {
+      "category": "trait",
+      "name": "Włączenie (Engulf)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-strach",
+    "text": "Strach (Frightful Presence) [aura]: Stworzenia wchodzące w zasięg aury muszą wykonać Rzut Obronny na Wolę lub stają się Przestraszone. Stworzenie, które zda rzut, jest odporne na tę aurę przez 1 minutę. Potężne potwory mają większy zasięg.",
+    "metadata": {
+      "category": "trait",
+      "name": "Strach (Frightful Presence)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-zmiana-ksztaltu",
+    "text": "Zmiana Kształtu (Change Shape) [1 akcja, koncentracja, wielopostaciowość, transmuacja]: Stworzenie przyjmuje formę innej istoty lub powraca do naturalnej postaci. Zachowuje swoje statystyki ale zmienia wygląd. Niektóre formy dają dodatkowe ataki lub zdolności.",
+    "metadata": {
+      "category": "trait",
+      "name": "Zmiana Kształtu (Change Shape)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wskrzeszenie",
+    "text": "Nieumarłość (Undead): Stworzenie jest nieumarłe — ożywione przez negatywną energię. Nieumarli są odporni na efekty śmierci, choroby, trucizny i stany psychiczne. Są leczeni przez negatywną energię i ranieni przez pozytywną.",
+    "metadata": {
+      "category": "trait",
+      "name": "Nieumarłość (Undead)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-lot",
+    "text": "Lot (Fly): Stworzenie posiada naturalną zdolność lotu z określoną Prędkością Lotu. Latające stworzenie spada jeśli zostanie Nieprzytomne. Lot wymaga co najmniej 1 akcji ruchu na turę aby utrzymać się w powietrzu (u niektórych stworzeń).",
+    "metadata": {
+      "category": "trait",
+      "name": "Lot (Fly)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-plywanie",
+    "text": "Pływanie (Swim): Stworzenie posiada naturalną Prędkość Pływania. Nie musi wykonywać testów Atletyki aby pływać — porusza się w wodzie z podaną prędkością. Często towarzyszy zdolności oddychania pod wodą.",
+    "metadata": {
+      "category": "trait",
+      "name": "Pływanie (Swim)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-kopanie",
+    "text": "Kopanie (Burrow): Stworzenie posiada Prędkość Kopania pozwalającą mu drążyć tunele pod ziemią. Stworzenie z kopaniem porusza się przez ziemię i kamień z podaną prędkością, zostawiając za sobą tunel (chyba że opisano inaczej).",
+    "metadata": {
+      "category": "trait",
+      "name": "Kopanie (Burrow)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-pociagniecie",
+    "text": "Pociągnięcie (Knockdown) [1 akcja]: Po trafieniu atakiem, stworzenie automatycznie Przewraca cel na ziemię. Cel zyskuje stan Przewrócony (Prone) bez dodatkowego rzutu. Wymaga wcześniejszego trafienia atakiem.",
+    "metadata": {
+      "category": "trait",
+      "name": "Pociągnięcie (Knockdown)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-paraliz",
+    "text": "Paraliż (Paralysis): Atak stworzenia może sparaliżować ofiarę. Cel musi wykonać Rzut Obronny na Wytrzymałość lub staje się Sparaliżowany na określony czas. Sparaliżowane stworzenie nie może wykonywać akcji fizycznych.",
+    "metadata": {
+      "category": "trait",
+      "name": "Paraliż (Paralysis)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-spojrzenie",
+    "text": "Spojrzenie (Gaze) [2 akcje]: Stworzenie używa nadprzyrodzonego spojrzenia przeciwko celowi w zasięgu 30 stóp. Efekt zależy od stworzenia — może petryfikować, oślepiać, przerażać lub zadawać obrażenia. Cel wykonuje Rzut Obronny.",
+    "metadata": {
+      "category": "trait",
+      "name": "Spojrzenie (Gaze)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-petryfikacja",
+    "text": "Petryfikacja (Petrification): Zdolność zamieniania ofiar w kamień. Cel musi wykonać Rzut Obronny na Wytrzymałość. Porażka powoduje Spowolnienie, krytyczna porażka zamienia ofiarę w kamienną statuę. Efekt można cofnąć magią.",
+    "metadata": {
+      "category": "trait",
+      "name": "Petryfikacja (Petrification)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wchloniecie",
+    "text": "Wchłonięcie (Swallow Whole) [1 akcja]: Stworzenie połyka schwytaną ofiarę mniejszą od siebie. Połknięte stworzenie otrzymuje obrażenia obuchowe na początku każdej tury potwora i jest Schwytane wewnątrz. Może się wydostać zadając wystarczające obrażenia.",
+    "metadata": {
+      "category": "trait",
+      "name": "Wchłonięcie (Swallow Whole)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wyzwanie",
+    "text": "Wyzwanie (Challenge): Stworzenie prowokuje pojedynczego wroga do walki. Cel musi wykonać Rzut Obronny na Wolę lub jest zmuszony skupić ataki na prowokującym stworzeniu, ignorując innych sojuszników.",
+    "metadata": {
+      "category": "trait",
+      "name": "Wyzwanie (Challenge)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-magia-wrodzona",
+    "text": "Magia Wrodzona (Innate Spells): Stworzenie posiada wrodzoną zdolność rzucania zaklęć bez przygotowania. Zaklęcia wrodzone mają określony poziom i liczbę użyć dziennie. Nie wymagają komponentów materialnych.",
+    "metadata": {
+      "category": "trait",
+      "name": "Magia Wrodzona (Innate Spells)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-odpornosc-na-magie",
+    "text": "Odporność na Magię (Spell Resistance): Stworzenie posiada wrodzoną odporność na efekty magiczne. Przeciwnicy muszą pokonać wartość odporności na magię rzucając zaklęcia celujące w stworzenie. Wyższe poziomy zaklęć łatwiej przebijają barierę.",
+    "metadata": {
+      "category": "trait",
+      "name": "Odporność na Magię (Spell Resistance)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-kontrola-umyslu",
+    "text": "Kontrola Umysłu (Dominate): Stworzenie może przejąć kontrolę nad wolą ofiary. Cel musi wykonać Rzut Obronny na Wolę. Przy porażce stworzenie kontroluje działania ofiary. Efekt kończy się gdy ofiara otrzyma obrażenia od kontrolera lub upłynie czas trwania.",
+    "metadata": {
+      "category": "trait",
+      "name": "Kontrola Umysłu (Dominate)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-drenaz-energii",
+    "text": "Drenaż Energii (Energy Drain): Atak stworzenia wysysa życiową esencję ofiary. Trafiony cel otrzymuje negatywne poziomy obniżające jego maksymalne PW i efektywny poziom. Drenaż energii jest szczególnie niebezpieczny bo może zabić bez obniżenia PW do zera.",
+    "metadata": {
+      "category": "trait",
+      "name": "Drenaż Energii (Energy Drain)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-przywolyanie",
+    "text": "Przywoływanie (Summon): Stworzenie potrafi przywołać pomniejsze istoty swojego typu. Przywołane stworzenia pojawiają się na 1 minutę i działają pod kontrolą przywołującego. Stworzenie zazwyczaj może przywoływać raz na dzień.",
+    "metadata": {
+      "category": "trait",
+      "name": "Przywoływanie (Summon)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-odpornosc-na-bron",
+    "text": "Odporność na Broń (Weapon Resistance): Stworzenie jest odporne na obrażenia fizyczne z broni niespełniających określonych warunków. Typowo wymaga broni z określonego materiału (np. srebro, zimne żelazo) lub magicznej.",
+    "metadata": {
+      "category": "trait",
+      "name": "Odporność na Broń (Weapon Resistance)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-szarza",
+    "text": "Szarża (Trample) [3 akcje]: Stworzenie przebiega przez pola przeciwników, tratując ich kopytami lub łapami. Każde stworzenie na drodze otrzymuje obrażenia i może wykonać Rzut Obronny na Refleks aby je zmniejszyć o połowę. Stworzenie może tratować każdy cel raz na użycie.",
+    "metadata": {
+      "category": "trait",
+      "name": "Szarża (Trample)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-rozerwanie",
+    "text": "Rozerwanie (Rend) [1 akcja]: Gdy stworzenie trafi ten sam cel dwoma atakami tego samego typu (np. dwa szpony), automatycznie zadaje dodatkowe obrażenia bez rzutu na atak. Obrażenia są zazwyczaj równe jednemu z ataków plus modyfikator Siły.",
+    "metadata": {
+      "category": "trait",
+      "name": "Rozerwanie (Rend)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-eterycznosc",
+    "text": "Eteryczność (Ethereal): Stworzenie może przechodzić między Planem Materialnym a Planem Eterycznym. Gdy jest eteryczne, jest niewidoczne i niematerialne na Planie Materialnym, ale może obserwować co się dzieje.",
+    "metadata": {
+      "category": "trait",
+      "name": "Eteryczność (Ethereal)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-niematerialnosc",
+    "text": "Niematerialność (Incorporeal): Stworzenie nie ma fizycznego ciała. Jest odporne na większość fizycznych ataków i może przechodzić przez ściany. Ataki siłowe (force) i magiczne działają normalnie. Broń z runy duchowej (ghost touch) ignoruje niematerialność.",
+    "metadata": {
+      "category": "trait",
+      "name": "Niematerialność (Incorporeal)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-szybkie-leczenie",
+    "text": "Szybkie Leczenie (Fast Healing): Stworzenie odzyskuje określoną liczbę PW na początku każdej swojej tury. W przeciwieństwie do regeneracji, szybkie leczenie nie zapobiega śmierci i nie jest wyłączane przez konkretny typ obrażeń.",
+    "metadata": {
+      "category": "trait",
+      "name": "Szybkie Leczenie (Fast Healing)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-widzenie-w-ciemnosci",
+    "text": "Widzenie w Słabym Świetle (Low-Light Vision): Stworzenie widzi w warunkach słabego oświetlenia tak dobrze jak w jasnym świetle. Traktuje obszary słabego światła jako jasne oświetlenie, co eliminuje stan Ukryty wynikający z przyciemnionego otoczenia.",
+    "metadata": {
+      "category": "trait",
+      "name": "Widzenie w Słabym Świetle (Low-Light Vision)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wyczucie-zycia",
+    "text": "Wyczucie Życia (Lifesense): Stworzenie wyczuwa obecność żywych istot w określonym zasięgu. Pozwala wykrywać niewidoczne żywe stworzenia. Nie działa na konstrukty ani nieumarłych.",
+    "metadata": {
+      "category": "trait",
+      "name": "Wyczucie Życia (Lifesense)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wech",
+    "text": "Węch (Scent): Stworzenie posiada wyczulony zmysł węchu w określonym zasięgu. Pozwala wykrywać stworzenia po zapachu nawet gdy są niewidoczne. Stworzenie musi Szukać (Seek) aby zlokalizować cel wykryty węchem.",
+    "metadata": {
+      "category": "trait",
+      "name": "Węch (Scent)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wszechwiedza",
+    "text": "Wszechwiedza (All-Around Vision): Stworzenie widzi we wszystkich kierunkach jednocześnie. Nie może być Okrążone (Flanked), ponieważ nie ma tyłu. Typowe dla stworzeń z wieloma oczami lub głowami.",
+    "metadata": {
+      "category": "trait",
+      "name": "Wszechwiedza (All-Around Vision)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-chwytanie-w-locie",
+    "text": "Chwytanie w Locie (Snatch): Stworzenie latające może schwytać ofiarę podczas ruchu w powietrzu. Wykonuje atak szponami podczas przelotu i może zabrać schwytaną ofiarę ze sobą w powietrze, upuszczając ją z wysokości.",
+    "metadata": {
+      "category": "trait",
+      "name": "Chwytanie w Locie (Snatch)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-podwojny-atak",
+    "text": "Podwójny Atak (Double Attack): Stworzenie wykonuje dwa ataki jednocześnie jako pojedynczą akcję. Oba ataki używają tej samej kary wielokrotnych ataków. Typowe dla stworzeń z wieloma łapami lub głowami.",
+    "metadata": {
+      "category": "trait",
+      "name": "Podwójny Atak (Double Attack)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-wypluwanie",
+    "text": "Wyplucie (Spit): Stworzenie wyrzuca z siebie substancję na dystans — kwas, truciznę, sieć lub inny materiał. Atak dystansowy o określonym zasięgu. Efekt zależy od stworzenia — może zadawać obrażenia, oślepiać lub unieruchamiać.",
+    "metadata": {
+      "category": "trait",
+      "name": "Wyplucie (Spit)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-widzenie-prawdy",
+    "text": "Widzenie Prawdy (True Seeing): Stworzenie widzi rzeczy takimi jakie naprawdę są. Przebija iluzje, widzi niewidoczne stworzenia, dostrzega prawdziwe formy zamaskowanych istot. Odpowiednik zaklęcia Prawdziwe Widzenie jako stała zdolność.",
+    "metadata": {
+      "category": "trait",
+      "name": "Widzenie Prawdy (True Seeing)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-odrzucenie",
+    "text": "Odrzucenie (Push/Improved Push) [1 akcja]: Po trafieniu atakiem stworzenie odpycha cel o 5 stóp (lub 10 przy ulepszonym odrzuceniu). Cel jest odrzucany w kierunku od stworzenia. Jeśli droga jest zablokowana, cel może otrzymać dodatkowe obrażenia.",
+    "metadata": {
+      "category": "trait",
+      "name": "Odrzucenie (Push)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-pochlananie",
+    "text": "Pochłanianie (Absorb): Stworzenie absorbuje energię magiczną skierowaną przeciwko niemu. Zaklęcia określonego typu zamiast zadawać obrażenia leczą stworzenie lub wzmacniają je. Typowo dotyczy jednego typu energii (np. ogień, błyskawica).",
+    "metadata": {
+      "category": "trait",
+      "name": "Pochłanianie (Absorb)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-slepy-zmysl",
+    "text": "Ślepy Zmysł (Blindsense): Stworzenie wyczuwa otoczenie bez użycia wzroku w określonym zasięgu — za pomocą echolokacji, wyczucia ciepła lub wibracji powietrza. Pozwala wykrywać niewidoczne stworzenia, ale nie daje precyzyjnej lokalizacji.",
+    "metadata": {
+      "category": "trait",
+      "name": "Ślepy Zmysł (Blindsense)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-slepe-widzenie",
+    "text": "Ślepe Widzenie (Blindsight): Zaawansowana forma ślepego zmysłu zapewniająca precyzyjne postrzeganie otoczenia bez wzroku. Stworzenie z tą zdolnością nie jest dotknięte ciemnością, niewidzialnością ani wizualnymi iluzjami w zasięgu zdolności.",
+    "metadata": {
+      "category": "trait",
+      "name": "Ślepe Widzenie (Blindsight)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
+  },
+  {
+    "id": "trait-obezwladniajacy-jad",
+    "text": "Obezwładniający Jad (Incapacitating Venom): Szczególnie potężna trucizna stworzenia, która może całkowicie obezwładnić ofiarę. Przy krytycznej porażce Rzutu Obronnego ofiara staje się Nieprzytomna na określony czas. Wymaga natychmiastowej pomocy medycznej.",
+    "metadata": {
+      "category": "trait",
+      "name": "Obezwładniający Jad (Incapacitating Venom)",
+      "version": "pf2e",
+      "source": "Monster Core (ORC)"
+    }
   }
 ]

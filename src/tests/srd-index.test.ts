@@ -26,8 +26,10 @@ describe("getSrdIndex", () => {
 
   it("loaded index can search and return results", async () => {
     const index = await getSrdIndex();
-    // Embeddings file won't exist in tests — index falls back to zero vectors
-    // but should still be searchable without throwing.
-    expect(() => index.search(new Array(768).fill(0), 3)).not.toThrow();
+    // Search with a query matching the actual embedding dimension.
+    // If real embeddings exist (3584-dim), use that; otherwise fallback handles any dim.
+    const dim = index.size() > 0 ? 3584 : 768;
+    const results = index.search(new Array(dim).fill(0), 3);
+    expect(results.length).toBeLessThanOrEqual(3);
   });
 });
