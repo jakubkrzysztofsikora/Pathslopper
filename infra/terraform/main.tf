@@ -138,7 +138,10 @@ resource "scaleway_object_bucket" "character_sheets" {
     max_age_seconds = 3600
   }
 
-  tags = local.common_tags
+  tags = {
+    project    = local.project_name
+    managed_by = "terraform"
+  }
 }
 
 resource "scaleway_iam_application" "object_storage" {
