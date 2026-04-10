@@ -65,6 +65,23 @@ jobs:
         working-directory: infra/terraform
         run: terraform init
 
+      # Query the Scaleway API for the current non-deprecated Redis version.
+      # Hardcoded versions break when Scaleway retires them, so we discover
+      # the latest at deploy time using the CI credentials.
+      - name: Discover available Redis version
+        id: redis
+        run: |
+          RESPONSE=$(curl -sf -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            "https://api.scaleway.com/redis/v1/zones/${SCW_DEFAULT_ZONE}/cluster-versions?include_deprecated=false&include_disabled=false")
+          VERSION=$(echo "$RESPONSE" | python3 -c "import sys,json; vs=json.load(sys.stdin).get('versions',[]); print(vs[0]['version'] if vs else '')")
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not discover a valid Redis version from Scaleway API"
+            echo "$RESPONSE"
+            exit 1
+          fi
+          echo "redis_version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Discovered Redis version: $VERSION"
+
       # Create the Container Registry namespace before pushing the image.
       # On the first deploy the namespace does not exist yet, so a targeted
       # apply bootstraps it without touching resources that depend on the
@@ -74,7 +91,8 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -target=scaleway_registry_namespace.this \
-            -var image_tag=bootstrap
+            -var image_tag=bootstrap \
+            -var redis_version=${{ steps.redis.outputs.redis_version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -102,7 +120,8 @@ jobs:
         working-directory: infra/terraform
         run: |
           terraform apply -auto-approve \
-            -var image_tag=${{ steps.tag.outputs.sha }}
+            -var image_tag=${{ steps.tag.outputs.sha }} \
+            -var redis_version=${{ steps.redis.outputs.redis_version }}
 
       - name: Capture outputs
         id: outputs
