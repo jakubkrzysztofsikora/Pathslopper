@@ -35,6 +35,7 @@ export function ToggleGroup({
         <RadixToggleGroup.Item
           key={item.value}
           value={item.value}
+          data-testid={`version-${item.value}`}
           className={cn(
             "px-4 py-2 rounded-md text-sm font-medium transition-colors",
             "border border-zinc-700 bg-zinc-800 text-zinc-300",

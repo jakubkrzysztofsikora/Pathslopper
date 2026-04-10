@@ -26,6 +26,7 @@ export function StoryDNAConfig({ className }: StoryDNAConfigProps) {
 
   return (
     <section
+      data-testid="story-dna-config"
       className={cn(
         "rounded-lg border border-zinc-700 bg-zinc-900 p-6",
         className
