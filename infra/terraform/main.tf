@@ -143,8 +143,6 @@ resource "scaleway_container" "app" {
   environment_variables = {
     NODE_ENV                = "production"
     NEXT_TELEMETRY_DISABLED = "1"
-    PORT                    = "3000"
-    HOSTNAME                = "0.0.0.0"
     LLM_BASE_URL            = var.llm_base_url
     LLM_TEXT_MODEL          = var.llm_text_model
     LLM_VISION_MODEL        = var.llm_vision_model
