@@ -117,6 +117,53 @@ locals {
   ) : ""
 }
 
+# ---- Object Storage for character-sheet uploads ----
+resource "scaleway_object_bucket" "character_sheets" {
+  count = var.enable_object_storage ? 1 : 0
+
+  name = "${local.project_name}-character-sheets"
+
+  lifecycle_rule {
+    id      = "expire-uploads"
+    enabled = true
+    expiration {
+      days = 1
+    }
+  }
+
+  cors_rule {
+    allowed_origins = [var.app_origin]
+    allowed_methods = ["PUT"]
+    allowed_headers = ["Content-Type"]
+    max_age_seconds = 3600
+  }
+
+  tags = local.common_tags
+}
+
+resource "scaleway_iam_application" "object_storage" {
+  count       = var.enable_object_storage ? 1 : 0
+  name        = "${local.project_name}-object-storage"
+  description = "Character-sheet upload credential (Object Storage only)."
+}
+
+resource "scaleway_iam_policy" "object_storage" {
+  count          = var.enable_object_storage ? 1 : 0
+  name           = "${local.project_name}-object-storage-policy"
+  application_id = scaleway_iam_application.object_storage[0].id
+
+  rule {
+    project_ids          = [data.scaleway_account_project.current.id]
+    permission_set_names = ["ObjectStorageReadOnly", "ObjectStorageObjectsWrite"]
+  }
+}
+
+resource "scaleway_iam_api_key" "object_storage" {
+  count          = var.enable_object_storage ? 1 : 0
+  application_id = scaleway_iam_application.object_storage[0].id
+  description    = "Object Storage credential for character-sheet presigned URLs."
+}
+
 # ---- Serverless Container namespace ----
 resource "scaleway_container_namespace" "this" {
   name        = local.container_namespace_name
@@ -163,6 +210,11 @@ resource "scaleway_container" "app" {
     },
     var.enable_redis ? {
       REDIS_URL = local.redis_url
+    } : {},
+    var.enable_object_storage ? {
+      SCW_OBJECT_STORAGE_ACCESS_KEY = scaleway_iam_api_key.object_storage[0].access_key
+      SCW_OBJECT_STORAGE_SECRET_KEY = scaleway_iam_api_key.object_storage[0].secret_key
+      SCW_CHARACTER_SHEETS_BUCKET   = scaleway_object_bucket.character_sheets[0].name
     } : {}
   )
 }

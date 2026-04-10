@@ -72,3 +72,15 @@ variable "llm_embedding_model" {
   type        = string
   default     = "bge-multilingual-gemma2"
 }
+
+variable "enable_object_storage" {
+  description = "Provision Scaleway Object Storage for character-sheet uploads. When false the app uses base64 POST."
+  type        = bool
+  default     = true
+}
+
+variable "app_origin" {
+  description = "Application origin for CORS. Use '*' for MVP, narrow to custom domain later."
+  type        = string
+  default     = "*"
+}

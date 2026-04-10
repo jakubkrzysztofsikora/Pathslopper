@@ -44,6 +44,38 @@ function formatApiError(error: unknown, fallback: string): string {
   return fallback;
 }
 
+async function uploadViaPresignedUrl(
+  file: File,
+  version: string
+): Promise<CharacterSheetParsed> {
+  // Step 1: Get presigned PUT URL from server
+  const urlRes = await fetch(
+    `/api/character-sheet/upload-url?mimeType=${encodeURIComponent(file.type)}`
+  );
+  const urlJson = await urlRes.json();
+  if (!urlRes.ok || !urlJson.ok)
+    throw new Error(urlJson.error || "Failed to get upload URL");
+
+  // Step 2: PUT raw binary directly to Object Storage (no base64 overhead)
+  const putRes = await fetch(urlJson.putUrl, {
+    method: "PUT",
+    body: file,
+    headers: { "Content-Type": file.type },
+  });
+  if (!putRes.ok) throw new Error(`Upload failed: ${putRes.status}`);
+
+  // Step 3: POST objectKey to VLM route so server generates a GET URL
+  const vlmRes = await fetch("/api/character-sheet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ objectKey: urlJson.objectKey, version }),
+  });
+  const vlmJson = await vlmRes.json();
+  if (!vlmRes.ok || !vlmJson.ok)
+    throw new Error(vlmJson.error || "VLM parsing failed");
+  return vlmJson.data as CharacterSheetParsed;
+}
+
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -101,29 +133,42 @@ export function CharacterSheetUploader({
     inFlightRef.current = true;
     setState({ status: "loading" });
     try {
-      const imageBase64 = await fileToBase64(file);
-      const res = await fetch("/api/character-sheet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageBase64,
-          mimeType: file.type,
-          version,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setState({
-          status: "error",
-          message: formatApiError(json.error, "Character sheet parsing failed."),
+      let parsed: CharacterSheetParsed;
+      let warnings: string[] = [];
+
+      try {
+        // Preferred path: presigned PUT URL avoids base64 encoding overhead
+        // and keeps large binaries out of the JSON POST body.
+        parsed = await uploadViaPresignedUrl(file, version);
+      } catch {
+        // Fall back to legacy base64 path (e.g., Object Storage not configured,
+        // CORS misconfiguration, or local dev without SCW credentials).
+        const imageBase64 = await fileToBase64(file);
+        const res = await fetch("/api/character-sheet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64,
+            mimeType: file.type,
+            version,
+          }),
         });
-        return;
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          setState({
+            status: "error",
+            message: formatApiError(json.error, "Character sheet parsing failed."),
+          });
+          return;
+        }
+        parsed = json.data as CharacterSheetParsed;
+        warnings = Array.isArray(json.warnings) ? json.warnings : [];
       }
-      const parsed = json.data as CharacterSheetParsed;
+
       setState({
         status: "success",
         data: parsed,
-        warnings: Array.isArray(json.warnings) ? json.warnings : [],
+        warnings,
       });
       // Best-effort: persist parsed character to the server session if one exists.
       const sessionId = window.sessionStorage.getItem("pathfinder-nexus:sessionId");
