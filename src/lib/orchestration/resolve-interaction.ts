@@ -7,6 +7,8 @@ import type { VectorStore } from "@/lib/rag/vector-store";
 import type { embedTexts as EmbedTextsFn } from "@/lib/rag/embed";
 import { optimizeInput } from "./optimize-input";
 import { adjudicate, type AdjudicateOptions } from "./adjudicate";
+// Graph import is lazy (dynamic import inside resolveViaGraph) to avoid
+// loading @langchain/langgraph when USE_LANGGRAPH=false (the default).
 
 /**
  * Phase 2 + Phase 3 composition: takes raw player prose, optimizes it into
@@ -59,6 +61,10 @@ export async function resolveInteraction(
   input: ResolveInteractionInput,
   deps: ResolveInteractionDeps
 ): Promise<ResolveInteractionResult> {
+  if (process.env.USE_LANGGRAPH === "true") {
+    return resolveViaGraph(input, deps);
+  }
+
   const optimized = await optimizeInput(input.rawInput, input.version, {
     callLLM: deps.callLLM,
     logger: deps.logger,
@@ -180,4 +186,54 @@ export async function resolveInteraction(
   }
 
   return { ok: true, result, session };
+}
+
+/**
+ * LangGraph execution path. Activated only when USE_LANGGRAPH=true.
+ *
+ * The graph module is lazily imported so that the @langchain/langgraph
+ * package is never loaded in the default (flag-off) code path.
+ */
+async function resolveViaGraph(
+  input: ResolveInteractionInput,
+  deps: ResolveInteractionDeps
+): Promise<ResolveInteractionResult> {
+  const { buildInteractionGraph } = await import("./graph/interaction-graph");
+
+  const graph = buildInteractionGraph({
+    callLLM: deps.callLLM,
+    sessionStore: deps.sessionStore,
+    srdIndex: deps.srdIndex,
+    embedTexts: deps.embedTexts,
+    adjudicateOptions: deps.adjudicateOptions,
+    logger: deps.logger,
+  });
+
+  const graphResult = await graph.invoke({
+    rawInput: input.rawInput,
+    version: input.version,
+    sessionId: input.sessionId,
+    overrideModifier: input.overrideModifier,
+    overrideDc: input.overrideDc,
+    characterName: input.characterName,
+  });
+
+  if (graphResult.error) {
+    return {
+      ok: false,
+      stage: (graphResult.errorStage as "optimize" | "session") ?? "optimize",
+      error: graphResult.error,
+    };
+  }
+
+  if (!graphResult.result) {
+    return { ok: false, stage: "optimize", error: "No result produced by graph" };
+  }
+
+  let session: SessionState | undefined;
+  if (input.sessionId && deps.sessionStore) {
+    session = (await deps.sessionStore.get(input.sessionId)) ?? undefined;
+  }
+
+  return { ok: true, result: graphResult.result, session };
 }
