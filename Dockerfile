@@ -33,7 +33,8 @@ RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
 # Standalone output contains its own minimal node_modules.
-COPY --from=builder /app/public ./public
+# No `public/` directory exists in the repo yet, so we skip copying it.
+# Re-add `COPY --from=builder /app/public ./public` once static assets land.
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
