@@ -101,6 +101,11 @@ resource "scaleway_redis_cluster" "main" {
   tags         = local.common_tags
 
   public_network {}
+
+  acl {
+    ip         = "0.0.0.0/0"
+    description = "Allow all — CI runners and Serverless Containers"
+  }
 }
 
 locals {
