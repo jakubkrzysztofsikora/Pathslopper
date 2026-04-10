@@ -95,10 +95,10 @@ export function createIoRedisClient(
             opts?: Record<string, unknown>,
           ) => IoRedisLike;
           return new RedisCtor(url, {
-            ...(options?.connectTimeout != null && {
+            ...((options?.connectTimeout !== undefined) && {
               connectTimeout: options.connectTimeout,
             }),
-            ...(options?.maxRetriesPerRequest != null && {
+            ...((options?.maxRetriesPerRequest !== undefined) && {
               maxRetriesPerRequest: options.maxRetriesPerRequest,
             }),
           });
