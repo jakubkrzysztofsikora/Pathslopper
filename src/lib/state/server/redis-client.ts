@@ -76,8 +76,16 @@ export function createIoRedisClient(url: string): RedisClient {
           const mod = await import("ioredis");
           const Ctor = (mod as unknown as { default?: unknown }).default ??
             (mod as unknown);
-          const RedisCtor = Ctor as new (url: string) => IoRedisLike;
-          return new RedisCtor(url);
+          const RedisCtor = Ctor as new (
+            url: string,
+            opts?: { tls?: { rejectUnauthorized: boolean } },
+          ) => IoRedisLike;
+          // Scaleway Managed Redis uses a self-signed TLS certificate.
+          // When the URL uses rediss:// we must accept it.
+          const tls = url.startsWith("rediss://")
+            ? { tls: { rejectUnauthorized: false } }
+            : undefined;
+          return new RedisCtor(url, tls);
         } catch (err) {
           throw new Error(
             `Failed to connect to Redis at ${redactUrl(url)}: ${err instanceof Error ? err.message : String(err)}`
