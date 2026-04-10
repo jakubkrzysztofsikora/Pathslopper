@@ -123,24 +123,15 @@ jobs:
         run: npm run test:integration
         timeout-minutes: 5
 
-  e2e:
-    name: E2E Smoke (Playwright)
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci --no-audit --no-fund
-      - run: npx playwright install chromium
-
-      - name: Run E2E against live deployment
-        env:
-          PLAYWRIGHT_BASE_URL: https://pathfindernexus5821adad-app.functions.fnc.fr-par.scw.cloud
-        run: npx playwright test --reporter=list
-        timeout-minutes: 10
+  # E2E Playwright smoke tests are intentionally NOT run from ci.yml.
+  # They exercise the live Scaleway Serverless Container URL, which by
+  # definition reflects the *previous* deploy. Running them from ci.yml
+  # means branch pushes would test stale prod and gate deploy against
+  # itself (chicken-and-egg). Instead, e2e runs as a post-deploy step in
+  # deploy.yml, immediately after `terraform apply` has pushed the new
+  # image. This way e2e validates the freshly deployed container, and
+  # branch CI no longer fails because of drift between the branch and
+  # the live deployment.
 
   srd-embeddings-check:
     name: SRD Embeddings Staleness
