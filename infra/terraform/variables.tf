@@ -64,5 +64,5 @@ variable "redis_node_type" {
 variable "redis_version" {
   description = "Scaleway Managed Redis engine version. Must match a version supported by the provider."
   type        = string
-  default     = "7.0.12"
+  default     = "7.2.11"
 }
