@@ -73,7 +73,8 @@ jobs:
         working-directory: infra/terraform
         run: |
           terraform apply -auto-approve \
-            -target=scaleway_registry_namespace.this
+            -target=scaleway_registry_namespace.this \
+            -var image_tag=bootstrap
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
