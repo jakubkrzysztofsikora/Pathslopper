@@ -66,18 +66,27 @@ export function normalizeLlmIntent(raw: unknown): unknown {
   }
   const obj: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
 
-  // Optional numeric fields: drop null/undefined so Zod's .optional() kicks in.
-  for (const key of ["modifier", "dc", "actionCost"]) {
-    if (obj[key] === null) delete obj[key];
-  }
-
-  // Optional short-string fields: drop null AND empty-after-trim so the
-  // schema's NonEmptyShort / OptionalShort checks pass. Required fields
-  // (rawInput, description) stay strict — we only normalize the ones the
-  // LLM has permission to omit.
-  for (const key of ["target", "skillOrAttack"]) {
+  // Optional fields (both numeric and short-string): drop any of
+  //   - null
+  //   - undefined
+  //   - an empty-or-whitespace string
+  // so Zod's `.optional()` branches take over. Unified across numeric
+  // and string optionals because LLMs don't respect the type distinction
+  // and frequently emit `""` for uncertain numbers and `null` for
+  // uncertain strings — we need to tolerate both shapes on both keys.
+  // Required fields (rawInput, description) are not in this list, so
+  // they stay strict and schema validation catches genuinely malformed
+  // intents.
+  const optionalKeys = [
+    "modifier",
+    "dc",
+    "actionCost",
+    "target",
+    "skillOrAttack",
+  ];
+  for (const key of optionalKeys) {
     const v = obj[key];
-    if (v === null) {
+    if (v == null) {
       delete obj[key];
     } else if (typeof v === "string" && v.trim() === "") {
       delete obj[key];

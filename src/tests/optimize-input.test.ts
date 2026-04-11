@@ -98,7 +98,7 @@ describe("optimizeInput orchestrator", () => {
       description: "The player searches for traps using Perception",
       modifier: null,
       dc: null,
-      actionCost: 1,
+      actionCost: null,
     };
     const callLLM = vi.fn().mockResolvedValueOnce(JSON.stringify(llamaShape));
     const result = await optimizeInput("I search for traps", "pf2e", { callLLM });
@@ -107,6 +107,7 @@ describe("optimizeInput orchestrator", () => {
       expect(result.intent.action).toBe("skill-check");
       expect(result.intent.modifier).toBeUndefined();
       expect(result.intent.dc).toBeUndefined();
+      expect(result.intent.actionCost).toBeUndefined();
     }
   });
 
@@ -126,6 +127,29 @@ describe("optimizeInput orchestrator", () => {
     if (result.ok) {
       expect(result.intent.target).toBeUndefined();
       expect(result.intent.skillOrAttack).toBeUndefined();
+    }
+  });
+
+  it("normalizes empty-string modifier/dc from the LLM response", async () => {
+    // Some models emit "" for uncertain numeric fields rather than null.
+    // The unified normalizer must handle both shapes on numeric optionals.
+    const llamaShape = {
+      version: "pf2e",
+      rawInput: "I attempt the leap",
+      action: "skill-check",
+      skillOrAttack: "Athletics",
+      target: "the chasm",
+      description: "Leap across the chasm",
+      modifier: "",
+      dc: "",
+      actionCost: 1,
+    };
+    const callLLM = vi.fn().mockResolvedValueOnce(JSON.stringify(llamaShape));
+    const result = await optimizeInput("I attempt the leap", "pf2e", { callLLM });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.intent.modifier).toBeUndefined();
+      expect(result.intent.dc).toBeUndefined();
     }
   });
 
@@ -175,6 +199,38 @@ describe("normalizeLlmIntent", () => {
       description: "y",
       target: "",
       skillOrAttack: null,
+    };
+    const out = normalizeLlmIntent(input) as Record<string, unknown>;
+    expect("target" in out).toBe(false);
+    expect("skillOrAttack" in out).toBe(false);
+  });
+
+  it("drops empty-string and whitespace-only optional numeric fields", () => {
+    // Some LLMs emit "" for uncertain numbers rather than null. The
+    // unified normalizer must drop these so Zod's .optional() kicks in.
+    const input = {
+      version: "pf2e",
+      rawInput: "x",
+      action: "strike",
+      description: "y",
+      modifier: "",
+      dc: "   ",
+      actionCost: "",
+    };
+    const out = normalizeLlmIntent(input) as Record<string, unknown>;
+    expect("modifier" in out).toBe(false);
+    expect("dc" in out).toBe(false);
+    expect("actionCost" in out).toBe(false);
+  });
+
+  it("drops whitespace-only optional short fields", () => {
+    const input = {
+      version: "pf2e",
+      rawInput: "x",
+      action: "strike",
+      description: "y",
+      target: "   ",
+      skillOrAttack: "\t\n",
     };
     const out = normalizeLlmIntent(input) as Record<string, unknown>;
     expect("target" in out).toBe(false);
