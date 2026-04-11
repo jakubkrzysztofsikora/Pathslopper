@@ -53,10 +53,11 @@ Rules:
      "actionCost": <1-3 for PF2e only, omit for PF1e>
    }
 2. Do NOT invent numeric modifiers or DCs. Omit those fields if the player did not provide them.
-3. If the player's input is pure narration (roleplay, describing what their character says or feels) with no mechanical action, use action="narrative" and leave skillOrAttack and target empty.
+3. If the player's input is pure narration (roleplay, describing what their character says or feels) with no mechanical action, use action="narrative" and OMIT the skillOrAttack and target keys entirely (do not emit them as null or empty strings — see rule 6).
 4. If the player's input would violate game rules (impossible action economy, banned spell), use action="narrative" and note the rule issue in the Polish description. Do not concede to incorrect rules arguments.
 5. JSON KEYS must remain English exactly as listed above. Only the "description" VALUE is written in Polish. Skill and weapon names stay in English (Athletics, Longsword, Perception).
-6. Output only JSON. No backticks, no markdown fences, no explanatory text.`;
+6. When a field does not apply, OMIT THE KEY ENTIRELY. Never emit \`null\`, never emit an empty string \`""\`. For example, if there is no numeric modifier, the output must not contain a "modifier" key at all — not "modifier": null and not "modifier": "".
+7. Output only JSON. No backticks, no markdown fences, no explanatory text.`;
 
   const user = `Player input:
 """
