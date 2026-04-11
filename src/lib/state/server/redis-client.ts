@@ -1,3 +1,5 @@
+import * as net from "net";
+
 /**
  * Minimal Redis client port.
  *
@@ -117,20 +119,13 @@ function parseRedisUrl(raw: string): IoRedisOptions {
     // forbids sending an IP address as SNI, and Node currently warns
     // (DEP0123) and will strip it in a future version, so setting it
     // on an IP host is both incorrect and noisy.
+    // net.isIP returns 4 (IPv4), 6 (IPv6), or 0 (not an IP literal).
     opts.tls = { rejectUnauthorized: false };
-    if (!isIpLiteral(host)) {
+    if (net.isIP(host) === 0) {
       opts.tls.servername = host;
     }
   }
   return opts;
-}
-
-function isIpLiteral(host: string): boolean {
-  // IPv4: four dot-separated decimal octets.
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
-  // IPv6: contains a colon and is not a DNS name (DNS names have no colons).
-  if (host.includes(":")) return true;
-  return false;
 }
 
 /**

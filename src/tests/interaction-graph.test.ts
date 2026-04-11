@@ -281,4 +281,42 @@ describe("resolveInteraction feature flag routing", () => {
       expect(result.stage).toBe("optimize");
     }
   });
+
+  it("MUST: USE_LANGGRAPH=true with activeOverride bypasses LLM and returns synthetic result", async () => {
+    process.env.USE_LANGGRAPH = "true";
+
+    const { resolveInteraction } = await import(
+      "@/lib/orchestration/resolve-interaction"
+    );
+
+    const store = new InMemorySessionStore();
+    const session = await store.create("pf2e");
+    await store.setActiveOverride(
+      session.id,
+      "The goblin is struck down by fate.",
+      "Two prior failed attempts.",
+      2
+    );
+
+    // callLLM should never be invoked — the override bypass runs before the graph
+    const callLLM = vi.fn();
+
+    const result = await resolveInteraction(
+      {
+        rawInput: "I strike the goblin",
+        version: "pf2e",
+        sessionId: session.id,
+      },
+      { callLLM, sessionStore: store }
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.result.summary).toBe("The goblin is struck down by fate.");
+      expect(result.result.roll.breakdown).toContain("manager override");
+      expect(result.result.roll.rolls).toHaveLength(0);
+    }
+    // The override bypass must not call the LLM regardless of USE_LANGGRAPH
+    expect(callLLM).not.toHaveBeenCalled();
+  });
 });

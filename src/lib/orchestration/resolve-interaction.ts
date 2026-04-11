@@ -88,11 +88,10 @@ export async function resolveInteraction(
   input: ResolveInteractionInput,
   deps: ResolveInteractionDeps
 ): Promise<ResolveInteractionResult> {
-  if (process.env.USE_LANGGRAPH === "true") {
-    return resolveViaGraph(input, deps);
-  }
-
   // Phase 0 — Early session load + override bypass.
+  //
+  // Done BEFORE the graph/imperative split so that manager overrides bypass
+  // the LLM on BOTH execution paths (USE_LANGGRAPH=true and false).
   //
   // When the session has an activeOverride the GM has already decided the
   // outcome and the optimized intent would be discarded anyway. Calling
@@ -144,6 +143,10 @@ export async function resolveInteraction(
         session: updated ?? undefined,
       };
     }
+  }
+
+  if (process.env.USE_LANGGRAPH === "true") {
+    return resolveViaGraph(input, deps);
   }
 
   // Phase 2 — Input optimization via LLM.
