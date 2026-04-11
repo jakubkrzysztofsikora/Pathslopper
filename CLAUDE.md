@@ -5,6 +5,59 @@ that any non-trivial task flows through a **Plan → Build → Test → Ship** l
 with the right specialist at each step, rather than one generalist trying to do
 everything.
 
+## Claude Code Agent Teams (experimental) — enabled
+
+This repo commits `.claude/settings.json` with
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` so every session running against
+this directory can spawn coordinated agent teams (team lead + teammates
+working on parallel tasks and self-coordinating through a shared task
+list). The implementation workflow for the session-graph rewrite
+(`thoughts/shared/plans/2026-04-11-session-graph-autonomous-gm.md`) is
+**designed around Agent Teams**, not one-off subagent calls:
+
+- A **team lead** spawned per phase owns the phase's success criteria,
+  decomposes work, and dispatches teammates.
+- **Teammates** are the existing specialists in `.claude/agents/`
+  (backend-developer, frontend-developer, llm-architect, etc.) and the
+  domain consultants (`ttrpg-gm-expert`, `scaleway-specialist`).
+- The team lead consults `ttrpg-gm-expert` **before** committing any
+  change that affects domain semantics — that agent is the domain-
+  authority gate.
+- Team communication goes through the shared task list; checkpoints
+  are recorded as TaskUpdate calls that all teammates can see.
+
+See https://code.claude.com/docs/en/agent-teams.md for spawn syntax
+and display modes. If the feature is disabled, fall back to sequential
+subagent invocations — the phases in the plan still work that way.
+
+## TTRPG domain authority — `ttrpg-gm-expert` agent
+
+The repo ships `.claude/agents/ttrpg-gm-expert.md`: a senior Pathfinder
+2e Game Master agent with 15+ years of experience, grounded in Sly
+Flourish's *Lazy Dungeon Master*, Justin Alexander's node-based design,
+Dungeon World *Fronts*, Blades in the Dark *Clocks*, and the full PF2e
+rules stack (Core Rulebook Remastered, GM Core, Monster Core,
+Gamemastery Guide).
+
+**Consult it proactively — do not guess domain decisions.** This agent
+owns verdicts on:
+
+- SessionGraph schema fields (is a scene/NPC/clock/secret captured
+  correctly?)
+- Generator prompt design (does stage X produce runnable content?)
+- Director behavior (are hard/soft/question triggers tuned right?)
+- Combat resolution (MVP `combat-rolled` scope honesty — Amendment R)
+- NPC stat blocks (GMG Table 2-5 compliance)
+- Ending conditions and edge cases (TPK, party split, derailment,
+  pacing, emergency secret grants)
+- Safety tools (lines, veils, X-card, content warnings)
+
+Verdict format is `GREEN / YELLOW / RED` with concrete amendments.
+Treat RED as a blocker; treat YELLOW as a required follow-up task.
+The v3 plan amendments I–U were produced by an adversarial run of
+exactly this agent against v2. Future amendments to schema or Director
+behavior follow the same loop.
+
 ## The standard loop
 
 ```
