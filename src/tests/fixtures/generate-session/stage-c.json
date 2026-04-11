@@ -1,0 +1,113 @@
+{
+  "npcs": [
+    {
+      "id": "npc-captain",
+      "name": "Kapitan Marek",
+      "role": "antagonist",
+      "goal": "Chronić twierdzę i rozkazy tyrana.",
+      "voice": "Zimny, rozkazujący, bez emocji.",
+      "disposition": -2
+    },
+    {
+      "id": "npc-informant",
+      "name": "Aleksy Szary",
+      "role": "ally",
+      "goal": "Pomóc drużynie od środka.",
+      "voice": "Nerwowy, szybko mówi, często spogląda przez ramię.",
+      "disposition": 2
+    },
+    {
+      "id": "npc-guard",
+      "name": "Strażnik Lech",
+      "role": "neutral",
+      "goal": "Przeżyć i dostać żołd.",
+      "voice": "Zmęczony, monotonny.",
+      "disposition": 0
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-gate",
+      "name": "Brama twierdzy",
+      "aspects": ["Masywna", "Strzeżona", "Zardzewiałe zawiasy"]
+    },
+    {
+      "id": "loc-dungeon",
+      "name": "Podziemia",
+      "aspects": ["Wilgotne", "Ciemne", "Śmierdzące"]
+    },
+    {
+      "id": "loc-tower",
+      "name": "Wieża tyrana",
+      "aspects": ["Wysoka", "Zimna", "Magicznie chroniona"]
+    }
+  ],
+  "secrets": [
+    {
+      "id": "sec-1",
+      "text": "Tyran ma sekretne wejście przez piwnicę od strony rzeki.",
+      "conclusionTag": "defeat-tyrant",
+      "discovered": false,
+      "delivery": "npc-dialog",
+      "requires": []
+    },
+    {
+      "id": "sec-2",
+      "text": "Kapitan straży jest tajnym wspólnikiem tyrana od dwudziestu lat.",
+      "conclusionTag": "defeat-tyrant",
+      "discovered": false,
+      "delivery": "document",
+      "requires": []
+    },
+    {
+      "id": "sec-3",
+      "text": "W lochach przetrzymywani są niewinni więźniowie jako zakładnicy.",
+      "conclusionTag": "rescue-prisoners",
+      "discovered": false,
+      "delivery": "environmental",
+      "requires": []
+    },
+    {
+      "id": "sec-4",
+      "text": "Klucz do komnaty tyrana jest ukryty w posągu przy bramie.",
+      "conclusionTag": "defeat-tyrant",
+      "discovered": false,
+      "delivery": "skill-check",
+      "requires": []
+    },
+    {
+      "id": "sec-5",
+      "text": "Aleksy jest dawnym rycerzem, który zdradził tyrana po rzezi swojej wioski.",
+      "conclusionTag": "rescue-prisoners",
+      "discovered": false,
+      "delivery": "npc-dialog",
+      "requires": []
+    },
+    {
+      "id": "sec-6",
+      "text": "Mapa rozlokowań straży jest sfałszowana — to pułapka.",
+      "conclusionTag": "escape",
+      "discovered": false,
+      "delivery": "document",
+      "requires": []
+    }
+  ],
+  "clocks": [
+    {
+      "id": "clock-alarm",
+      "label": "Alarm twierdzy",
+      "segments": 4,
+      "filled": 0,
+      "polarity": "danger",
+      "tickSources": ["hard-move", "fail"]
+    },
+    {
+      "id": "clock-ritual",
+      "label": "Postęp rytuału tyrana",
+      "segments": 6,
+      "filled": 0,
+      "polarity": "danger",
+      "tickSources": ["scene-enter", "time-skip"]
+    }
+  ]
+}

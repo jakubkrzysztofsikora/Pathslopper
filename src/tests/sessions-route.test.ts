@@ -16,6 +16,27 @@ function getRequest(url: string): NextRequest {
   return new NextRequest(url, { method: "GET" });
 }
 
+const MINIMAL_BRIEF = {
+  version: "pf2e",
+  partySize: 4,
+  partyLevel: 3,
+  targetDurationHours: 4,
+  tone: "heroic",
+  setting: "ruiny starożytnej twierdzy",
+  presetId: "classic",
+  storyDna: {
+    version: "pf2e",
+    sliders: {
+      narrativePacing: 5,
+      tacticalLethality: 5,
+      npcImprov: 5,
+    },
+    tags: { include: [], exclude: [] },
+  },
+  characterHooks: [],
+  safetyTools: { lines: [], veils: [], xCardEnabled: true },
+};
+
 describe("POST /api/sessions", () => {
   beforeEach(async () => {
     await getSessionStore()._reset();
@@ -32,6 +53,19 @@ describe("POST /api/sessions", () => {
     expect(json.session.phase).toBe("brief");
     expect(json.session.characters).toEqual([]);
     expect(typeof json.session.id).toBe("string");
+  });
+
+  it("persists brief when brief payload is included and returns phase=brief with brief populated", async () => {
+    const res = await createSessionPOST(
+      jsonRequest("http://localhost/api/sessions", { version: "pf2e", brief: MINIMAL_BRIEF })
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.session.phase).toBe("brief");
+    expect(json.session.brief).toBeDefined();
+    expect(json.session.brief.partyLevel).toBe(3);
+    expect(json.session.brief.tone).toBe("heroic");
   });
 
   it("returns 400 on invalid version", async () => {

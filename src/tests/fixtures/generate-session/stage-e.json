@@ -1,0 +1,13 @@
+{
+  "nodePrompts": {
+    "sc-start": "Stoisz przed masywną bramą twierdzy. Zardzewiałe zawiasy skrzypią w zimnym wietrze. Strażnicy w ciemnych zbrojach mierzą cię wzrokiem.",
+    "sc-patrol": "Patrol trzech strażników przemierza zewnętrzne mury. Ich kroki są miarowe, mechaniczne. Jeden z nich zatrzymuje się i spogląda w twoją stronę.",
+    "sc-cellar": "Wąskie schody prowadzą w dół, do wilgotnych podziemi. Powietrze jest ciężkie od zapachu pleśni i czegoś metalicznego. Coś tu jest nie tak.",
+    "sc-informant": "Mężczyzna w łachmanach wyłania się z cienia. Jego oczy są bystre, choć twarz zmęczona. 'Wiedziałem, że przyjdziecie' — szepcze.",
+    "sc-captain": "Kapitan Marek stoi na środku korytarza, ręka na rękojeści miecza. Jego zimny wzrok przenika każdego z was. 'Zatrzymać się. Teraz.'",
+    "sc-ritual": "Komnata wypełniona jest dymem kadzidła i blaskiem czarnych świec. Tyran stoi w centrum kręgu rун, recytując zaklęcie.",
+    "sc-escape": "Mury drżą. Płomienie lizą belki stropowe. Musicie się wydostać — teraz. Każda sekunda kosztuje.",
+    "sc-victory": "Wychodzisz na świeże powietrze. Twierdza płonie za twoimi plecami. W oddali słyszysz okrzyki radości mieszkańców pierwszej wyzwolonej wioski.",
+    "sc-defeat": "Kajdany zacinają się na twoich nadgarstkach. Kapitan Marek patrzy na ciebie bez emocji. 'Zabrać ich do lochów.'"
+  }
+}

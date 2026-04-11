@@ -1,0 +1,103 @@
+{
+  "scenes": [
+    {
+      "id": "sc-start",
+      "title": "Brama twierdzy",
+      "synopsis": "Drużyna staje przed bramą. Musi znaleźć sposób na wejście.",
+      "kind": "strong-start",
+      "act": 1,
+      "tensionLevel": 5,
+      "estimatedMinutes": 20,
+      "npcsPresent": [],
+      "locationRef": "loc-gate"
+    },
+    {
+      "id": "sc-patrol",
+      "title": "Patrol straży",
+      "synopsis": "Strażnicy patrolują zewnętrzne mury.",
+      "kind": "scene",
+      "act": 1,
+      "tensionLevel": 4,
+      "estimatedMinutes": 15,
+      "npcsPresent": ["npc-guard"],
+      "locationRef": "loc-gate"
+    },
+    {
+      "id": "sc-cellar",
+      "title": "Tajemnicza piwnica",
+      "synopsis": "Ukryte wejście prowadzi do podziemi.",
+      "kind": "exploration",
+      "act": 1,
+      "tensionLevel": 6,
+      "estimatedMinutes": 25,
+      "npcsPresent": [],
+      "locationRef": "loc-dungeon"
+    },
+    {
+      "id": "sc-informant",
+      "title": "Spotkanie z informatorem",
+      "synopsis": "Tajemniczy informator ujawnia sekret twierdzy.",
+      "kind": "scene",
+      "act": 1,
+      "tensionLevel": 3,
+      "estimatedMinutes": 20,
+      "npcsPresent": ["npc-informant"],
+      "locationRef": "loc-dungeon"
+    },
+    {
+      "id": "sc-captain",
+      "title": "Konfrontacja z kapitanem",
+      "synopsis": "Kapitan straży blokuje drogę do wieży.",
+      "kind": "combat-narrative",
+      "act": 2,
+      "tensionLevel": 8,
+      "estimatedMinutes": 30,
+      "npcsPresent": ["npc-captain", "npc-guard"],
+      "locationRef": "loc-tower"
+    },
+    {
+      "id": "sc-ritual",
+      "title": "Komnata rytualna",
+      "synopsis": "Tyran przygotowuje mroczny rytuał.",
+      "kind": "scene",
+      "act": 2,
+      "tensionLevel": 9,
+      "estimatedMinutes": 25,
+      "npcsPresent": ["npc-captain"],
+      "locationRef": "loc-tower"
+    },
+    {
+      "id": "sc-escape",
+      "title": "Ucieczka przez mury",
+      "synopsis": "Bohaterowie muszą wydostać się z płonącej twierdzy.",
+      "kind": "scene",
+      "act": 2,
+      "tensionLevel": 7,
+      "estimatedMinutes": 20,
+      "npcsPresent": [],
+      "locationRef": "loc-gate"
+    },
+    {
+      "id": "sc-victory",
+      "title": "Wolność",
+      "synopsis": "Region jest wolny. Tyrania została obalona.",
+      "kind": "ending",
+      "act": 2,
+      "tensionLevel": 2,
+      "estimatedMinutes": 10,
+      "npcsPresent": [],
+      "locationRef": "loc-gate"
+    },
+    {
+      "id": "sc-defeat",
+      "title": "Klęska",
+      "synopsis": "Drużyna zostaje pojmana lub poległa.",
+      "kind": "ending",
+      "act": 2,
+      "tensionLevel": 1,
+      "estimatedMinutes": 10,
+      "npcsPresent": [],
+      "locationRef": "loc-dungeon"
+    }
+  ]
+}

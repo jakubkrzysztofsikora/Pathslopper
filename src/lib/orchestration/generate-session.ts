@@ -1,0 +1,362 @@
+import { randomUUID } from "node:crypto";
+import type { CallLLM, ChatMessage } from "@/lib/llm/client";
+import type { SessionBrief } from "@/lib/schemas/session-brief";
+import type { SessionGraph } from "@/lib/schemas/session-graph";
+import { SessionGraphSchema } from "@/lib/schemas/session-graph";
+import {
+  buildGeneratorChain,
+  type StageASkeleton,
+  type StageBScenes,
+  type StageCWorldKit,
+  type StageDWiring,
+  type StageEProse,
+  type StageFStatBlocks,
+} from "@/lib/prompts/session-generator";
+import type { SessionNode, SessionGraph as SG } from "@/lib/schemas/session-graph";
+
+type PartialSessionGraph = Omit<SG, "createdAt" | "updatedAt" | "validatedAt">;
+
+export interface GenerateSessionDeps {
+  callLLM: CallLLM;
+  logger?: (stage: string, info: unknown) => void;
+}
+
+export type GenerateSessionFailureStage = "A" | "B" | "C" | "D" | "E" | "F" | "validate";
+
+export type GenerateSessionResult =
+  | { ok: true; graph: SessionGraph; warnings: string[] }
+  | { ok: false; stage: GenerateSessionFailureStage; error: string; partial?: unknown };
+
+const UPSTREAM_ERROR = "Upstream model call failed.";
+const PARSE_ERROR = "Stage output could not be parsed against schema.";
+
+/**
+ * Run one LLM stage with a single retry on parse failure. Returns the parsed
+ * value or throws with context so the caller can return a typed failure result.
+ */
+async function runStageWithRetry<T>(
+  stageLabel: GenerateSessionFailureStage,
+  prompts: { system: string; user: string },
+  temperature: number,
+  parse: (raw: string) => T | null,
+  callLLM: CallLLM,
+  logger: ((stage: string, info: unknown) => void) | undefined
+): Promise<{ ok: true; value: T } | { ok: false; error: string; raw?: string }> {
+  const messages: ChatMessage[] = [{ role: "user", content: prompts.user }];
+
+  let raw: string;
+  try {
+    raw = await callLLM({ system: prompts.system, messages, temperature });
+  } catch (err) {
+    logger?.(stageLabel, err);
+    return { ok: false, error: UPSTREAM_ERROR };
+  }
+
+  const parsed = parse(raw);
+  if (parsed !== null) return { ok: true, value: parsed };
+
+  // Retry once: feed the bad output + a targeted correction
+  const retryMessages: ChatMessage[] = [
+    { role: "user", content: prompts.user },
+    { role: "assistant", content: raw },
+    {
+      role: "user",
+      content:
+        "Your previous response could not be parsed as valid JSON matching the required schema. " +
+        "Rewrite ONLY the JSON object — no markdown, no code fences, no explanation. " +
+        "Fix all structural issues so it validates against the schema.",
+    },
+  ];
+
+  let retryRaw: string;
+  try {
+    retryRaw = await callLLM({ system: prompts.system, messages: retryMessages, temperature });
+  } catch (err) {
+    logger?.(`${stageLabel}-retry`, err);
+    return { ok: false, error: UPSTREAM_ERROR, raw };
+  }
+
+  const retryParsed = parse(retryRaw);
+  if (retryParsed !== null) return { ok: true, value: retryParsed };
+
+  return { ok: false, error: PARSE_ERROR, raw: retryRaw };
+}
+
+/**
+ * Attempt to extract and parse JSON from an LLM response string.
+ * Handles both bare JSON objects and JSON embedded in markdown code fences.
+ */
+function extractJson(raw: string): unknown | null {
+  const trimmed = raw.trim();
+  // Try bare JSON first
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Try to extract from a ```json ... ``` fence
+    const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) {
+      try {
+        return JSON.parse(fenceMatch[1].trim());
+      } catch {
+        // fall through
+      }
+    }
+    // Try to find the first top-level JSON object
+    const objMatch = trimmed.match(/(\{[\s\S]*\})/);
+    if (objMatch) {
+      try {
+        return JSON.parse(objMatch[1]);
+      } catch {
+        // fall through
+      }
+    }
+    return null;
+  }
+}
+
+/**
+ * Assemble a partial SessionGraph from all six stage outputs, then fill in
+ * the node prompt fields from Stage E.
+ */
+function assembleGraph(
+  brief: SessionBrief,
+  stageA: StageASkeleton,
+  stageB: StageBScenes,
+  stageC: StageCWorldKit,
+  stageD: StageDWiring,
+  stageE: StageEProse,
+  stageF: StageFStatBlocks
+): Partial<SessionGraph> {
+  const now = new Date().toISOString();
+
+  // Build SessionNodes from Stage B scenes + Stage E prompts
+  const nodes: SessionNode[] = stageB.scenes.map((scene) => ({
+    id: scene.id,
+    kind: scene.kind,
+    act: scene.act,
+    title: scene.title,
+    synopsis: scene.synopsis,
+    // Stage E fills in the per-node narration seed
+    prompt: stageE.nodePrompts[scene.id] ?? "",
+    estimatedMinutes: scene.estimatedMinutes,
+    tensionLevel: scene.tensionLevel,
+    npcsPresent: scene.npcsPresent ?? [],
+    locationId: scene.locationRef,
+    // Defaults for optional session-node fields
+    obstacles: [],
+    contentWarnings: [],
+    tags: [],
+    onEnterEffects: [],
+    repeatable: false,
+  }));
+
+  // Merge Stage F stat blocks into Stage C NPCs
+  const npcs = stageC.npcs.map((npc) => {
+    const statBlock = stageF.statBlocks[npc.id];
+    if (statBlock) return { ...npc, statBlock };
+    return npc;
+  });
+
+  // Build Fronts from Stage A (add firedPortents=0 and required id)
+  const fronts = stageA.fronts.map((f, idx) => ({
+    id: `front-${idx + 1}`,
+    name: f.name,
+    stakes: f.stakes,
+    dangers: f.dangers,
+    grimPortents: f.grimPortents,
+    impendingDoom: f.impendingDoom,
+    firedPortents: 0,
+  }));
+
+  return {
+    id: randomUUID(),
+    version: brief.version,
+    brief,
+    startNodeId: stageD.startNodeId,
+    nodes,
+    edges: stageD.edges,
+    clocks: stageC.clocks,
+    fronts,
+    secrets: stageC.secrets,
+    npcs,
+    locations: stageC.locations,
+    endings: stageD.endings,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export async function generateSession(
+  brief: SessionBrief,
+  deps: GenerateSessionDeps
+): Promise<GenerateSessionResult> {
+  const { callLLM, logger } = deps;
+  const chain = buildGeneratorChain();
+
+  // Stage A — skeleton
+  const stageAResult = await runStageWithRetry(
+    "A",
+    chain.stageA.buildPrompt(brief),
+    chain.stageA.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageA.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageAResult.ok) return { ok: false, stage: "A", error: stageAResult.error, partial: stageAResult.raw };
+  const stageA = stageAResult.value;
+
+  // Stage B — scenes
+  const stageBResult = await runStageWithRetry(
+    "B",
+    chain.stageB.buildPrompt({ brief, skeleton: stageA }),
+    chain.stageB.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageB.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageBResult.ok) return { ok: false, stage: "B", error: stageBResult.error, partial: stageBResult.raw };
+  const stageB = stageBResult.value;
+
+  // Stage C — world kit
+  const stageCResult = await runStageWithRetry(
+    "C",
+    chain.stageC.buildPrompt({ brief, skeleton: stageA, scenes: stageB }),
+    chain.stageC.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageC.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageCResult.ok) return { ok: false, stage: "C", error: stageCResult.error, partial: stageCResult.raw };
+  const stageC = stageCResult.value;
+
+  // Stage D — wiring
+  const stageDResult = await runStageWithRetry(
+    "D",
+    chain.stageD.buildPrompt({ brief, skeleton: stageA, scenes: stageB, worldKit: stageC }),
+    chain.stageD.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageD.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageDResult.ok) return { ok: false, stage: "D", error: stageDResult.error, partial: stageDResult.raw };
+  const stageD = stageDResult.value;
+
+  // Partial assembly for Stage E (needs assembled structure minus node prompts)
+  const partialGraph = assembleGraph(
+    brief,
+    stageA,
+    stageB,
+    stageC,
+    stageD,
+    { nodePrompts: {} },
+    { statBlocks: {} }
+  );
+
+  // Stage E — prose (node prompts)
+  const stageEResult = await runStageWithRetry(
+    "E",
+    chain.stageE.buildPrompt({
+      assembledGraph: partialGraph as PartialSessionGraph,
+    }),
+    chain.stageE.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageE.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageEResult.ok) return { ok: false, stage: "E", error: stageEResult.error, partial: stageEResult.raw };
+  const stageE = stageEResult.value;
+
+  // Stage F — stat blocks
+  const stageFResult = await runStageWithRetry(
+    "F",
+    chain.stageF.buildPrompt({
+      graph: partialGraph as PartialSessionGraph,
+    }),
+    chain.stageF.temperature,
+    (raw) => {
+      const json = extractJson(raw);
+      if (!json) return null;
+      const result = chain.stageF.schema.safeParse(json);
+      return result.success ? result.data : null;
+    },
+    callLLM,
+    logger
+  );
+  if (!stageFResult.ok) return { ok: false, stage: "F", error: stageFResult.error, partial: stageFResult.raw };
+  const stageF = stageFResult.value;
+
+  // Assemble final graph
+  const assembled = assembleGraph(brief, stageA, stageB, stageC, stageD, stageE, stageF);
+
+  // Validation pass
+  const parseResult = SessionGraphSchema.safeParse(assembled);
+  if (parseResult.success) {
+    return { ok: true, graph: parseResult.data, warnings: [] };
+  }
+
+  // Validator repair — one shot
+  const repairErrors = parseResult.error.errors
+    .map((e) => `${e.path.join(".")}: ${e.message}`)
+    .join("\n");
+
+  const repairSystem =
+    "You are a JSON repair assistant. Fix the SessionGraph JSON to satisfy all validation errors listed below. " +
+    "Return ONLY the corrected JSON object — no markdown, no explanation.";
+  const repairUser =
+    `VALIDATION ERRORS:\n${repairErrors}\n\nPARTIAL GRAPH:\n${JSON.stringify(assembled, null, 2)}\n\n` +
+    "Return the minimally corrected SessionGraph JSON.";
+
+  let repairedRaw: string;
+  try {
+    repairedRaw = await callLLM({
+      system: repairSystem,
+      messages: [{ role: "user", content: repairUser }],
+      temperature: 0.1,
+    });
+  } catch (err) {
+    logger?.("validate-repair", err);
+    return { ok: false, stage: "validate", error: UPSTREAM_ERROR, partial: assembled };
+  }
+
+  const repairedJson = extractJson(repairedRaw);
+  if (!repairedJson) {
+    return { ok: false, stage: "validate", error: PARSE_ERROR, partial: assembled };
+  }
+
+  const repairedResult = SessionGraphSchema.safeParse(repairedJson);
+  if (!repairedResult.success) {
+    return {
+      ok: false,
+      stage: "validate",
+      error: `Repair failed: ${repairedResult.error.errors.map((e) => e.message).join("; ")}`,
+      partial: repairedJson,
+    };
+  }
+
+  return { ok: true, graph: repairedResult.data, warnings: ["Graph required repair during validation."] };
+}

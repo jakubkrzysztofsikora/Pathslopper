@@ -1,0 +1,103 @@
+{
+  "startNodeId": "sc-start",
+  "edges": [
+    {
+      "id": "e-start-patrol",
+      "from": "sc-start",
+      "to": "sc-patrol",
+      "kind": "choice",
+      "label": "Podejdź do straży",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-start-cellar",
+      "from": "sc-start",
+      "to": "sc-cellar",
+      "kind": "choice",
+      "label": "Szukaj ukrytego wejścia",
+      "onTraverseEffects": [],
+      "priority": 1
+    },
+    {
+      "id": "e-patrol-captain",
+      "from": "sc-patrol",
+      "to": "sc-captain",
+      "kind": "auto",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-cellar-informant",
+      "from": "sc-cellar",
+      "to": "sc-informant",
+      "kind": "auto",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-informant-captain",
+      "from": "sc-informant",
+      "to": "sc-captain",
+      "kind": "auto",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-captain-ritual",
+      "from": "sc-captain",
+      "to": "sc-ritual",
+      "kind": "auto",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-ritual-escape",
+      "from": "sc-ritual",
+      "to": "sc-escape",
+      "kind": "choice",
+      "label": "Uciekaj!",
+      "onTraverseEffects": [],
+      "priority": 0
+    },
+    {
+      "id": "e-escape-victory",
+      "from": "sc-escape",
+      "to": "sc-victory",
+      "kind": "auto",
+      "onTraverseEffects": [
+        { "op": "set-flag", "flag": "tyrant-defeated" }
+      ],
+      "priority": 0
+    },
+    {
+      "id": "e-alarm-defeat",
+      "from": "sc-ritual",
+      "to": "sc-defeat",
+      "kind": "clock-trigger",
+      "clockId": "clock-alarm",
+      "onTraverseEffects": [],
+      "priority": 0
+    }
+  ],
+  "endings": [
+    {
+      "id": "end-victory",
+      "nodeId": "sc-victory",
+      "condition": { "op": "flag-set", "flag": "tyrant-defeated" },
+      "title": "Wolność regionu",
+      "summary": "Tyran pokonany, region uwolniony od tyranii.",
+      "category": "victory",
+      "frontOutcomes": { "front-1": "neutralized" }
+    },
+    {
+      "id": "end-defeat",
+      "nodeId": "sc-defeat",
+      "condition": { "op": "clock-filled", "clockId": "clock-alarm" },
+      "title": "Pojmani",
+      "summary": "Alarm dotarł do posiłków — drużyna została pojmana.",
+      "category": "defeat",
+      "frontOutcomes": { "front-1": "escalated" }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "acts": [
+    {
+      "title": "Przybycie",
+      "stakes": "Czy drużyna zdoła wejść do twierdzy?"
+    },
+    {
+      "title": "Konfrontacja",
+      "stakes": "Czy tyran zostanie pokonany?"
+    }
+  ],
+  "fronts": [
+    {
+      "name": "Tyran",
+      "dangers": [
+        {
+          "name": "Straż",
+          "impulse": "Aresztować każdego intruza."
+        }
+      ],
+      "grimPortents": [
+        "Podatki zostają podwojone.",
+        "Mury twierdzy się wzmacniają.",
+        "Głos oporu milknie."
+      ],
+      "impendingDoom": "Całkowite zniewolenie regionu na pokolenia.",
+      "stakes": ["Czy tyrania zostanie przełamana?"]
+    }
+  ],
+  "primaryConflict": "Drużyna musi obalić tyrana, który terroryzuje region, zanim jego siła stanie się nie do pokonania."
+}
