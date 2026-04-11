@@ -1,73 +1,31 @@
-import { createHash, randomBytes } from "node:crypto";
-import type {
-  ManagerOverrideTurn,
-  NarrationTurn,
-  ResolvedTurn,
-  SessionState,
-} from "@/lib/schemas/session";
-import { MAX_CHARACTERS_PER_SESSION } from "@/lib/schemas/session";
+import { randomBytes } from "node:crypto";
+import type { SessionState, WorldState } from "@/lib/schemas/session";
+import type { SessionBrief } from "@/lib/schemas/session-brief";
+import type { SessionGraph } from "@/lib/schemas/session-graph";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 
-/**
- * Server-only session store.
- *
- * Holds the per-session append-only turn log that backs the Stateful
- * Interaction Loop. The interface is async so Redis (or any future
- * remote store) can implement it without refactoring callers.
- *
- * Per CLAUDE.md's state boundary invariant, nothing in this file is
- * safe to import from a client component. Only API route handlers and
- * orchestrators should touch the store.
- */
-
-export const MAX_TURNS_PER_SESSION = 200;
 export const MAX_SESSIONS_TRACKED = 1000;
-export { MAX_CHARACTERS_PER_SESSION };
 
 export interface SessionStore {
   create(version: PathfinderVersion): Promise<SessionState>;
   get(id: string): Promise<SessionState | undefined>;
-  appendResolved(
-    id: string,
-    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-  ): Promise<SessionState | undefined>;
-  appendNarration(
-    id: string,
-    markdown: string,
-    opts?: { at?: string }
-  ): Promise<SessionState | undefined>;
-  worldStateHash(id: string): Promise<string | undefined>;
   addCharacter(
     id: string,
     character: CharacterSheetParsed
   ): Promise<SessionState | undefined>;
-  setActiveOverride(
+  // Phase 1 graph-lifecycle methods (Amendment A)
+  setBrief(id: string, brief: SessionBrief): Promise<SessionState | undefined>;
+  setGraph(id: string, graph: SessionGraph): Promise<SessionState | undefined>;
+  updateGraph(
     id: string,
-    forcedOutcome: string,
-    summary: string,
-    turnsConsidered: number
+    patch: Partial<SessionGraph>
   ): Promise<SessionState | undefined>;
-  clearActiveOverride(id: string): Promise<SessionState | undefined>;
-  /**
-   * Atomic read-modify-write that consumes an active manager override.
-   *
-   * The bypass path in resolveInteraction needs to do two things when
-   * override is active: clear the `activeOverride` flag and append the
-   * synthetic resolved turn to the log. Doing those as two separate
-   * calls is both inefficient (two Redis round-trips, each its own
-   * read-modify-write) and inconsistent (if the second call fails the
-   * session is left with the override cleared but no resolved turn
-   * logged). This method folds both mutations into one transaction so
-   * they either both land or neither does.
-   *
-   * Returns the updated session, or `undefined` if the session is
-   * missing or has no active override (caller should treat that as
-   * "session disappeared mid-request" and surface a session error).
-   */
-  consumeOverride(
+  approve(id: string, inkCompiled: string): Promise<SessionState | undefined>;
+  tick(
     id: string,
-    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
+    inkState: string,
+    worldState: WorldState
   ): Promise<SessionState | undefined>;
   size(): Promise<number>;
   /** Test-only: clear all sessions. */
@@ -79,226 +37,9 @@ export function nowIso(): string {
 }
 
 export function newSessionId(): string {
-  // 18 random bytes base64url-encoded → 24-char URL-safe ID (matches the
-  // SessionIdSchema regex and length bounds).
   return randomBytes(18)
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
-}
-
-export function hashState(state: SessionState): string {
-  // Deterministic fingerprint of the turn log — the "world-state hash"
-  // from the original brief. The narrator treats this as authoritative.
-  // sha256 truncated to 16 hex chars is plenty for keying.
-  const canonical = JSON.stringify({
-    id: state.id,
-    version: state.version,
-    turns: state.turns,
-  });
-  return createHash("sha256").update(canonical).digest("hex").slice(0, 16);
-}
-
-export function buildResolvedTurn(
-  input: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-): ResolvedTurn {
-  return {
-    kind: "resolved",
-    at: input.at ?? nowIso(),
-    intent: input.intent,
-    result: input.result,
-  };
-}
-
-export function buildNarrationTurn(
-  markdown: string,
-  worldStateHash: string,
-  opts: { at?: string } = {}
-): NarrationTurn {
-  return {
-    kind: "narration",
-    at: opts.at ?? nowIso(),
-    markdown,
-    worldStateHash,
-  };
-}
-
-export function buildManagerOverrideTurn(
-  input: { summary: string; forcedOutcome: string; turnsConsidered: number; at?: string }
-): ManagerOverrideTurn {
-  return {
-    kind: "manager-override",
-    at: input.at ?? nowIso(),
-    summary: input.summary,
-    forcedOutcome: input.forcedOutcome,
-    turnsConsidered: input.turnsConsidered,
-  };
-}
-
-export function appendTurnCapped<T extends { turns: SessionState["turns"] }>(
-  state: T,
-  turn: SessionState["turns"][number]
-): SessionState["turns"] {
-  return [...state.turns, turn].slice(-MAX_TURNS_PER_SESSION);
-}
-
-/**
- * In-memory session store. Holds sessions in a Map<id, SessionState> in
- * module scope on the server and persists across requests on a warm
- * Scaleway Serverless Container instance. Cold starts and horizontal
- * scaling WILL lose state — this is the local-dev and fallback path.
- * Production uses the Redis-backed store via getSessionStore().
- */
-export class InMemorySessionStore implements SessionStore {
-  private readonly sessions = new Map<string, SessionState>();
-
-  async create(version: PathfinderVersion): Promise<SessionState> {
-    if (this.sessions.size >= MAX_SESSIONS_TRACKED) {
-      const oldestKey = this.sessions.keys().next().value;
-      if (oldestKey) this.sessions.delete(oldestKey);
-    }
-    const id = newSessionId();
-    const now = nowIso();
-    const state: SessionState = {
-      id,
-      version,
-      createdAt: now,
-      updatedAt: now,
-      turns: [],
-      characters: [],
-      activeOverride: null,
-    };
-    this.sessions.set(id, state);
-    return state;
-  }
-
-  async get(id: string): Promise<SessionState | undefined> {
-    return this.sessions.get(id);
-  }
-
-  async appendResolved(
-    id: string,
-    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-  ): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    const resolved = buildResolvedTurn(turn);
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      turns: appendTurnCapped(session, resolved),
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async appendNarration(
-    id: string,
-    markdown: string,
-    opts: { at?: string } = {}
-  ): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    const narration = buildNarrationTurn(
-      markdown,
-      hashState(session),
-      opts
-    );
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      turns: appendTurnCapped(session, narration),
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async worldStateHash(id: string): Promise<string | undefined> {
-    const session = this.sessions.get(id);
-    return session ? hashState(session) : undefined;
-  }
-
-  async addCharacter(
-    id: string,
-    character: CharacterSheetParsed
-  ): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    if (session.characters.length >= MAX_CHARACTERS_PER_SESSION) {
-      throw new Error(
-        `Character roster is full (max ${MAX_CHARACTERS_PER_SESSION}).`
-      );
-    }
-    const duplicate = session.characters.find(
-      (c) => c.name.toLowerCase() === character.name.toLowerCase()
-    );
-    if (duplicate) {
-      throw new Error(`A character named "${character.name}" already exists in this session.`);
-    }
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      characters: [...session.characters, character],
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async setActiveOverride(
-    id: string,
-    forcedOutcome: string,
-    summary: string,
-    turnsConsidered: number
-  ): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    const overrideTurn = buildManagerOverrideTurn({ summary, forcedOutcome, turnsConsidered });
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      turns: appendTurnCapped(session, overrideTurn),
-      activeOverride: { forcedOutcome, setAt: nowIso() },
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async clearActiveOverride(id: string): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      activeOverride: null,
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async consumeOverride(
-    id: string,
-    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
-  ): Promise<SessionState | undefined> {
-    const session = this.sessions.get(id);
-    if (!session) return undefined;
-    if (!session.activeOverride) return undefined;
-    const resolved = buildResolvedTurn(turn);
-    const next: SessionState = {
-      ...session,
-      updatedAt: nowIso(),
-      activeOverride: null,
-      turns: appendTurnCapped(session, resolved),
-    };
-    this.sessions.set(id, next);
-    return next;
-  }
-
-  async size(): Promise<number> {
-    return this.sessions.size;
-  }
-
-  async _reset(): Promise<void> {
-    this.sessions.clear();
-  }
 }

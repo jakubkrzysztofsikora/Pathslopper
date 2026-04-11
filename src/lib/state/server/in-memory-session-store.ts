@@ -1,66 +1,24 @@
-import type { PathfinderVersion } from "@/lib/schemas/version";
-import { SessionStateSchema, type SessionState, type WorldState } from "@/lib/schemas/session";
+import type { SessionState, WorldState } from "@/lib/schemas/session";
 import { MAX_CHARACTERS_PER_SESSION } from "@/lib/schemas/session";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import type { SessionGraph } from "@/lib/schemas/session-graph";
+import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
-import { newSessionId, nowIso, type SessionStore } from "./session-store";
-import { createIoRedisClient, type RedisClient } from "./redis-client";
+import {
+  MAX_SESSIONS_TRACKED,
+  newSessionId,
+  nowIso,
+  type SessionStore,
+} from "./session-store";
 
-const KEY_PREFIX = "pfnexus:session:";
-// 7-day TTL — prepped sessions may sit unplayed for multiple days
-// ("human GM preps on Sunday, plays on Friday" use case).
-const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 7;
-
-function keyFor(id: string): string {
-  return `${KEY_PREFIX}${id}`;
-}
-
-function matchAllKeysPattern(): string {
-  return `${KEY_PREFIX}*`;
-}
-
-export class RedisSessionStore implements SessionStore {
-  constructor(
-    private readonly redis: RedisClient,
-    private readonly ttlSeconds: number = DEFAULT_TTL_SECONDS
-  ) {}
-
-  static fromUrl(url: string, ttlSeconds?: number): RedisSessionStore {
-    return new RedisSessionStore(createIoRedisClient(url), ttlSeconds);
-  }
-
-  private async readSession(id: string): Promise<SessionState | undefined> {
-    const raw = await this.redis.get(keyFor(id));
-    if (!raw) return undefined;
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (err) {
-      console.error(
-        `[RedisSessionStore] Failed to parse session ${id}: ${err instanceof Error ? err.message : String(err)}`
-      );
-      return undefined;
-    }
-    const result = SessionStateSchema.safeParse(parsed);
-    if (!result.success) {
-      console.error(
-        `[RedisSessionStore] Session ${id} failed schema validation: ${result.error.message}`
-      );
-      return undefined;
-    }
-    return result.data;
-  }
-
-  private async writeSession(state: SessionState): Promise<void> {
-    await this.redis.setWithTtl(
-      keyFor(state.id),
-      JSON.stringify(state),
-      this.ttlSeconds
-    );
-  }
+export class InMemorySessionStore implements SessionStore {
+  private readonly sessions = new Map<string, SessionState>();
 
   async create(version: PathfinderVersion): Promise<SessionState> {
+    if (this.sessions.size >= MAX_SESSIONS_TRACKED) {
+      const oldestKey = this.sessions.keys().next().value;
+      if (oldestKey) this.sessions.delete(oldestKey);
+    }
     const id = newSessionId();
     const now = nowIso();
     const state: SessionState = {
@@ -82,19 +40,19 @@ export class RedisSessionStore implements SessionStore {
       },
       characters: [],
     };
-    await this.writeSession(state);
+    this.sessions.set(id, state);
     return state;
   }
 
   async get(id: string): Promise<SessionState | undefined> {
-    return this.readSession(id);
+    return this.sessions.get(id);
   }
 
   async addCharacter(
     id: string,
     character: CharacterSheetParsed
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session) return undefined;
     if (session.characters.length >= MAX_CHARACTERS_PER_SESSION) {
       throw new Error(
@@ -114,7 +72,7 @@ export class RedisSessionStore implements SessionStore {
       updatedAt: nowIso(),
       characters: [...session.characters, character],
     };
-    await this.writeSession(next);
+    this.sessions.set(id, next);
     return next;
   }
 
@@ -122,10 +80,14 @@ export class RedisSessionStore implements SessionStore {
     id: string,
     brief: SessionBrief
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session) return undefined;
-    const next: SessionState = { ...session, updatedAt: nowIso(), brief };
-    await this.writeSession(next);
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      brief,
+    };
+    this.sessions.set(id, next);
     return next;
   }
 
@@ -133,7 +95,7 @@ export class RedisSessionStore implements SessionStore {
     id: string,
     graph: SessionGraph
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session) return undefined;
     const next: SessionState = {
       ...session,
@@ -141,7 +103,7 @@ export class RedisSessionStore implements SessionStore {
       phase: "authoring",
       graph,
     };
-    await this.writeSession(next);
+    this.sessions.set(id, next);
     return next;
   }
 
@@ -149,14 +111,14 @@ export class RedisSessionStore implements SessionStore {
     id: string,
     patch: Partial<SessionGraph>
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session || !session.graph) return undefined;
     const next: SessionState = {
       ...session,
       updatedAt: nowIso(),
       graph: { ...session.graph, ...patch },
     };
-    await this.writeSession(next);
+    this.sessions.set(id, next);
     return next;
   }
 
@@ -164,7 +126,7 @@ export class RedisSessionStore implements SessionStore {
     id: string,
     inkCompiled: string
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session) return undefined;
     const next: SessionState = {
       ...session,
@@ -172,7 +134,7 @@ export class RedisSessionStore implements SessionStore {
       phase: "approved",
       inkCompiled,
     };
-    await this.writeSession(next);
+    this.sessions.set(id, next);
     return next;
   }
 
@@ -181,7 +143,7 @@ export class RedisSessionStore implements SessionStore {
     inkState: string,
     worldState: WorldState
   ): Promise<SessionState | undefined> {
-    const session = await this.readSession(id);
+    const session = this.sessions.get(id);
     if (!session) return undefined;
     const next: SessionState = {
       ...session,
@@ -190,15 +152,15 @@ export class RedisSessionStore implements SessionStore {
       inkState,
       worldState,
     };
-    await this.writeSession(next);
+    this.sessions.set(id, next);
     return next;
   }
 
   async size(): Promise<number> {
-    return this.redis.countKeys(matchAllKeysPattern());
+    return this.sessions.size;
   }
 
   async _reset(): Promise<void> {
-    await this.redis.deleteByPattern(matchAllKeysPattern());
+    this.sessions.clear();
   }
 }

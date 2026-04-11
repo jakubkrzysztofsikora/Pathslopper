@@ -29,7 +29,8 @@ describe("POST /api/sessions", () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.session.version).toBe("pf2e");
-    expect(json.session.turns).toHaveLength(0);
+    expect(json.session.phase).toBe("brief");
+    expect(json.session.characters).toEqual([]);
     expect(typeof json.session.id).toBe("string");
   });
 

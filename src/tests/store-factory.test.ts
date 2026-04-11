@@ -3,7 +3,7 @@ import {
   getSessionStore,
   _resetSessionStoreSingleton,
 } from "@/lib/state/server/store-factory";
-import { InMemorySessionStore } from "@/lib/state/server/session-store";
+import { InMemorySessionStore } from "@/lib/state/server/in-memory-session-store";
 
 describe("getSessionStore factory", () => {
   const originalRedisUrl = process.env.REDIS_URL;

@@ -16,11 +16,12 @@ import { t } from "@/lib/i18n";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { SessionState } from "@/lib/schemas/session";
 
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2 | 3 | 4;
 
 const STEP_KEYS = [
   "wizard.stepVersion",
   "wizard.stepStyle",
+  "wizard.stepBrief",
   "wizard.stepCharacters",
   "wizard.stepSummary",
 ] as const;
@@ -60,6 +61,9 @@ export function NewSessionWizard() {
   const [sessionName, setSessionName] = React.useState(() =>
     defaultSessionName("classic")
   );
+  const [targetDurationHours, setTargetDurationHours] = React.useState(5);
+  const [tone, setTone] = React.useState("");
+  const [setting, setSetting] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -90,10 +94,27 @@ export function NewSessionWizard() {
     setSubmitting(true);
     setError(null);
     try {
+      const liveStore = useStoryDNAStore.getState();
+      const snapshot = liveStore.getSnapshot();
+      const storyDna = snapshot.success
+        ? snapshot.data
+        : { version, sliders: liveStore.sliders, tags: liveStore.tags };
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ version }),
+        body: JSON.stringify({
+          version,
+          brief: {
+            version,
+            partySize: 4,
+            partyLevel: 1,
+            targetDurationHours,
+            tone: tone.trim(),
+            setting: setting.trim(),
+            presetId: preset,
+            storyDna,
+          },
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -102,20 +123,12 @@ export function NewSessionWizard() {
         return;
       }
       const session = json.session as SessionState;
-      const liveStore = useStoryDNAStore.getState();
-      const snapshot = liveStore.getSnapshot();
       addBookmark({
         id: session.id,
         name: sessionName.trim() || defaultSessionName(preset),
         version: session.version,
         createdAt: session.createdAt,
-        storyDnaSnapshot: snapshot.success
-          ? snapshot.data
-          : {
-              version,
-              sliders: liveStore.sliders,
-              tags: liveStore.tags,
-            },
+        storyDnaSnapshot: storyDna,
       });
       router.push(`/sesja/${session.id}`);
     } catch {
@@ -255,11 +268,56 @@ export function NewSessionWizard() {
       {step === 2 && (
         <Card data-testid="wizard-step-2">
           <CardHeader>
-            <CardTitle>{t("wizard.charactersHeading")}</CardTitle>
-            <CardDescription>{t("wizard.charactersLead")}</CardDescription>
+            <CardTitle>Sesja — zarys</CardTitle>
+            <CardDescription>
+              Opisz klimat, świat i planowany czas gry.
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <CharacterSheetUploader />
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                Czas trwania (godziny)
+              </label>
+              <input
+                type="number"
+                min={3}
+                max={10}
+                value={targetDurationHours}
+                onChange={(e) =>
+                  setTargetDurationHours(Number(e.target.value))
+                }
+                data-testid="wizard-duration"
+                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                Klimat (tone)
+              </label>
+              <input
+                type="text"
+                maxLength={200}
+                placeholder="np. mroczny skok, epik fantasy, kosmiczny horror"
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                data-testid="wizard-tone"
+                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                Opis świata (setting)
+              </label>
+              <textarea
+                maxLength={500}
+                rows={3}
+                placeholder="Jeden akapit — gdzie jesteśmy, co się dzieje?"
+                value={setting}
+                onChange={(e) => setSetting(e.target.value)}
+                data-testid="wizard-setting"
+                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
@@ -268,17 +326,44 @@ export function NewSessionWizard() {
               >
                 {t("common.previous")}
               </Button>
+              <Button
+                onClick={() => setStep(3)}
+                data-testid="wizard-next-2"
+              >
+                {t("common.next")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === 3 && (
+        <Card data-testid="wizard-step-3">
+          <CardHeader>
+            <CardTitle>{t("wizard.charactersHeading")}</CardTitle>
+            <CardDescription>{t("wizard.charactersLead")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <CharacterSheetUploader />
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => setStep(2)}
+                data-testid="wizard-back-3"
+              >
+                {t("common.previous")}
+              </Button>
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
-                  onClick={() => setStep(3)}
-                  data-testid="wizard-skip-2"
+                  onClick={() => setStep(4)}
+                  data-testid="wizard-skip-3"
                 >
                   {t("common.skip")}
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
-                  data-testid="wizard-next-2"
+                  onClick={() => setStep(4)}
+                  data-testid="wizard-next-3"
                 >
                   {t("common.next")}
                 </Button>
@@ -288,8 +373,8 @@ export function NewSessionWizard() {
         </Card>
       )}
 
-      {step === 3 && (
-        <Card data-testid="wizard-step-3">
+      {step === 4 && (
+        <Card data-testid="wizard-step-4">
           <CardHeader>
             <CardTitle>{t("wizard.summaryHeading")}</CardTitle>
             <CardDescription>{t("wizard.summaryLead")}</CardDescription>
@@ -341,8 +426,8 @@ export function NewSessionWizard() {
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
-                onClick={() => setStep(2)}
-                data-testid="wizard-back-3"
+                onClick={() => setStep(3)}
+                data-testid="wizard-back-4"
               >
                 {t("common.previous")}
               </Button>

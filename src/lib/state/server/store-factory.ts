@@ -1,5 +1,6 @@
-import { InMemorySessionStore, type SessionStore } from "./session-store";
+import { InMemorySessionStore } from "./in-memory-session-store";
 import { RedisSessionStore } from "./redis-session-store";
+import type { SessionStore } from "./session-store";
 
 /**
  * Session store factory.

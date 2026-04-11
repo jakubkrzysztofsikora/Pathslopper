@@ -81,6 +81,7 @@ export const pl = {
     pageLead: "Cztery kroki dzielą Cię od rozpoczęcia rozgrywki.",
     stepVersion: "Wersja",
     stepStyle: "Styl gry",
+    stepBrief: "Zarys sesji",
     stepCharacters: "Postacie",
     stepSummary: "Podsumowanie",
     stepsLabel: "Kroki kreatora",

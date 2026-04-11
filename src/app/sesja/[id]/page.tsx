@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { PlayerInputConsole } from "@/components/interaction/player-input-console";
 import { ExpiredSessionScreen } from "@/components/sessions/expired-session-screen";
 import { SessionHeader } from "@/components/sessions/session-header";
 import { getSessionStore } from "@/lib/state/server/store-factory";
@@ -31,7 +30,10 @@ export default async function SessionPage({ params }: SessionPageProps) {
       data-testid="session-page"
     >
       <SessionHeader session={session} />
-      <PlayerInputConsole sessionId={session.id} initialSession={session} />
+      <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-6 text-zinc-400">
+        Sesja {session.id} — interfejs przygotowania i prowadzenia gry pojawi
+        się w Fazach 4 i 5.
+      </section>
     </main>
   );
 }
