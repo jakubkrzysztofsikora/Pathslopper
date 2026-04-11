@@ -49,7 +49,8 @@ Rules:
 2. Do NOT invent numeric modifiers or DCs. Omit those fields if the player did not provide them.
 3. If the player's input is pure narration (roleplay, describing what their character says or feels) with no mechanical action, use action="narrative" and leave skillOrAttack and target empty.
 4. If the player's input would violate game rules (impossible action economy, banned spell), use action="narrative" and note the rule issue in the description. Do not concede to incorrect rules arguments.
-5. Output only JSON. No backticks, no markdown fences, no explanatory text.`;
+5. Output only JSON. No backticks, no markdown fences, no explanatory text.
+6. When a field does not apply, OMIT THE KEY ENTIRELY. Never emit \`null\`, never emit an empty string \`""\`. For example, if there is no numeric modifier, the output must not contain a "modifier" key at all — not "modifier": null and not "modifier": "".`;
 
   const user = `Player input:
 """

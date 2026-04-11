@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { CallLLM, ChatMessage } from "@/lib/llm/client";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import {
@@ -32,6 +33,65 @@ const UPSTREAM_ERROR_MESSAGE = "Upstream model call failed.";
 const PARSE_ERROR_MESSAGE =
   "Could not parse PlayerIntent from optimizer response.";
 
+/**
+ * Normalize an LLM-emitted PlayerIntent blob BEFORE schema validation.
+ *
+ * LLMs (especially llama-family models at temperature > 0) routinely emit
+ * `null` or `""` for optional fields even when the prompt explicitly says
+ * "omit if not applicable". Example observed from Scaleway
+ * `llama-3.1-70b-instruct` on the input "I search for traps":
+ *
+ *   {
+ *     "version": "pf2e",
+ *     "action": "skill-check",
+ *     "skillOrAttack": "Perception",
+ *     "target": "",          // <- empty string, breaks min(1)
+ *     "modifier": null,      // <- null, breaks number().optional()
+ *     "dc": null,            // <- same
+ *     "actionCost": 1
+ *   }
+ *
+ * PlayerIntentSchema rejects `null` for `.optional()` numbers and rejects
+ * empty strings for `.min(1)` strings, so the whole request fails with a
+ * schema validation error even though the intent is structurally fine.
+ *
+ * We strip these pseudo-nulls out of the payload so Zod treats them as
+ * "missing" and the optional branches kick in. The original schema is left
+ * strict for every other caller (session log, API route body) — this
+ * preprocessor only runs on the LLM boundary.
+ */
+export function normalizeLlmIntent(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return raw;
+  }
+  const obj: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+
+  // Optional numeric fields: drop null/undefined so Zod's .optional() kicks in.
+  for (const key of ["modifier", "dc", "actionCost"]) {
+    if (obj[key] === null) delete obj[key];
+  }
+
+  // Optional short-string fields: drop null AND empty-after-trim so the
+  // schema's NonEmptyShort / OptionalShort checks pass. Required fields
+  // (rawInput, description) stay strict — we only normalize the ones the
+  // LLM has permission to omit.
+  for (const key of ["target", "skillOrAttack"]) {
+    const v = obj[key];
+    if (v === null) {
+      delete obj[key];
+    } else if (typeof v === "string" && v.trim() === "") {
+      delete obj[key];
+    }
+  }
+
+  return obj;
+}
+
+// Schema wrapper used only for the LLM-optimize boundary. Preprocesses
+// raw parsed JSON through `normalizeLlmIntent` before delegating to
+// `PlayerIntentSchema`.
+const LlmPlayerIntentSchema = z.preprocess(normalizeLlmIntent, PlayerIntentSchema);
+
 export async function optimizeInput(
   rawInput: string,
   version: PathfinderVersion,
@@ -52,8 +112,10 @@ export async function optimizeInput(
 
   // The optimizer is instructed to emit bare JSON. extractJsonBlock now
   // handles both fenced and bare shapes so we pass the raw response
-  // through without pre-wrapping.
-  const extracted = extractJsonBlock(response, PlayerIntentSchema);
+  // through without pre-wrapping. The schema is wrapped in a preprocess
+  // step that normalizes null / empty-string values the LLM emits for
+  // optional fields — see normalizeLlmIntent for the rationale.
+  const extracted = extractJsonBlock(response, LlmPlayerIntentSchema);
   if (!extracted.ok || !extracted.data) {
     return {
       ok: false,
