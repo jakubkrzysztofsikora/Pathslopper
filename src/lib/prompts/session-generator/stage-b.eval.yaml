@@ -1,0 +1,60 @@
+# Promptfoo eval for Stage B — Sceny (Scenes)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+
+description: "Stage B — generacja scen sesji (min. 8 scen z metadanymi)"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-b-system
+    raw: "Jesteś generatorem scen sesji do Pathfinder 2e. Na podstawie szkieletu tworzysz listę scen w języku polskim. Odpowiadaj WYŁĄCZNIE poprawnym JSON."
+
+tests:
+  - description: "Generuje min. 8 scen z wymaganymi metadanymi"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+      skeleton: "file://../../../../tests/fixtures/generate-session/stage-a.json"
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON z polem 'scenes' — listą co najmniej 8 scen. Każda scena powinna mieć: 'id' (unikalny string), 'title' (tytuł), 'synopsis' (opis), 'kind' (np. scene, combat-narrative, ending), 'act' (numer aktu), 'tensionLevel' (0-10), 'estimatedMinutes'. Sprawdź poprawność struktury."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Tytuły i opisy scen muszą być w języku polskim. Żadnych angielskich wtrętów. Synopsisy powinny być konkretne, klimatyczne i nawiązywać do twierdzy tyrana."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Lista scen powinna zawierać przynajmniej jedną scenę typu 'strong-start' (mocny start), kilka scen eksploracyjnych lub fabularnych, przynajmniej jedną konfrontację i co najmniej dwie sceny kończące ('ending'). Dramaturgiczna krzywa napięcia powinna rosnąć w kierunku aktu 2."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            if (!obj.scenes || !Array.isArray(obj.scenes)) {
+              return { pass: false, score: 0, reason: "Brak pola 'scenes'" };
+            }
+            if (obj.scenes.length < 8) {
+              return { pass: false, score: 0, reason: `Za mało scen: ${obj.scenes.length} (wymagane min. 8)` };
+            }
+            return { pass: true, score: 1, reason: "Wystarczająca liczba scen" };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

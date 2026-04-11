@@ -1,0 +1,66 @@
+# Promptfoo eval for Stage D — Okablowanie (Graph Wiring)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+
+description: "Stage D — okablowanie grafu: startNodeId, krawędzie, zakończenia"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-d-system
+    raw: "Jesteś generatorem struktury grafu sesji do Pathfinder 2e. Tworzysz krawędzie grafu i zakończenia w języku polskim. Odpowiadaj WYŁĄCZNIE poprawnym JSON."
+
+tests:
+  - description: "Generuje poprawne okablowanie grafu z krawędziami i zakończeniami"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+      skeleton: "file://../../../../tests/fixtures/generate-session/stage-a.json"
+      scenes: "file://../../../../tests/fixtures/generate-session/stage-b.json"
+      worldKit: "file://../../../../tests/fixtures/generate-session/stage-c.json"
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON z polami: 'startNodeId' (string wskazujący scenę startową), 'edges' (lista krawędzi grafu, każda z polami id, from, to, kind), 'endings' (lista zakończeń z polami id, nodeId, type, title, epilogue). Sprawdź poprawność struktury."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Zakończenia ('endings') powinny być napisane w języku polskim. Epilogi powinny być narracyjne i fabularne, nie suche opisy techniczne. Powinien istnieć co najmniej jeden finał pozytywny (sukces drużyny) i jeden negatywny (porażka lub pyrrusowe zwycięstwo)."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Graf powinien być logicznie spójny: krawędzie muszą odnosić się do scen zdefiniowanych w Stage B. Scena startowa powinna być opisana jako mocny start ('strong-start'). Krawędzie powinny tworzyć napięcie dramaturgiczne."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            const hasRequired = obj.startNodeId && obj.edges && obj.endings;
+            if (!hasRequired) {
+              return { pass: false, score: 0, reason: "Brakuje wymaganych pól" };
+            }
+            if (!Array.isArray(obj.edges) || obj.edges.length === 0) {
+              return { pass: false, score: 0, reason: "Lista krawędzi jest pusta" };
+            }
+            if (!Array.isArray(obj.endings) || obj.endings.length < 2) {
+              return { pass: false, score: 0.5, reason: "Za mało zakończeń (wymagane min. 2)" };
+            }
+            return { pass: true, score: 1, reason: "Struktura grafu poprawna" };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

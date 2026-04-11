@@ -1,0 +1,29 @@
+{
+  "version": "pf2e",
+  "partySize": 4,
+  "partyLevel": 3,
+  "targetDurationHours": 4,
+  "tone": "mroczne fantasy, napięcie polityczne",
+  "setting": "Twierdza tyrana na skraju przeklętego lasu",
+  "presetId": "classic",
+  "storyDna": {
+    "version": "pf2e",
+    "sliders": {
+      "narrativePacing": 50,
+      "tacticalLethality": 55,
+      "npcImprov": 50
+    },
+    "tags": {
+      "include": ["tyran", "twierdza", "polityka"],
+      "exclude": []
+    }
+  },
+  "characterHooks": [
+    { "characterName": "Aldric", "hook": "Jego siostra jest więźniem twierdzy." }
+  ],
+  "safetyTools": {
+    "lines": ["tortury dzieci"],
+    "veils": ["graficzna przemoc"],
+    "xCardEnabled": true
+  }
+}

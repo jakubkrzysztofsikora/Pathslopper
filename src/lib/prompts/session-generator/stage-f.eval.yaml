@@ -1,0 +1,76 @@
+# Promptfoo eval for Stage F — Bloki statystyk PF2e (Stat Blocks)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+
+description: "Stage F — generacja bloków statystyk PF2e dla NPC (zgodnych z GMG Table 2-5)"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-f-system
+    raw: "Jesteś ekspertem od mechaniki Pathfinder 2e. Tworzysz bloki statystyk dla NPC zgodnie z tabelami GMG. Odpowiadaj WYŁĄCZNIE poprawnym JSON."
+
+tests:
+  - description: "Generuje bloki statystyk PF2e dla NPC z poprawną strukturą mechaniczną"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+      skeleton: "file://../../../../tests/fixtures/generate-session/stage-a.json"
+      scenes: "file://../../../../tests/fixtures/generate-session/stage-b.json"
+      worldKit: "file://../../../../tests/fixtures/generate-session/stage-c.json"
+      wiring: "file://../../../../tests/fixtures/generate-session/stage-d.json"
+      nodePrompts: "file://../../../../tests/fixtures/generate-session/stage-e.json"
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON z polem 'statBlocks' — słownikiem mapującym id NPC na blok statystyk. Każdy blok powinien zawierać: 'tier' (wartość 'pf2e'), 'level' (poziom stworzenia), 'ac' (klasa pancerza), 'hp' (punkty życia), 'perception' (percepcja), 'saves' (obiekt z fort/ref/will), 'strikes' (lista ataków). Sprawdź poprawność struktury."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Wartości mechaniczne bloków statystyk powinny być zgodne z poziomem stworzenia według tabel GMG Table 2-5. Kapitan straży (antagonista) powinien mieć wyższy poziom niż zwykły strażnik. Nazwy ataków ('strikes') powinny być w języku polskim."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Cechy specjalne ('specialAbilities') i reakcje ('reactions') powinny być opisane w języku polskim i mechanicznie sensowne w kontekście postaci. Bloki statystyk powinny odzwierciedlać charakter NPC: antagonista powinien być groźny, sojusznik słabszy mechanicznie."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            if (!obj.statBlocks || typeof obj.statBlocks !== 'object') {
+              return { pass: false, score: 0, reason: "Brak pola 'statBlocks'" };
+            }
+            const blocks = Object.values(obj.statBlocks);
+            if (blocks.length === 0) {
+              return { pass: false, score: 0, reason: "statBlocks jest pusty" };
+            }
+            const validBlocks = blocks.filter(b =>
+              b.tier === 'pf2e' &&
+              typeof b.level === 'number' &&
+              typeof b.ac === 'number' &&
+              typeof b.hp === 'number'
+            );
+            const score = validBlocks.length / blocks.length;
+            return {
+              pass: score >= 0.8,
+              score,
+              reason: `${validBlocks.length} z ${blocks.length} bloków ma poprawną strukturę`
+            };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

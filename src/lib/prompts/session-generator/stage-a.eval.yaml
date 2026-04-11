@@ -1,0 +1,58 @@
+# Promptfoo eval for Stage A — Szkielet sesji (Session Skeleton)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+# Judge model is the same llama-3.1-70b used in production.
+
+description: "Stage A — generacja szkieletu sesji (akty, fronty, główny konflikt)"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-a-system
+    raw: "Jesteś generatorem scenariuszy do Pathfinder 2e. Tworzysz strukturę sesji w języku polskim. Odpowiadaj WYŁĄCZNIE poprawnym JSON bez markdown ani wyjaśnień."
+
+tests:
+  - description: "Generuje poprawny szkielet sesji z 2 aktami i 1 frontem"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+    options:
+      provider: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON zawierającym pola: 'acts' (lista aktów z tytułem i stawkami), 'fronts' (lista frontów z nazwą, niebezpieczeństwami i portentami), 'primaryConflict' (główny konflikt). Sprawdź czy JSON jest dobrze sformułowany."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Całość odpowiedzi powinna być napisana w języku polskim. Żadnych angielskich fraz ani kluczy JSON w wartościach — tylko poprawna polszczyzna w polach tekstowych takich jak 'title', 'stakes', 'name', 'primaryConflict'."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Akt pierwszy powinien wprowadzać główny konflikt, a akt drugi eskalować napięcie ku kulminacji. Stawki ('stakes') każdego aktu powinny być konkretne i dotyczące drużyny."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            return obj.acts && obj.fronts && obj.primaryConflict
+              ? { pass: true, score: 1, reason: "Struktura JSON poprawna" }
+              : { pass: false, score: 0, reason: "Brakuje wymaganych pól" };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

@@ -1,0 +1,93 @@
+name: Prompt Eval
+
+on:
+  pull_request:
+    paths:
+      - "src/lib/prompts/session-generator/**"
+
+concurrency:
+  group: prompt-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eval:
+    name: Run promptfoo evals for changed stage prompts
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run promptfoo evals — Stage A
+        if: contains(github.event.pull_request.files.*.filename, 'stage-a')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-a.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Run promptfoo evals — Stage B
+        if: contains(github.event.pull_request.files.*.filename, 'stage-b')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-b.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Run promptfoo evals — Stage C
+        if: contains(github.event.pull_request.files.*.filename, 'stage-c')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-c.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Run promptfoo evals — Stage D
+        if: contains(github.event.pull_request.files.*.filename, 'stage-d')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-d.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Run promptfoo evals — Stage E
+        if: contains(github.event.pull_request.files.*.filename, 'stage-e')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-e.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+
+      - name: Run promptfoo evals — Stage F
+        if: contains(github.event.pull_request.files.*.filename, 'stage-f')
+        uses: promptfoo/promptfoo-action@v2
+        with:
+          config: src/lib/prompts/session-generator/stage-f.eval.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api.scaleway.ai/v1' }}
+          LLM_TEXT_MODEL: ${{ vars.LLM_TEXT_MODEL || 'llama-3.1-70b-instruct' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}

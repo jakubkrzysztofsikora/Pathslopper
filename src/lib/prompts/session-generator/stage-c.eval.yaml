@@ -1,0 +1,67 @@
+# Promptfoo eval for Stage C — World Kit (NPC, lokacje, zegary, sekrety)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+# Three-Clue Rule compliance check included per Amendment V.
+
+description: "Stage C — generacja zestawu świata: NPC, lokacje, zegary Blades-style, sekrety (Zasada Trzech Wskazówek)"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-c-system
+    raw: "Jesteś generatorem świata do Pathfinder 2e. Tworzysz NPC, lokacje, zegary i sekrety w języku polskim. Odpowiadaj WYŁĄCZNIE poprawnym JSON."
+
+tests:
+  - description: "Generuje kompletny world-kit z min. 3 NPC, 2 lokacjami, 2 zegarami i 6 sekretami"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+      skeleton: "file://../../../../tests/fixtures/generate-session/stage-a.json"
+      scenes: "file://../../../../tests/fixtures/generate-session/stage-b.json"
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON z polami: 'npcs' (lista co najmniej 3 postaci), 'locations' (lista co najmniej 2 lokacji z polami name i aspects), 'clocks' (lista co najmniej 2 zegarów w stylu Blades in the Dark z polami id, label, segments (4|6|8), filled (int), polarity (danger|opportunity|neutral), tickSources), 'secrets' (lista co najmniej 6 sekretów z polami id, text, conclusionTag, delivery). Sprawdź czy wszystkie pola są obecne i mają poprawną strukturę."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Wszystkie nazwy, opisy i teksty powinny być w języku polskim. Żadnych angielskich wtrętów w polach takich jak 'name', 'description', 'text'. Klimat powinien odpowiadać mrocznej twierdzy tyrana."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Sekrety powinny być zgodne z Zasadą Trzech Wskazówek (Alexandrian Three-Clue Rule): każdy unikalny conclusionTag (etykieta wniosku) w zbiorze secrets[] musi pojawiać się w CO NAJMNIEJ 3 różnych sekretach, najlepiej dostarczanych przez różne metody (delivery: npc-dialog / environmental / document / overheard / pc-backstory / skill-check). Policz unikalne conclusionTags i upewnij się że każdy ma ≥3 wystąpienia."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            const checks = [
+              obj.npcs && obj.npcs.length >= 3,
+              obj.locations && obj.locations.length >= 2,
+              obj.clocks && obj.clocks.length >= 2,
+              obj.secrets && obj.secrets.length >= 6,
+            ];
+            const passed = checks.every(Boolean);
+            return {
+              pass: passed,
+              score: checks.filter(Boolean).length / checks.length,
+              reason: passed ? "Wszystkie wymagania spełnione" : "Nie wszystkie wymagania spełnione"
+            };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

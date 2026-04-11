@@ -1,0 +1,69 @@
+# Promptfoo eval for Stage E — Narracyjne seedsy scen (Node Prompts)
+# Triggered on PR changes to src/lib/prompts/session-generator/**
+# Uses Scaleway Generative APIs via LLM_BASE_URL + LLM_API_KEY + LLM_TEXT_MODEL env vars.
+
+description: "Stage E — generacja narracyjnych seedsów dla każdej sceny (nodePrompts)"
+
+providers:
+  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+    config:
+      apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+      apiKey: "${LLM_API_KEY}"
+
+prompts:
+  - label: stage-e-system
+    raw: "Jesteś mistrzem narracji do Pathfinder 2e. Tworzysz krótkie, klimatyczne narracje otwierające dla każdej sceny. Odpowiadaj WYŁĄCZNIE poprawnym JSON."
+
+tests:
+  - description: "Generuje narracyjne seedsy dla każdej sceny w polskim języku"
+    vars:
+      brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
+      skeleton: "file://../../../../tests/fixtures/generate-session/stage-a.json"
+      scenes: "file://../../../../tests/fixtures/generate-session/stage-b.json"
+      worldKit: "file://../../../../tests/fixtures/generate-session/stage-c.json"
+      wiring: "file://../../../../tests/fixtures/generate-session/stage-d.json"
+    assert:
+      - type: llm-rubric
+        value: "Odpowiedź powinna być poprawnym JSON z polem 'nodePrompts' — słownikiem mapującym id sceny na krótki tekst narracyjny (string). Każdy seed powinien mieć od 2 do 5 zdań w języku polskim. Sprawdź poprawność struktury JSON."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Narracje muszą być pisane w czasie teraźniejszym lub trybie bezpośredniego zwrotu do graczy ('stoisz', 'widzisz', 'czujesz'). Każda narracja powinna angażować co najmniej jeden zmysł poza wzrokiem (dźwięk, zapach, dotyk, smak). Teksty muszą być w języku polskim."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: llm-rubric
+        value: "Narracje scen walki ('combat-narrative') powinny budować napięcie i zagrożenie. Narracje scen kończących ('ending') powinny mieć charakter epilogu — podsumowujący, emocjonalny, zamykający wątek drużyny. Żadna narracja nie powinna zdradzać rozwiązań zagadek."
+        provider:
+          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          config:
+            apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
+            apiKey: "${LLM_API_KEY}"
+
+      - type: javascript
+        value: |
+          try {
+            const obj = JSON.parse(output);
+            if (!obj.nodePrompts || typeof obj.nodePrompts !== 'object') {
+              return { pass: false, score: 0, reason: "Brak pola 'nodePrompts'" };
+            }
+            const keys = Object.keys(obj.nodePrompts);
+            if (keys.length === 0) {
+              return { pass: false, score: 0, reason: "nodePrompts jest pusty" };
+            }
+            const allStrings = keys.every(k => typeof obj.nodePrompts[k] === 'string' && obj.nodePrompts[k].length > 0);
+            return {
+              pass: allStrings,
+              score: allStrings ? 1 : 0.5,
+              reason: allStrings ? "Wszystkie narracje są prawidłowymi stringami" : "Niektóre narracje są puste lub niepoprawne"
+            };
+          } catch {
+            return { pass: false, score: 0, reason: "Niepoprawny JSON" };
+          }

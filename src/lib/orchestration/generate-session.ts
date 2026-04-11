@@ -13,6 +13,7 @@ import {
   type StageFStatBlocks,
 } from "@/lib/prompts/session-generator";
 import type { SessionNode, SessionGraph as SG } from "@/lib/schemas/session-graph";
+import { extractJsonBlock } from "@/lib/llm/json-extract";
 
 type PartialSessionGraph = Omit<SG, "createdAt" | "updatedAt" | "validatedAt">;
 
@@ -80,38 +81,6 @@ async function runStageWithRetry<T>(
   if (retryParsed !== null) return { ok: true, value: retryParsed };
 
   return { ok: false, error: PARSE_ERROR, raw: retryRaw };
-}
-
-/**
- * Attempt to extract and parse JSON from an LLM response string.
- * Handles both bare JSON objects and JSON embedded in markdown code fences.
- */
-function extractJson(raw: string): unknown | null {
-  const trimmed = raw.trim();
-  // Try bare JSON first
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    // Try to extract from a ```json ... ``` fence
-    const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fenceMatch) {
-      try {
-        return JSON.parse(fenceMatch[1].trim());
-      } catch {
-        // fall through
-      }
-    }
-    // Try to find the first top-level JSON object
-    const objMatch = trimmed.match(/(\{[\s\S]*\})/);
-    if (objMatch) {
-      try {
-        return JSON.parse(objMatch[1]);
-      } catch {
-        // fall through
-      }
-    }
-    return null;
-  }
 }
 
 /**
@@ -199,9 +168,9 @@ export async function generateSession(
     chain.stageA.buildPrompt(brief),
     chain.stageA.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageA.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageA.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -216,9 +185,9 @@ export async function generateSession(
     chain.stageB.buildPrompt({ brief, skeleton: stageA }),
     chain.stageB.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageB.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageB.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -233,9 +202,9 @@ export async function generateSession(
     chain.stageC.buildPrompt({ brief, skeleton: stageA, scenes: stageB }),
     chain.stageC.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageC.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageC.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -250,9 +219,9 @@ export async function generateSession(
     chain.stageD.buildPrompt({ brief, skeleton: stageA, scenes: stageB, worldKit: stageC }),
     chain.stageD.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageD.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageD.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -280,9 +249,9 @@ export async function generateSession(
     }),
     chain.stageE.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageE.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageE.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -296,12 +265,13 @@ export async function generateSession(
     "F",
     chain.stageF.buildPrompt({
       graph: partialGraph as PartialSessionGraph,
+      partyLevel: brief.partyLevel,
     }),
     chain.stageF.temperature,
     (raw) => {
-      const json = extractJson(raw);
-      if (!json) return null;
-      const result = chain.stageF.schema.safeParse(json);
+      const jsonStr = extractJsonBlock(raw);
+      if (!jsonStr) return null;
+      const result = chain.stageF.schema.safeParse(JSON.parse(jsonStr));
       return result.success ? result.data : null;
     },
     callLLM,
@@ -343,18 +313,19 @@ export async function generateSession(
     return { ok: false, stage: "validate", error: UPSTREAM_ERROR, partial: assembled };
   }
 
-  const repairedJson = extractJson(repairedRaw);
-  if (!repairedJson) {
+  const repairedJsonStr = extractJsonBlock(repairedRaw);
+  if (!repairedJsonStr) {
     return { ok: false, stage: "validate", error: PARSE_ERROR, partial: assembled };
   }
 
-  const repairedResult = SessionGraphSchema.safeParse(repairedJson);
+  const repairedParsed: unknown = JSON.parse(repairedJsonStr);
+  const repairedResult = SessionGraphSchema.safeParse(repairedParsed);
   if (!repairedResult.success) {
     return {
       ok: false,
       stage: "validate",
       error: `Repair failed: ${repairedResult.error.errors.map((e) => e.message).join("; ")}`,
-      partial: repairedJson,
+      partial: repairedParsed,
     };
   }
 

@@ -7,7 +7,7 @@ interface CreatureBuildRow {
   hp: { low: number; moderate: number; high: number };
   strikeBonus: { low: number; moderate: number; high: number; extreme: number };
   strikeDamage: { expression: string; average: number };
-  savingThrow: { terrible: number; low: number; moderate: number; high: number };
+  savingThrow: { terrible: number; low: number; moderate: number; high: number; extreme: number };
   perception: { terrible: number; low: number; moderate: number; high: number; extreme: number };
   spellDC: { moderate: number; high: number; extreme: number };
   spellAttack: { moderate: number; high: number; extreme: number };
@@ -111,9 +111,13 @@ export function validatePf2eStatBlock(block: Pf2eStatBlock): StatBlockValidation
     warnings
   );
 
-  // saves: [moderate - 3, moderate + 3]
-  const saveMin = row.savingThrow.moderate - 3;
-  const saveMax = row.savingThrow.moderate + 3;
+  // saves: [low - 1, extreme + 1] per save independently.
+  // Using the full per-level save band preserves creature character — a dragon
+  // may legitimately have high Fort/Will and low Ref. The old ±3 of moderate
+  // was too narrow and would clamp valid archetypes. Amendment Q widens the
+  // band to cover the entire table range with ±1 headroom at each end.
+  const saveMin = row.savingThrow.low - 1;
+  const saveMax = row.savingThrow.extreme + 1;
   const clampedFort = clampField(block.saves.fort, saveMin, saveMax, row.savingThrow.moderate, "saves.fort", block.level, warnings);
   const clampedRef = clampField(block.saves.ref, saveMin, saveMax, row.savingThrow.moderate, "saves.ref", block.level, warnings);
   const clampedWill = clampField(block.saves.will, saveMin, saveMax, row.savingThrow.moderate, "saves.will", block.level, warnings);
@@ -156,6 +160,47 @@ export function validatePf2eStatBlock(block: Pf2eStatBlock): StatBlockValidation
     return { ...strike, toHit: clampedToHit, damage: clampedDamage };
   });
 
+  // spell slots: clamp dc and attack per rank if spellSlots is present.
+  // Band: [moderate - 2, extreme + 2] for both spellDC and spellAttack.
+  let clampedSpellSlots = block.spellSlots;
+  if (block.spellSlots) {
+    const dcMin = row.spellDC.moderate - 2;
+    const dcMax = row.spellDC.extreme + 2;
+    const attackMin = row.spellAttack.moderate - 2;
+    const attackMax = row.spellAttack.extreme + 2;
+
+    const clamped: NonNullable<Pf2eStatBlock["spellSlots"]> = {};
+
+    for (const [rank, slot] of Object.entries(block.spellSlots)) {
+      const clampedDc = clampField(
+        slot.dc,
+        dcMin,
+        dcMax,
+        row.spellDC.moderate,
+        `spellSlots[${rank}].dc`,
+        block.level,
+        warnings
+      );
+
+      let clampedAttack = slot.attack;
+      if (slot.attack !== undefined) {
+        clampedAttack = clampField(
+          slot.attack,
+          attackMin,
+          attackMax,
+          row.spellAttack.moderate,
+          `spellSlots[${rank}].attack`,
+          block.level,
+          warnings
+        );
+      }
+
+      clamped[rank] = { ...slot, dc: clampedDc, attack: clampedAttack };
+    }
+
+    clampedSpellSlots = clamped;
+  }
+
   const clamped: Pf2eStatBlock = {
     ...block,
     ac: clampedAc,
@@ -163,6 +208,7 @@ export function validatePf2eStatBlock(block: Pf2eStatBlock): StatBlockValidation
     perception: clampedPerception,
     saves: { fort: clampedFort, ref: clampedRef, will: clampedWill },
     strikes: clampedStrikes,
+    spellSlots: clampedSpellSlots,
   };
 
   return { clamped, warnings };

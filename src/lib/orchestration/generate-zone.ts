@@ -5,6 +5,7 @@ import {
   type ZoneSeed,
 } from "@/lib/prompts/zone-generator";
 import type { CallLLM, ChatMessage } from "@/lib/llm/client";
+import { extractJsonBlock } from "@/lib/llm/json-extract";
 
 /**
  * Pure orchestrator for the Tactical Environment Protocol zone generation
@@ -140,6 +141,15 @@ export async function generateZone(
   }
 
   if (!verifyResult.zone) {
+    // Use extractJsonBlock to surface the raw JSON candidate for debugging.
+    // verifyResult.zone being null means the schema parse failed, not that
+    // there was no JSON — but logging the raw candidate helps diagnose
+    // whether the model emitted JSON at all vs. the schema being wrong.
+    const rawCandidate = extractJsonBlock(markdown);
+    logger?.("verify", {
+      reason: VERIFY_ERROR_MESSAGE,
+      hasJsonCandidate: rawCandidate !== null,
+    });
     return {
       ok: false,
       stage: "verify",
