@@ -214,6 +214,29 @@ export class RedisSessionStore implements SessionStore {
     return next;
   }
 
+  async consumeOverride(
+    id: string,
+    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
+  ): Promise<SessionState | undefined> {
+    // Single read-modify-write so "clear override" and "append resolved
+    // turn" either both land or neither does. Not wrapped in a Redis
+    // MULTI/EXEC because the existing mutations in this store are all
+    // last-writer-wins reads of the single JSON blob key; adding real
+    // optimistic locking (WATCH/MULTI) is a separate, global upgrade.
+    const session = await this.readSession(id);
+    if (!session) return undefined;
+    if (!session.activeOverride) return undefined;
+    const resolved = buildResolvedTurn(turn);
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      activeOverride: null,
+      turns: appendTurnCapped(session, resolved),
+    };
+    await this.writeSession(next);
+    return next;
+  }
+
   async size(): Promise<number> {
     return this.redis.countKeys(matchAllKeysPattern());
   }

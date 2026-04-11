@@ -1,9 +1,31 @@
 import { optimizeInput } from "../optimize-input";
 import { adjudicate, type AdjudicateOptions } from "../adjudicate";
 import type { CallLLM } from "@/lib/llm/client";
+import type { PlayerIntent } from "@/lib/schemas/player-intent";
 import type { SessionStore } from "@/lib/state/server/session-store";
 import type { VectorStore } from "@/lib/rag/vector-store";
 import type { InteractionStateType } from "./state";
+
+/**
+ * Build a minimal PlayerIntent from the graph state without calling the LLM.
+ * Used on the manager-override bypass path. Mirrors the same helper in
+ * resolve-interaction.ts so both execution paths produce an identical
+ * stub shape.
+ */
+function buildOverrideStubIntent(state: InteractionStateType): PlayerIntent {
+  const trimmed = state.rawInput.trim();
+  const description = trimmed.length > 0 ? trimmed.slice(0, 300) : "Player action";
+  return {
+    version: state.version,
+    rawInput: description,
+    action: "narrative",
+    description,
+    ...(state.overrideModifier !== undefined && {
+      modifier: state.overrideModifier,
+    }),
+    ...(state.overrideDc !== undefined && { dc: state.overrideDc }),
+  };
+}
 
 /**
  * External dependencies injected into each graph node.
@@ -25,9 +47,20 @@ export interface GraphDeps {
  *
  * Runs the Phase 2 input optimizer. Applies any UI modifier/DC overrides
  * on top of the LLM-inferred intent so the player can pin numeric values.
+ *
+ * Short-circuits (no LLM call) when `overrideConsumed` is already set by
+ * the upstream `overrideCheck` node — the GM-forced outcome path will
+ * use the stub intent built during override detection, so the optimizer
+ * would only be producing an intent that's about to be discarded.
  */
 export function createOptimizeNode(deps: GraphDeps) {
   return async (state: InteractionStateType): Promise<Partial<InteractionStateType>> => {
+    if (state.overrideConsumed) {
+      // overrideCheck already populated state.intent with a stub; skip
+      // the LLM round-trip entirely.
+      return {};
+    }
+
     const result = await optimizeInput(state.rawInput, state.version, {
       callLLM: deps.callLLM,
       logger: deps.logger,
@@ -56,9 +89,15 @@ export function createOptimizeNode(deps: GraphDeps) {
 /**
  * Node: overrideCheck
  *
- * Looks up the active manager override in the session store. Sets
- * overrideConsumed=true when one is found so the adjudicate node can
- * produce a synthetic result without rolling dice.
+ * Looks up the active manager override in the session store and, when
+ * one exists, populates state.intent with a stub so the downstream
+ * optimize node can short-circuit its LLM call. The adjudicate node
+ * still owns producing the synthetic result (no dice) and clearing
+ * the override atomically via consumeOverride.
+ *
+ * This runs BEFORE optimize in the graph edges so the LLM is never
+ * invoked on the override path — same contract as the imperative
+ * resolveInteraction() flow.
  */
 export function createOverrideCheckNode(deps: GraphDeps) {
   return async (
@@ -71,7 +110,10 @@ export function createOverrideCheckNode(deps: GraphDeps) {
     if (!session?.activeOverride) {
       return { overrideConsumed: false };
     }
-    return { overrideConsumed: true };
+    return {
+      overrideConsumed: true,
+      intent: buildOverrideStubIntent(state),
+    };
   };
 }
 
@@ -121,7 +163,11 @@ export function createAdjudicateNode(deps: GraphDeps) {
       return { error: "No intent", errorStage: "adjudicate" };
     }
 
-    // Manager override path: produce a synthetic result without rolling dice.
+    // Manager override path: produce a synthetic result without rolling
+    // dice. Note: state.intent is the stub built by overrideCheck — the
+    // LLM was never invoked on this path. We only build the synthetic
+    // result here; persistence + atomic override clearing happens in
+    // the persist node via SessionStore.consumeOverride.
     if (state.overrideConsumed && state.sessionId && deps.sessionStore) {
       const session = await deps.sessionStore.get(state.sessionId);
       if (session?.activeOverride) {
@@ -137,7 +183,6 @@ export function createAdjudicateNode(deps: GraphDeps) {
           outcome: "resolved" as const,
           summary: session.activeOverride.forcedOutcome,
         };
-        await deps.sessionStore.clearActiveOverride(state.sessionId);
         return { result: syntheticResult };
       }
     }
@@ -155,12 +200,29 @@ export function createAdjudicateNode(deps: GraphDeps) {
  *
  * Appends the resolved turn to the server-owned session log.
  * No-ops when sessionId or sessionStore are absent.
+ *
+ * On the manager-override path, uses SessionStore.consumeOverride to
+ * clear the override flag and append the synthetic resolved turn in a
+ * single atomic write. On the normal path, uses appendResolved.
  */
 export function createPersistNode(deps: GraphDeps) {
   return async (
     state: InteractionStateType
   ): Promise<Partial<InteractionStateType>> => {
     if (state.error || !state.result || !state.sessionId || !deps.sessionStore) {
+      return {};
+    }
+    if (state.overrideConsumed) {
+      const updated = await deps.sessionStore.consumeOverride(state.sessionId, {
+        intent: state.result.intent,
+        result: state.result,
+      });
+      if (!updated) {
+        return {
+          error: `Unknown session: ${state.sessionId}`,
+          errorStage: "persist",
+        };
+      }
       return {};
     }
     await deps.sessionStore.appendResolved(state.sessionId, {

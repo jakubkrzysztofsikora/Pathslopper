@@ -132,15 +132,24 @@ export async function resolveInteraction(
         outcome: "resolved",
         summary: currentSession.activeOverride.forcedOutcome,
       };
-      await deps.sessionStore.clearActiveOverride(input.sessionId);
-      const updated = await deps.sessionStore.appendResolved(input.sessionId, {
+      // Atomic: clear override + append resolved turn in one write.
+      // Returns undefined if the session disappeared or the override
+      // was already consumed between Phase 0 load and this call.
+      const updated = await deps.sessionStore.consumeOverride(input.sessionId, {
         intent: stubIntent,
         result: syntheticResult,
       });
+      if (!updated) {
+        return {
+          ok: false,
+          stage: "session",
+          error: `Unknown session: ${input.sessionId}`,
+        };
+      }
       return {
         ok: true,
         result: syntheticResult,
-        session: updated ?? undefined,
+        session: updated,
       };
     }
   }

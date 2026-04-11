@@ -111,6 +111,19 @@ describe("buildInteractionGraph", () => {
     // Override should be cleared from the session
     const updatedSession = await store.get(session.id);
     expect(updatedSession?.activeOverride).toBeNull();
+
+    // The graph must NEVER call the LLM on the override path — the
+    // overrideCheck node runs before optimize and short-circuits it.
+    // This is the regression guard for the flakiness that surfaced in
+    // the integration test against Scaleway Generative APIs.
+    expect(callLLM).not.toHaveBeenCalled();
+
+    // Resolved turn must be appended to the session log atomically
+    // alongside clearing the override (consumeOverride contract).
+    const resolvedTurns = updatedSession?.turns.filter(
+      (t) => t.kind === "resolved"
+    );
+    expect(resolvedTurns?.length).toBe(1);
   });
 
   it("MUST: graph applies UI modifier override on top of LLM-inferred modifier", async () => {

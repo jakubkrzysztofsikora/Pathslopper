@@ -49,6 +49,26 @@ export interface SessionStore {
     turnsConsidered: number
   ): Promise<SessionState | undefined>;
   clearActiveOverride(id: string): Promise<SessionState | undefined>;
+  /**
+   * Atomic read-modify-write that consumes an active manager override.
+   *
+   * The bypass path in resolveInteraction needs to do two things when
+   * override is active: clear the `activeOverride` flag and append the
+   * synthetic resolved turn to the log. Doing those as two separate
+   * calls is both inefficient (two Redis round-trips, each its own
+   * read-modify-write) and inconsistent (if the second call fails the
+   * session is left with the override cleared but no resolved turn
+   * logged). This method folds both mutations into one transaction so
+   * they either both land or neither does.
+   *
+   * Returns the updated session, or `undefined` if the session is
+   * missing or has no active override (caller should treat that as
+   * "session disappeared mid-request" and surface a session error).
+   */
+  consumeOverride(
+    id: string,
+    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
+  ): Promise<SessionState | undefined>;
   size(): Promise<number>;
   /** Test-only: clear all sessions. */
   _reset(): Promise<void>;
@@ -251,6 +271,24 @@ export class InMemorySessionStore implements SessionStore {
       ...session,
       updatedAt: nowIso(),
       activeOverride: null,
+    };
+    this.sessions.set(id, next);
+    return next;
+  }
+
+  async consumeOverride(
+    id: string,
+    turn: Omit<ResolvedTurn, "kind" | "at"> & { at?: string }
+  ): Promise<SessionState | undefined> {
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    if (!session.activeOverride) return undefined;
+    const resolved = buildResolvedTurn(turn);
+    const next: SessionState = {
+      ...session,
+      updatedAt: nowIso(),
+      activeOverride: null,
+      turns: appendTurnCapped(session, resolved),
     };
     this.sessions.set(id, next);
     return next;
