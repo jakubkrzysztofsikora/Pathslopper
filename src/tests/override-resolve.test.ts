@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolveInteraction } from "@/lib/orchestration/resolve-interaction";
 import { getSessionStore } from "@/lib/state/server/store-factory";
+import { pl } from "@/lib/i18n";
 
 const optimizedIntent = {
   version: "pf2e",
@@ -46,7 +47,9 @@ describe("resolveInteraction with active override", () => {
       );
       // Should not have actually rolled dice
       expect(result.result.roll.rolls).toHaveLength(0);
-      expect(result.result.roll.breakdown).toContain("manager override");
+      expect(result.result.roll.breakdown).toBe(
+        pl.adjudication.managerOverrideNoRoll
+      );
     }
     // callLLM must NOT be invoked — the override bypass is LLM-independent
     expect(callLLM).not.toHaveBeenCalled();

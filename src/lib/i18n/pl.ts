@@ -1,0 +1,245 @@
+/**
+ * Polish (pl-PL) dictionary for the Pathfinder Nexus player UI.
+ *
+ * Single-locale MVP: this file is the only locale bundle. When (if) we ever
+ * add a second locale we will swap this module for `next-intl` with a server
+ * boundary — the `t(key)` helper signature is intentionally compatible with
+ * the shape of `next-intl`'s `getTranslations`, so the migration will be
+ * mechanical.
+ *
+ * Keep keys hierarchical (namespace.subkey.leaf) and sorted alphabetically
+ * within a namespace. Do not inline JSX — the helper returns plain strings.
+ */
+
+export const pl = {
+  common: {
+    appName: "Pathfinder Nexus",
+    tagline: "Mistrz Gry sterowany sztuczną inteligencją",
+    backToHome: "Wróć na stronę główną",
+    cancel: "Anuluj",
+    close: "Zamknij",
+    confirm: "Potwierdź",
+    delete: "Usuń",
+    edit: "Edytuj",
+    loading: "Wczytywanie…",
+    next: "Dalej",
+    previous: "Wstecz",
+    rename: "Zmień nazwę",
+    retry: "Spróbuj ponownie",
+    save: "Zapisz",
+    skip: "Pomiń",
+    version: "Wersja",
+  },
+  nav: {
+    home: "Strona główna",
+    help: "Pomoc",
+    mainNavLabel: "Główna nawigacja",
+    newSession: "Nowa sesja",
+  },
+  versionPicker: {
+    heading: "Wybierz edycję Pathfindera",
+    pf1eLabel: "Pathfinder 1e — symulacja fabularna",
+    pf2eLabel: "Pathfinder 2e — system trzech akcji",
+  },
+  adjudication: {
+    noRollNarrative: "(brak rzutu — akcja narracyjna)",
+    rulesReferenceHeading: "Źródło reguł",
+    managerOverrideNoRoll: "(Panel Mistrza Gry — bez rzutu)",
+    noDcSummary:
+      "Wyrzucono {total} — brak KT, Mistrz Gry musi ustalić trudność.",
+    summariseCheckWithTarget:
+      "{verb} na cel: {target}: wyrzucono {total} — {degreeLabel}.",
+    summariseCheckNoTarget: "{verb}: wyrzucono {total} — {degreeLabel}.",
+    managerOverrideFallbackSummary: "Panel Mistrza Gry",
+  },
+  home: {
+    heroTitle: "Pathfinder Nexus",
+    heroSubtitle: "Mistrz Gry sterowany sztuczną inteligencją — po polsku",
+    heroLead:
+      "Deterministyczna narracja oparta na stanie świata. Dostosuj DNA opowieści, wrzuć karty postaci i rozegraj scenę w ciągu kilku minut.",
+    ctaStart: "Nowa sesja",
+    ctaHelp: "Jak to działa",
+    stepsHeading: "Jak zacząć?",
+    step1Title: "Stwórz",
+    step1Body:
+      "Wybierz edycję Pathfindera i gotowy preset nastroju lub dostrój DNA opowieści ręcznie.",
+    step2Title: "Graj",
+    step2Body:
+      "Opisuj akcje własnymi słowami. System optymalizuje intencję, przelicza rzuty i prowadzi narrację.",
+    step3Title: "Wracaj",
+    step3Body:
+      "Sesje żyją 24 godziny na serwerze. Twój pasek zakładek lokalnie zapamięta każdą przygodę.",
+    sessionsHeading: "Twoje sesje",
+    sessionsSubheading: "Zakładki zapisane lokalnie w Twojej przeglądarce.",
+    sessionsEmptyTitle: "Nie masz jeszcze żadnych sesji",
+    sessionsEmptyBody:
+      "Rozpocznij pierwszą przygodę — zajmie to mniej niż minutę.",
+    sessionsEmptyCta: "Stwórz pierwszą sesję",
+  },
+  wizard: {
+    pageTitle: "Nowa sesja",
+    pageLead: "Cztery kroki dzielą Cię od rozpoczęcia rozgrywki.",
+    stepVersion: "Wersja",
+    stepStyle: "Styl gry",
+    stepCharacters: "Postacie",
+    stepSummary: "Podsumowanie",
+    stepsLabel: "Kroki kreatora",
+    versionHeading: "Wybierz edycję Pathfindera",
+    versionLead:
+      "PF1e to symulacja skoncentrowana na narracji. PF2e korzysta z systemu trzech akcji.",
+    styleHeading: "Wybierz styl gry",
+    styleLead:
+      "Presety ustawiają suwaki DNA oraz tagi tematyczne. Każdy z nich możesz potem zmienić.",
+    stylePresetCustom: "Własne ustawienia",
+    stylePresetCustomDescription:
+      "Dostroję DNA opowieści ręcznie w pełnym panelu konfiguracji.",
+    charactersHeading: "Dodaj karty postaci (opcjonalnie)",
+    charactersLead:
+      "Wgraj zdjęcie lub skan papierowej karty. Możesz też pominąć ten krok i dodać postacie później.",
+    summaryHeading: "Gotowe do startu",
+    summaryLead:
+      "Sprawdź ustawienia i rozpocznij sesję. Sesja zostanie zapisana na serwerze i dodana do Twoich zakładek.",
+    summaryVersionLabel: "Edycja",
+    summaryPresetLabel: "Preset",
+    summaryCharactersLabel: "Postacie",
+    summaryCharactersNone: "Brak (możesz dodać później)",
+    summarySessionNameLabel: "Nazwa sesji",
+    summarySessionNameHelp: "Pojawi się na Twojej liście zakładek.",
+    startCta: "Rozpocznij sesję",
+    startingCta: "Startuję…",
+    errorCreate: "Nie udało się utworzyć sesji. Spróbuj ponownie.",
+  },
+  presets: {
+    classicTitle: "Klasyczna wyprawa",
+    classicBody:
+      "Wyważony balans narracji i taktyki. Idealny do pierwszego kontaktu z systemem.",
+    classicTag: "Klasyka",
+    intrigueTitle: "Polityczna intryga",
+    intrigueBody:
+      "Mniej walki, więcej dialogów. BN-i improwizują, śmiertelność niska.",
+    intrigueTag: "Intryga",
+    horrorTitle: "Mroczny horror",
+    horrorBody:
+      "Duża śmiertelność, ciężka atmosfera. Narracja zostawia miejsce na grozę.",
+    horrorTag: "Horror",
+  },
+  session: {
+    headerVersionLabel: "Edycja",
+    headerCharactersLabel: "Postacie",
+    headerManageLabel: "Zarządzaj",
+    headerRenameLabel: "Zmień nazwę",
+    headerDeleteLabel: "Usuń z listy",
+    headerReturnLabel: "Wróć do listy",
+    logHeading: "Dziennik sesji",
+    logEmpty: "Sesja jest pusta — opisz pierwszą akcję swojej postaci.",
+    turnNarrationLabel: "Narracja",
+    turnOverrideLabel: "Panel Mistrza Gry",
+    consoleHeading: "Akcja gracza",
+    consoleLead:
+      "Opisz swoją akcję swobodnym tekstem. System przetworzy ją na intencję, rozstrzygnie rzut i dopisze turę do dziennika.",
+    consoleActionLabel: "Opis akcji (pełnym zdaniem)",
+    consoleActionPlaceholder:
+      "np. Wymierzam długim mieczem w najbliższego goblina.",
+    consoleModifierLabel: "Modyfikator (opcjonalnie)",
+    consoleDcLabel: "KT / KP (opcjonalnie)",
+    consoleCharacterLabel: "Postać (opcjonalnie)",
+    consoleCharacterNone: "— brak —",
+    consoleResolve: "Rozstrzygnij akcję",
+    consoleResolving: "Rozstrzyganie…",
+    consoleNarrate: "Opowiedz scenę",
+    consoleNarrating: "Opowiadam…",
+    consoleOverrideOpen: "Panel Mistrza Gry",
+    consoleOverridePending: "Override aktywny…",
+    consoleOverrideHeading: "Tryb Mistrza Gry — przejmij kontrolę",
+    consoleOverrideHelp:
+      "Ta sekcja pozwala Mistrzowi Gry ominąć losowość: streść ostatnie tury albo wymuś konkretne wyjście. Używaj oszczędnie.",
+    consoleOverrideLastNLabel: "Liczba tur do streszczenia",
+    consoleOverrideSummarize: "Streść ostatnie tury",
+    consoleOverrideSummarizing: "Streszczam…",
+    consoleOverrideSummaryHeading: "Streszczenie",
+    consoleOverrideForcedLabel: "Wymuszone wyjście (zastąpi następny rzut)",
+    consoleOverrideForcedPlaceholder: "Opisz dokładnie co się dzieje dalej…",
+    consoleOverrideForce: "Wymuś wyjście",
+    consoleOverrideForcing: "Wymuszam…",
+    consoleResultIntent: "Intencja",
+    consoleResultAudit: "Przelicz matematykę",
+    consoleResultSummary: "Podsumowanie",
+    consoleErrorGeneric: "Coś poszło nie tak. Spróbuj ponownie.",
+    consoleErrorEmptyInput: "Najpierw opisz swoją akcję.",
+    degreeCriticalSuccess: "krytyczny sukces",
+    degreeSuccess: "sukces",
+    degreeFailure: "porażka",
+    degreeCriticalFailure: "krytyczna porażka",
+    expiredTitle: "Ta sesja wygasła",
+    expiredBody:
+      "Sesje Pathfinder Nexus żyją 24 godziny na serwerze. Ta nie jest już dostępna — prawdopodobnie upłynął jej czas życia.",
+    expiredCreate: "Stwórz nową sesję",
+    expiredForget: "Usuń z listy zakładek",
+  },
+  storyDna: {
+    heading: "DNA opowieści",
+    lead: "Skalibrowane dla {versionLabel}. Dostosuj suwaki, by nadać ton narracji.",
+    pacingLabel: "Tempo narracji",
+    pacingDescription:
+      "Stosunek scen fabularnych do walki. Wyższe wartości = więcej dialogu i eksploracji.",
+    lethalityLabel: "Taktyczna śmiertelność",
+    lethalityDescription:
+      "Wyższe wartości zwiększają zagrożenie ze strony potworów i środowiska.",
+    improvLabel: "Improwizacja BN",
+    improvDescription:
+      "Jak swobodnie Bohaterowie Niezależni odchodzą od zaplanowanych zachowań.",
+    includeHeading: "Motywy do włączenia",
+    includePlaceholder: "Dodaj motyw…",
+    excludeHeading: "Filtr slopa (wykluczenia)",
+    excludePlaceholder: "Dodaj zakazaną frazę…",
+  },
+  characterSheet: {
+    heading: "Karta postaci — odczyt wizualny",
+    lead: "Wgraj zdjęcie lub skan papierowej karty. Model z wizją rozpozna układ dla edycji {versionLabel}.",
+    uploadLabel: "Wgraj zdjęcie karty postaci",
+    parsing: "Analizuję kartę przez model z wizją…",
+    unsupportedMime: "Nieobsługiwany format pliku: {mime}.",
+    fileTooLarge: "Plik jest za duży ({sizeMb} MB). Maksymalny rozmiar to {maxMb} MB.",
+    genericError: "Nie udało się zinterpretować karty.",
+  },
+  zones: {
+    heading: "Protokół środowiska taktycznego",
+    lead:
+      "Generuje strefę taktyczną w trzech etapach: Etap A (PL) → Etap B (PL + JSON) → Etap C (weryfikacja i skan slopa).",
+    biomeLabel: "Biom",
+    intentLabel: "Zamiar starcia",
+    generate: "Wygeneruj strefę",
+    generating: "Generuję…",
+    markdownHeading: "Narracja (Markdown)",
+    jsonHeading: "JSON strefy (przelicz matematykę)",
+    genericError: "Generowanie strefy nie powiodło się.",
+    invalidDnaState:
+      "Stan DNA opowieści jest nieprawidłowy. Odśwież stronę lub zresetuj ustawienia.",
+  },
+  help: {
+    title: "Pomoc — jak działa Pathfinder Nexus",
+    lead:
+      "Krótki przewodnik po czterech fazach silnika: narracja, optymalizacja wejścia, rozstrzyganie i dziennik sesji.",
+    sectionDnaTitle: "DNA opowieści",
+    sectionDnaBody:
+      "Trzy suwaki sterują tonem: tempo narracji, taktyczna śmiertelność i improwizacja BN. Tagi pozwalają wymusić motywy lub zakazać zużytych fraz.",
+    sectionDegreesTitle: "Stopnie sukcesu",
+    sectionDegreesBody:
+      "Każda akcja kończy się jednym z czterech wyników: krytyczny sukces, sukces, porażka, krytyczna porażka. Wyniki zależą od różnicy między rzutem a KT/KP.",
+    sectionMgTitle: "Panel Mistrza Gry",
+    sectionMgBody:
+      "Pozwala streścić ostatnie tury albo wymusić konkretne wyjście następnego rozstrzygnięcia. Narzędzie awaryjne — pozwala naprawić sesję, która utknęła.",
+    sectionSessionsTitle: "Sesje",
+    sectionSessionsBody:
+      "Serwer przechowuje sesje przez 24 godziny od ostatniej zmiany. Twoja przeglądarka pamięta zakładki lokalnie, więc zniknięcie karty nie kasuje dziennika — dopóki sesja nie wygaśnie.",
+    back: "Wróć na stronę główną",
+  },
+  errors: {
+    genericServer: "Serwer odpowiedział błędem.",
+    networkFail: "Nie udało się połączyć z serwerem. Sprawdź sieć.",
+    sessionNotFound: "Nie znaleziono sesji.",
+    invalidInput: "Dane wejściowe są nieprawidłowe.",
+  },
+} as const;
+
+export type Pl = typeof pl;

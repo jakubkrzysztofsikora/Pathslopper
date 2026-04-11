@@ -24,19 +24,19 @@ describe("VersionPicker", () => {
     render(<VersionPicker />);
     expect(screen.getByText(/Pathfinder 1e/i)).toBeDefined();
     expect(screen.getByText(/Pathfinder 2e/i)).toBeDefined();
-    expect(screen.getByText(/Story-Forward Simulation/i)).toBeDefined();
-    expect(screen.getByText(/Three-Action Economy/i)).toBeDefined();
+    expect(screen.getByText(/symulacja fabularna/i)).toBeDefined();
+    expect(screen.getByText(/system trzech akcji/i)).toBeDefined();
   });
 
   it("clicking the PF1e item writes pf1e into the store", () => {
     render(<VersionPicker />);
-    fireEvent.click(screen.getByText(/Story-Forward Simulation/i));
+    fireEvent.click(screen.getByText(/symulacja fabularna/i));
     expect(useStoryDNAStore.getState().version).toBe("pf1e");
   });
 
   it("clicking the PF1e item resets sliders to PF1e defaults", () => {
     render(<VersionPicker />);
-    fireEvent.click(screen.getByText(/Story-Forward Simulation/i));
+    fireEvent.click(screen.getByText(/symulacja fabularna/i));
     const sliders = useStoryDNAStore.getState().sliders;
     expect(sliders.narrativePacing).toBe(
       VERSION_SLIDER_DEFAULTS.pf1e.narrativePacing
@@ -50,7 +50,7 @@ describe("VersionPicker", () => {
   it("clicking the PF2e item from pf1e state switches back", () => {
     useStoryDNAStore.getState().setVersion("pf1e");
     render(<VersionPicker />);
-    fireEvent.click(screen.getByText(/Three-Action Economy/i));
+    fireEvent.click(screen.getByText(/system trzech akcji/i));
     expect(useStoryDNAStore.getState().version).toBe("pf2e");
   });
 });

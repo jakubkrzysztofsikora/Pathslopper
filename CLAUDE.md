@@ -213,6 +213,8 @@ the in-memory store automatically.
 | `workflow-patterns` | wshobson/agents (conductor) | TDD workflow + checkpoints |
 | `terraform` | antonbabenko/terraform-skill | Terraform/OpenTofu best practices |
 | `terraform-style-guide` | hashicorp/agent-skills | HashiCorp HCL style guide |
+| `ui-ux-pro-max` | nextlevelbuilder/ui-ux-pro-max-skill | UI/UX design intelligence — 50+ styles, 161 palettes, 57 font pairings, 99 UX guidelines |
+| `ux-designer` | szilu/ux-designer-skill | Modern UX best practices synthesized from NN/g, WCAG 2.2, Material Design, Apple HIG |
 
 ### Agents (`.claude/agents/`)
 

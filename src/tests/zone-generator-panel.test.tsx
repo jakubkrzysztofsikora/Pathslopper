@@ -140,7 +140,7 @@ describe("ZoneGeneratorPanel", () => {
       const button = screen.getByTestId(
         "zone-generate-button"
       ) as HTMLButtonElement;
-      expect(button.textContent).toContain("Generating");
+      expect(button.textContent).toContain("Generuję");
       expect(button.disabled).toBe(true);
     });
 

@@ -5,6 +5,7 @@ import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { SliderRow } from "./slider-row";
 import { FilterTags } from "./filter-tags";
 import { cn } from "@/lib/utils/cn";
+import { t, format } from "@/lib/i18n";
 
 export interface StoryDNAConfigProps {
   className?: string;
@@ -34,30 +35,29 @@ export function StoryDNAConfig({ className }: StoryDNAConfigProps) {
     >
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-zinc-100">
-          Story DNA Configuration
+          {t("storyDna.heading")}
         </h2>
         <p className="text-sm text-zinc-400 mt-1">
-          Calibrated for {versionLabel}. Adjust sliders to shape the AI GM
-          narrative engine.
+          {format(t("storyDna.lead"), { versionLabel })}
         </p>
       </div>
 
       <div className="flex flex-col gap-6">
         <SliderRow
-          label="Narrative Pacing"
-          description="Controls the ratio of story beats to combat encounters."
+          label={t("storyDna.pacingLabel")}
+          description={t("storyDna.pacingDescription")}
           value={sliders.narrativePacing}
           onValueChange={(v) => setSlider("narrativePacing", v)}
         />
         <SliderRow
-          label="Tactical Lethality"
-          description="Higher values increase monster threat and environmental danger."
+          label={t("storyDna.lethalityLabel")}
+          description={t("storyDna.lethalityDescription")}
           value={sliders.tacticalLethality}
           onValueChange={(v) => setSlider("tacticalLethality", v)}
         />
         <SliderRow
-          label="NPC Improv"
-          description="How freely NPCs deviate from scripted behavior."
+          label={t("storyDna.improvLabel")}
+          description={t("storyDna.improvDescription")}
           value={sliders.npcImprov}
           onValueChange={(v) => setSlider("npcImprov", v)}
         />

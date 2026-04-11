@@ -4,6 +4,7 @@ import { callLLM } from "@/lib/llm/client";
 import { RedisSessionStore } from "@/lib/state/server/redis-session-store";
 import { createIoRedisClient } from "@/lib/state/server/redis-client";
 import type { RedisClient } from "@/lib/state/server/redis-client";
+import { pl } from "@/lib/i18n";
 
 // No guards. Both LLM_API_KEY and REDIS_URL must be set.
 
@@ -86,7 +87,9 @@ describe("resolveInteraction — full pipeline with real LLM + Redis", () => {
 
     // Should have used the forced outcome
     expect(result.result.summary).toContain("The goblin surrenders");
-    expect(result.result.roll.breakdown).toContain("manager override");
+    expect(result.result.roll.breakdown).toBe(
+      pl.adjudication.managerOverrideNoRoll,
+    );
 
     // Override should be cleared
     const refetched = await store.get(session.id);

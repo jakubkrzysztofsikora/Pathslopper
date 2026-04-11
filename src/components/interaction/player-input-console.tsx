@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { cn } from "@/lib/utils/cn";
+import { t } from "@/lib/i18n";
+import { degreeLabelPl } from "@/lib/utils/degree-label-pl";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
 import type { SessionState, Turn } from "@/lib/schemas/session";
 
@@ -14,8 +16,6 @@ type State =
   | { status: "loading-override" }
   | { status: "error"; message: string }
   | { status: "success"; result: AdjudicationResult };
-
-const SESSION_STORAGE_KEY = "pathfinder-nexus:sessionId";
 
 function formatApiError(error: unknown, fallback: string): string {
   if (typeof error === "string") return error;
@@ -57,6 +57,12 @@ function degreeBadgeClass(degree?: string): string {
   }
 }
 
+// Local alias so existing JSX sites don't grow an import-site rename;
+// the real implementation lives in @/lib/utils/degree-label-pl so that
+// the adjudicator on the server can reuse the same mapping without
+// pulling in client code.
+const degreeLabel = degreeLabelPl;
+
 function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
   if (turn.kind === "narration") {
     return (
@@ -66,7 +72,7 @@ function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
       >
         <div className="flex items-center gap-2 mb-1">
           <span className="text-amber-400 uppercase tracking-wide">
-            Narration
+            {t("session.turnNarrationLabel")}
           </span>
           <span className="text-zinc-400">
             world-state {turn.worldStateHash}
@@ -86,7 +92,7 @@ function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
       >
         <div className="flex items-center gap-2 mb-1">
           <span className="text-red-400 uppercase tracking-wide">
-            Manager Override
+            {t("session.turnOverrideLabel")}
           </span>
         </div>
         <p className="text-zinc-300 italic">{turn.summary}</p>
@@ -112,13 +118,13 @@ function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
               degreeBadgeClass(degree)
             )}
           >
-            {degree.replace("-", " ")}
+            {degreeLabel(degree)}
           </span>
         )}
       </div>
       <p className="italic text-zinc-300">&ldquo;{turn.intent.rawInput}&rdquo;</p>
       <pre className="mt-1 text-amber-300 whitespace-pre-wrap font-mono">
-        {turn.result.roll.breakdown || "(no roll)"}
+        {turn.result.roll.breakdown || "(brak rzutu)"}
       </pre>
       <p className="mt-1 text-zinc-200">{turn.result.summary}</p>
     </li>
@@ -126,41 +132,45 @@ function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
 }
 
 export interface PlayerInputConsoleProps {
+  /**
+   * Required session id. The component assumes the server-side session
+   * already exists (created by the wizard) and will POST every action
+   * against it. The legacy auto-create-on-first-action path has been
+   * removed as part of the player UX overhaul.
+   */
+  sessionId: string;
+  /**
+   * Optional initial session state — pass the result of a server-side
+   * `GET /api/sessions/[id]` so the dialogue log renders immediately on
+   * first paint, before any interaction happens.
+   */
+  initialSession?: SessionState | null;
   className?: string;
 }
 
-export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
+export function PlayerInputConsole({
+  sessionId,
+  initialSession = null,
+  className,
+}: PlayerInputConsoleProps) {
   const version = useStoryDNAStore((s) => s.version);
-  const [sessionId, setSessionId] = React.useState<string | null>(null);
-  const [session, setSession] = React.useState<SessionState | null>(null);
-  const [rawInput, setRawInput] = React.useState(
-    "I swing my longsword at the nearest goblin."
+  const [session, setSession] = React.useState<SessionState | null>(
+    initialSession
   );
-  const [modifierStr, setModifierStr] = React.useState("5");
-  const [dcStr, setDcStr] = React.useState("15");
+  const [rawInput, setRawInput] = React.useState("");
+  const [modifierStr, setModifierStr] = React.useState("");
+  const [dcStr, setDcStr] = React.useState("");
   const [characterName, setCharacterName] = React.useState<string>("");
   const [state, setState] = React.useState<State>({ status: "idle" });
   const [fourthWallOpen, setFourthWallOpen] = React.useState(false);
   const [lastN, setLastN] = React.useState("5");
-  const [deadlockSummary, setDeadlockSummary] = React.useState<string | null>(null);
+  const [deadlockSummary, setDeadlockSummary] = React.useState<string | null>(
+    null
+  );
   const [forcedOutcome, setForcedOutcome] = React.useState("");
   const [overrideActive, setOverrideActive] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
   const inFlightRef = React.useRef(false);
-
-  // Rehydrate a previously-created session ID from sessionStorage so a
-  // page refresh doesn't silently orphan the server-side log.
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-    if (stored) setSessionId(stored);
-  }, []);
-
-  React.useEffect(() => {
-    if (sessionId && typeof window !== "undefined") {
-      window.sessionStorage.setItem(SESSION_STORAGE_KEY, sessionId);
-    }
-  }, [sessionId]);
 
   React.useEffect(() => {
     if (state.status === "success" && resultRef.current) {
@@ -168,40 +178,12 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     }
   }, [state.status]);
 
-  async function ensureSession(): Promise<string | null> {
-    if (sessionId) return sessionId;
-    try {
-      const res = await fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ version }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setState({
-          status: "error",
-          message: formatApiError(json.error, "Could not create session."),
-        });
-        return null;
-      }
-      const newSession = json.session as SessionState;
-      setSessionId(newSession.id);
-      setSession(newSession);
-      return newSession.id;
-    } catch (err) {
-      setState({
-        status: "error",
-        message: err instanceof Error ? err.message : "Session create failed.",
-      });
-      return null;
-    }
-  }
-
   async function handleResolve() {
     if (inFlightRef.current) return;
-    if (rawInput.trim().length === 0) return;
-    const sid = await ensureSession();
-    if (!sid) return;
+    if (rawInput.trim().length === 0) {
+      setState({ status: "error", message: t("session.consoleErrorEmptyInput") });
+      return;
+    }
 
     inFlightRef.current = true;
     setState({ status: "loading-resolve" });
@@ -211,7 +193,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
         version,
         overrideModifier: parseOptionalInt(modifierStr),
         overrideDc: parseOptionalInt(dcStr),
-        sessionId: sid,
+        sessionId,
       };
       if (characterName) {
         body.characterName = characterName;
@@ -225,7 +207,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message: formatApiError(json.error, "Resolution failed."),
+          message: formatApiError(json.error, t("session.consoleErrorGeneric")),
         });
         return;
       }
@@ -237,7 +219,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Request failed.",
+        message: err instanceof Error ? err.message : t("session.consoleErrorGeneric"),
       });
     } finally {
       inFlightRef.current = false;
@@ -246,8 +228,6 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
 
   async function handleNarrate() {
     if (inFlightRef.current) return;
-    const sid = await ensureSession();
-    if (!sid) return;
 
     inFlightRef.current = true;
     setState({ status: "loading-narrate" });
@@ -255,13 +235,13 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
       const res = await fetch("/api/interaction/narrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: sid, persist: true }),
+        body: JSON.stringify({ sessionId, persist: true }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message: formatApiError(json.error, "Narration failed."),
+          message: formatApiError(json.error, t("session.consoleErrorGeneric")),
         });
         return;
       }
@@ -270,40 +250,32 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Narration failed.",
+        message: err instanceof Error ? err.message : t("session.consoleErrorGeneric"),
       });
     } finally {
       inFlightRef.current = false;
     }
   }
 
-  function handleResetSession() {
-    if (typeof window !== "undefined") {
-      window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
-    }
-    setSessionId(null);
-    setSession(null);
-    setState({ status: "idle" });
-  }
-
   async function handleSummarize() {
     if (inFlightRef.current) return;
-    const sid = sessionId;
-    if (!sid) return;
     inFlightRef.current = true;
     setState({ status: "loading-summarize" });
     try {
       const n = parseInt(lastN, 10);
-      const res = await fetch(`/api/sessions/${sid}/override`, {
+      const res = await fetch(`/api/sessions/${sessionId}/override`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "summarize", lastN: Number.isFinite(n) ? n : 5 }),
+        body: JSON.stringify({
+          action: "summarize",
+          lastN: Number.isFinite(n) ? n : 5,
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message: formatApiError(json.error, "Summarization failed."),
+          message: formatApiError(json.error, t("session.consoleErrorGeneric")),
         });
         return;
       }
@@ -312,7 +284,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Summarization failed.",
+        message: err instanceof Error ? err.message : t("session.consoleErrorGeneric"),
       });
     } finally {
       inFlightRef.current = false;
@@ -322,15 +294,13 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
   async function handleForceOutcome() {
     if (inFlightRef.current) return;
     if (forcedOutcome.trim().length === 0) return;
-    const sid = await ensureSession();
-    if (!sid) return;
     inFlightRef.current = true;
     setState({ status: "loading-override" });
     try {
       const n = parseInt(lastN, 10);
       const turnsConsidered = Number.isFinite(n) ? n : 5;
-      const summary = deadlockSummary ?? "Manager override.";
-      const res = await fetch(`/api/sessions/${sid}/override`, {
+      const summary = deadlockSummary ?? t("session.turnOverrideLabel");
+      const res = await fetch(`/api/sessions/${sessionId}/override`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -344,7 +314,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message: formatApiError(json.error, "Override failed."),
+          message: formatApiError(json.error, t("session.consoleErrorGeneric")),
         });
         return;
       }
@@ -357,7 +327,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Override failed.",
+        message: err instanceof Error ? err.message : t("session.consoleErrorGeneric"),
       });
     } finally {
       inFlightRef.current = false;
@@ -384,40 +354,29 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
             id="player-input-console-heading"
             className="text-lg font-semibold text-zinc-100"
           >
-            Player Input Console — Audit the Math
+            {t("session.consoleHeading")}
           </h2>
           <p className="text-sm text-zinc-300 mt-1">
-            Phase 1 narrates the scene. Phase 2 cleans your prose into a
-            PlayerIntent. Phase 3 adjudicates deterministically. Phase 4
-            appends the turn to the server-owned session log.
+            {t("session.consoleLead")}
           </p>
         </div>
-        {sessionId && (
-          <div className="text-xs text-zinc-400 font-mono flex items-center gap-2">
-            <span data-testid="session-id-display">
-              session {sessionId.slice(0, 8)}…
-            </span>
-            <button
-              type="button"
-              onClick={handleResetSession}
-              className="text-amber-400 hover:text-amber-300 underline"
-              data-testid="session-reset-button"
-            >
-              reset
-            </button>
-          </div>
-        )}
+        <div className="text-xs text-zinc-400 font-mono">
+          <span data-testid="session-id-display">
+            sesja {sessionId.slice(0, 8)}…
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
         <label className="flex flex-col gap-1">
           <span className="text-xs uppercase tracking-wide text-zinc-300">
-            Player action (free text)
+            {t("session.consoleActionLabel")}
           </span>
           <textarea
             value={rawInput}
             onChange={(e) => setRawInput(e.target.value)}
             data-testid="player-input-textarea"
+            placeholder={t("session.consoleActionPlaceholder")}
             rows={3}
             className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
           />
@@ -426,7 +385,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
         <div className="flex gap-3 flex-wrap">
           <label className="flex flex-col gap-1 flex-1">
             <span className="text-xs uppercase tracking-wide text-zinc-300">
-              Modifier (optional)
+              {t("session.consoleModifierLabel")}
             </span>
             <input
               type="number"
@@ -438,7 +397,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
           </label>
           <label className="flex flex-col gap-1 flex-1">
             <span className="text-xs uppercase tracking-wide text-zinc-300">
-              DC / AC (optional)
+              {t("session.consoleDcLabel")}
             </span>
             <input
               type="number"
@@ -451,7 +410,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
           {session?.characters && session.characters.length > 0 && (
             <label className="flex flex-col gap-1 flex-1">
               <span className="text-xs uppercase tracking-wide text-zinc-300">
-                Character (optional)
+                {t("session.consoleCharacterLabel")}
               </span>
               <select
                 value={characterName}
@@ -459,7 +418,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
                 data-testid="player-input-character"
                 className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
               >
-                <option value="">— none —</option>
+                <option value="">{t("session.consoleCharacterNone")}</option>
                 {session.characters.map((c) => (
                   <option key={c.name} value={c.name}>
                     {c.name}
@@ -478,7 +437,9 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
             data-testid="player-input-resolve-button"
             className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
           >
-            {state.status === "loading-resolve" ? "Resolving..." : "Resolve Action"}
+            {state.status === "loading-resolve"
+              ? t("session.consoleResolving")
+              : t("session.consoleResolve")}
           </button>
           <button
             type="button"
@@ -487,13 +448,16 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
             data-testid="player-input-narrate-button"
             className="rounded-md border border-amber-600 px-4 py-2 text-sm font-medium text-amber-400 hover:bg-amber-900/20 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:text-zinc-500"
           >
-            {state.status === "loading-narrate" ? "Narrating..." : "Narrate Scene"}
+            {state.status === "loading-narrate"
+              ? t("session.consoleNarrating")
+              : t("session.consoleNarrate")}
           </button>
           <button
             type="button"
             onClick={() => setFourthWallOpen((o) => !o)}
             disabled={isLoading}
             data-testid="player-input-fourth-wall-button"
+            aria-expanded={fourthWallOpen}
             className={cn(
               "rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:border-zinc-700 disabled:text-zinc-500",
               fourthWallOpen
@@ -501,7 +465,9 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
                 : "border-red-700 text-red-400 hover:bg-red-900/20"
             )}
           >
-            {overrideActive ? "Override Pending..." : "Break the Fourth Wall"}
+            {overrideActive
+              ? t("session.consoleOverridePending")
+              : t("session.consoleOverrideOpen")}
           </button>
         </div>
 
@@ -511,11 +477,14 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
             data-testid="fourth-wall-panel"
           >
             <p className="text-xs text-red-300 font-medium uppercase tracking-wide">
-              Manager Mode — Override Next Resolution
+              {t("session.consoleOverrideHeading")}
+            </p>
+            <p className="text-xs text-zinc-300">
+              {t("session.consoleOverrideHelp")}
             </p>
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-400">
-                Turns to summarize (lastN)
+                {t("session.consoleOverrideLastNLabel")}
               </span>
               <input
                 type="number"
@@ -530,31 +499,35 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
             <button
               type="button"
               onClick={() => void handleSummarize()}
-              disabled={isLoading || !sessionId}
+              disabled={isLoading}
               data-testid="fourth-wall-summarize-button"
               className="self-start rounded-md border border-zinc-600 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-500"
             >
-              {state.status === "loading-summarize" ? "Summarizing..." : "Summarize Recent Turns"}
+              {state.status === "loading-summarize"
+                ? t("session.consoleOverrideSummarizing")
+                : t("session.consoleOverrideSummarize")}
             </button>
             {deadlockSummary && (
               <div
                 className="rounded border border-zinc-700 bg-zinc-900 p-3 text-xs text-zinc-200"
                 data-testid="fourth-wall-summary-display"
               >
-                <p className="text-zinc-400 uppercase tracking-wide mb-1">Summary</p>
+                <p className="text-zinc-400 uppercase tracking-wide mb-1">
+                  {t("session.consoleOverrideSummaryHeading")}
+                </p>
                 <p>{deadlockSummary}</p>
               </div>
             )}
             <label className="flex flex-col gap-1">
               <span className="text-xs text-zinc-400">
-                Forced outcome (replaces next dice roll)
+                {t("session.consoleOverrideForcedLabel")}
               </span>
               <textarea
                 value={forcedOutcome}
                 onChange={(e) => setForcedOutcome(e.target.value)}
                 data-testid="fourth-wall-forced-outcome"
                 rows={3}
-                placeholder="Describe exactly what happens next..."
+                placeholder={t("session.consoleOverrideForcedPlaceholder")}
                 className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-red-500 focus:outline-none"
               />
             </label>
@@ -565,7 +538,9 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
               data-testid="fourth-wall-force-button"
               className="self-start rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
             >
-              {state.status === "loading-override" ? "Forcing..." : "Force Outcome"}
+              {state.status === "loading-override"
+                ? t("session.consoleOverrideForcing")
+                : t("session.consoleOverrideForce")}
             </button>
           </div>
         )}
@@ -586,7 +561,7 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
           >
             <div className="flex items-baseline justify-between flex-wrap gap-2">
               <h3 className="text-base font-semibold text-amber-400">
-                Intent: {state.result.intent.action}
+                {t("session.consoleResultIntent")}: {state.result.intent.action}
                 {state.result.intent.skillOrAttack &&
                   ` · ${state.result.intent.skillOrAttack}`}
               </h3>
@@ -598,14 +573,14 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
                   )}
                   data-testid="player-input-degree-badge"
                 >
-                  {state.result.roll.degreeOfSuccess.replace("-", " ")}
+                  {degreeLabel(state.result.roll.degreeOfSuccess)}
                 </span>
               )}
             </div>
 
             <div>
               <h4 className="text-xs uppercase tracking-wide text-zinc-300 mb-1">
-                Audit the Math
+                {t("session.consoleResultAudit")}
               </h4>
               <pre
                 data-testid="player-input-audit"
@@ -617,20 +592,20 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
 
             <div>
               <h4 className="text-xs uppercase tracking-wide text-zinc-300 mb-1">
-                Summary
+                {t("session.consoleResultSummary")}
               </h4>
               <p className="text-sm text-zinc-100">{state.result.summary}</p>
             </div>
           </div>
         )}
 
-        {session && session.turns.length > 0 && (
+        {session && session.turns.length > 0 ? (
           <div
             className="mt-2 border-t border-zinc-800 pt-3"
             data-testid="session-log"
           >
             <h3 className="text-xs uppercase tracking-wide text-zinc-300 mb-2">
-              Session Log ({session.turns.length})
+              {t("session.logHeading")} ({session.turns.length})
             </h3>
             <ol className="flex flex-col gap-2 max-h-64 overflow-auto">
               {session.turns.map((turn, i) => (
@@ -638,6 +613,15 @@ export function PlayerInputConsole({ className }: PlayerInputConsoleProps) {
               ))}
             </ol>
           </div>
+        ) : (
+          session && (
+            <p
+              className="mt-2 border-t border-zinc-800 pt-3 text-xs italic text-zinc-400"
+              data-testid="session-log-empty"
+            >
+              {t("session.logEmpty")}
+            </p>
+          )
         )}
       </div>
     </section>

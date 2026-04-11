@@ -26,23 +26,23 @@ describe("FilterTags", () => {
 
   it("renders both section headings and initial chips", () => {
     setup();
-    expect(screen.getByText("Include Themes")).toBeDefined();
-    expect(screen.getByText(/Slop Filter/i)).toBeDefined();
+    expect(screen.getByText("Motywy do włączenia")).toBeDefined();
+    expect(screen.getByText(/Filtr slopa/i)).toBeDefined();
     expect(screen.getByText("Dark Fantasy")).toBeDefined();
     expect(screen.getByText("moreover")).toBeDefined();
   });
 
   it("typing and pressing Enter in the include input calls onAddInclude", () => {
     const { onAddInclude } = setup();
-    const input = screen.getByPlaceholderText(/Add include theme/i);
-    fireEvent.change(input, { target: { value: "Political Intrigue" } });
+    const input = screen.getByPlaceholderText(/Dodaj motyw/i);
+    fireEvent.change(input, { target: { value: "Polityczna intryga" } });
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(onAddInclude).toHaveBeenCalledWith("Political Intrigue");
+    expect(onAddInclude).toHaveBeenCalledWith("Polityczna intryga");
   });
 
   it("typing and pressing Enter in the exclude input calls onAddExclude", () => {
     const { onAddExclude } = setup();
-    const input = screen.getByPlaceholderText(/Add banned phrase/i);
+    const input = screen.getByPlaceholderText(/Dodaj zakazaną frazę/i);
     fireEvent.change(input, { target: { value: "delve" } });
     fireEvent.keyDown(input, { key: "Enter" });
     expect(onAddExclude).toHaveBeenCalledWith("delve");
@@ -62,8 +62,8 @@ describe("FilterTags", () => {
 
   it("tag inputs are accessibly associated with their section headings via aria-labelledby", () => {
     setup();
-    const includeInput = screen.getByPlaceholderText(/Add include theme/i);
-    const excludeInput = screen.getByPlaceholderText(/Add banned phrase/i);
+    const includeInput = screen.getByPlaceholderText(/Dodaj motyw/i);
+    const excludeInput = screen.getByPlaceholderText(/Dodaj zakazaną frazę/i);
     // The inputs carry aria-labelledby pointing to the h4 IDs set in FilterTags.
     expect(includeInput.getAttribute("aria-labelledby")).toBe(
       "filter-tags-include-heading"

@@ -55,7 +55,7 @@ describe("CharacterSheetUploader", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert").textContent).toContain(
-        "Unsupported file type"
+        "Nieobsługiwany format pliku"
       );
     });
     expect(fetchSpy).not.toHaveBeenCalled();

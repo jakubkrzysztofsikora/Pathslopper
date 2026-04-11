@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { adjudicate } from "@/lib/orchestration/adjudicate";
 import type { PlayerIntent } from "@/lib/schemas/player-intent";
+import { pl } from "@/lib/i18n";
+
+// Reference the dictionary key rather than a hardcoded Polish string so the
+// test stays coupled to the UI copy even if the wording is tweaked.
+const RULES_HEADING = `${pl.adjudication.rulesReferenceHeading}:`;
 
 function makeIntent(overrides: Partial<PlayerIntent> = {}): PlayerIntent {
   return {
@@ -24,7 +29,7 @@ describe("adjudicate — srdContext", () => {
       srdContext: "[Longsword] Longsword: 1d8 S, reach 5 ft.",
     });
     expect(result.summary).toContain("[Longsword] Longsword");
-    expect(result.summary).toContain("Rules Reference:");
+    expect(result.summary).toContain(RULES_HEADING);
   });
 
   it("when srdContext is not provided, summary is unchanged from baseline", () => {
@@ -36,9 +41,9 @@ describe("adjudicate — srdContext", () => {
     });
 
     // Summary without SRD should NOT contain "Rules Reference"
-    expect(withoutSrd.summary).not.toContain("Rules Reference:");
+    expect(withoutSrd.summary).not.toContain(RULES_HEADING);
     // Summary with SRD has extra section appended
-    expect(withSrd.summary).toContain("Rules Reference:");
+    expect(withSrd.summary).toContain(RULES_HEADING);
     // The base part of the summary should be the same
     expect(withSrd.summary.startsWith(withoutSrd.summary)).toBe(true);
   });
@@ -49,6 +54,6 @@ describe("adjudicate — srdContext", () => {
     // Narrative path returns description as summary directly — no rules reference appended
     expect(result.outcome).toBe("narrative");
     expect(result.summary).toBe(intent.description);
-    expect(result.summary).not.toContain("Rules Reference:");
+    expect(result.summary).not.toContain(RULES_HEADING);
   });
 });

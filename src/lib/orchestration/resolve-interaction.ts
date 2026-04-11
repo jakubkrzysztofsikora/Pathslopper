@@ -8,6 +8,7 @@ import type { VectorStore } from "@/lib/rag/vector-store";
 import type { embedTexts as EmbedTextsFn } from "@/lib/rag/embed";
 import { optimizeInput } from "./optimize-input";
 import { adjudicate, type AdjudicateOptions } from "./adjudicate";
+import { t } from "@/lib/i18n";
 // Graph import is lazy (dynamic import inside resolveViaGraph) to avoid
 // loading @langchain/langgraph when USE_LANGGRAPH=false (the default).
 
@@ -127,7 +128,7 @@ export async function resolveInteraction(
           rolls: [],
           modifiers: [],
           total: 0,
-          breakdown: "(manager override — no dice rolled)",
+          breakdown: t("adjudication.managerOverrideNoRoll"),
         },
         outcome: "resolved",
         summary: currentSession.activeOverride.forcedOutcome,

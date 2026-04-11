@@ -4,6 +4,7 @@ import { PlayerInputConsole } from "@/components/interaction/player-input-consol
 import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { VERSION_SLIDER_DEFAULTS } from "@/lib/schemas/story-dna";
 import { DEFAULT_BANNED_PHRASES } from "@/lib/prompts/banned-phrases";
+import type { SessionState } from "@/lib/schemas/session";
 
 function resetStore() {
   useStoryDNAStore.setState({
@@ -16,18 +17,20 @@ function resetStore() {
   });
 }
 
-const fakeSession = {
+const fakeSession: SessionState = {
   id: "abcdefgh12345678",
   version: "pf2e",
   createdAt: "2026-04-09T00:00:00.000Z",
   updatedAt: "2026-04-09T00:00:00.000Z",
   turns: [],
+  characters: [],
+  activeOverride: null,
 };
 
 const successResult = {
   intent: {
     version: "pf2e",
-    rawInput: "I swing my longsword at the nearest goblin.",
+    rawInput: "Wymierzam długim mieczem w najbliższego goblina.",
     action: "strike",
     skillOrAttack: "Longsword",
     target: "goblin",
@@ -46,16 +49,15 @@ const successResult = {
     degreeOfSuccess: "success",
   },
   outcome: "resolved",
-  summary: "Longsword against goblin: rolled 20 — success.",
+  summary: "Longsword na cel: goblin: wyrzucono 20 — sukces.",
 };
 
 /**
- * Route-aware fetch mock. The PlayerInputConsole now calls /api/sessions
- * before /api/interaction/resolve on first use, so a single flat mock
- * would misattribute calls. This helper dispatches by URL.
+ * Route-aware fetch mock. With the overhaul the console no longer hits
+ * /api/sessions itself — the wizard owns session creation — so this
+ * helper only dispatches resolve / narrate.
  */
 interface MockResponses {
-  createSession?: unknown;
   resolve?: unknown;
   narrate?: unknown;
 }
@@ -63,13 +65,6 @@ interface MockResponses {
 function mockFetchByRoute(responses: MockResponses) {
   return vi.fn(async (url: string, _init?: RequestInit) => {
     void _init;
-    if (url === "/api/sessions") {
-      return {
-        ok: true,
-        json: async () =>
-          responses.createSession ?? { ok: true, session: fakeSession },
-      } as Response;
-    }
     if (url === "/api/interaction/resolve") {
       return {
         ok: true,
@@ -87,7 +82,7 @@ function mockFetchByRoute(responses: MockResponses) {
         json: async () =>
           responses.narrate ?? {
             ok: true,
-            markdown: "You step into damp stone.",
+            markdown: "Wchodzisz w wilgotny kamień.",
             worldStateHash: "abc12345",
             warnings: [],
             session: fakeSession,
@@ -101,9 +96,6 @@ function mockFetchByRoute(responses: MockResponses) {
 describe("PlayerInputConsole", () => {
   beforeEach(() => {
     resetStore();
-    if (typeof window !== "undefined") {
-      window.sessionStorage.clear();
-    }
   });
   afterEach(() => {
     cleanup();
@@ -111,30 +103,38 @@ describe("PlayerInputConsole", () => {
   });
 
   it("renders the heading, textarea, modifier, DC, and resolve button", () => {
-    render(<PlayerInputConsole />);
-    expect(screen.getByText(/Audit the Math/i)).toBeDefined();
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
+    expect(screen.getByText(/Akcja gracza/i)).toBeDefined();
     expect(screen.getByTestId("player-input-textarea")).toBeDefined();
     expect(screen.getByTestId("player-input-modifier")).toBeDefined();
     expect(screen.getByTestId("player-input-dc")).toBeDefined();
     expect(screen.getByTestId("player-input-resolve-button")).toBeDefined();
     expect(screen.getByTestId("player-input-narrate-button")).toBeDefined();
+    expect(screen.getByTestId("session-id-display")).toBeDefined();
   });
 
   it("disables the resolve button when the textarea is empty", () => {
-    render(<PlayerInputConsole />);
-    const textarea = screen.getByTestId("player-input-textarea");
-    fireEvent.change(textarea, { target: { value: "" } });
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
     const button = screen.getByTestId(
       "player-input-resolve-button"
     ) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
   });
 
-  it("creates a session then POSTs rawInput + version + overrides and renders the audit breakdown", async () => {
+  it("POSTs rawInput + version + overrides and renders the audit breakdown", async () => {
     const fetchSpy = mockFetchByRoute({});
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<PlayerInputConsole />);
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
+    fireEvent.change(screen.getByTestId("player-input-textarea"), {
+      target: { value: "Atakuję goblina mieczem." },
+    });
     fireEvent.change(screen.getByTestId("player-input-modifier"), {
       target: { value: "5" },
     });
@@ -147,14 +147,9 @@ describe("PlayerInputConsole", () => {
       expect(screen.getByTestId("player-input-audit")).toBeDefined();
     });
 
-    // First call must be session creation.
-    expect(fetchSpy.mock.calls[0][0]).toBe("/api/sessions");
-    const createBody = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
-    expect(createBody.version).toBe("pf2e");
-
-    // Second call is the resolve with the new sessionId attached.
-    expect(fetchSpy.mock.calls[1][0]).toBe("/api/interaction/resolve");
-    const resolveBody = JSON.parse(String(fetchSpy.mock.calls[1][1]?.body));
+    // The only call the console makes is the resolve with the injected sessionId.
+    expect(fetchSpy.mock.calls[0][0]).toBe("/api/interaction/resolve");
+    const resolveBody = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
     expect(resolveBody.version).toBe("pf2e");
     expect(resolveBody.overrideModifier).toBe(5);
     expect(resolveBody.overrideDc).toBe(15);
@@ -165,7 +160,7 @@ describe("PlayerInputConsole", () => {
       successResult.roll.breakdown
     );
     expect(screen.getByTestId("player-input-degree-badge").textContent).toMatch(
-      /success/i
+      /sukces/i
     );
   });
 
@@ -173,12 +168,11 @@ describe("PlayerInputConsole", () => {
     const fetchSpy = mockFetchByRoute({});
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<PlayerInputConsole />);
-    fireEvent.change(screen.getByTestId("player-input-modifier"), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByTestId("player-input-dc"), {
-      target: { value: "" },
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
+    fireEvent.change(screen.getByTestId("player-input-textarea"), {
+      target: { value: "Opisuję scenę." },
     });
     fireEvent.click(screen.getByTestId("player-input-resolve-button"));
 
@@ -197,21 +191,18 @@ describe("PlayerInputConsole", () => {
   });
 
   it("renders the API error message when the resolve request fails", async () => {
-    const fetchSpy = vi.fn(async (url: string) => {
-      if (url === "/api/sessions") {
-        return {
-          ok: true,
-          json: async () => ({ ok: true, session: fakeSession }),
-        } as Response;
-      }
-      return {
-        ok: false,
-        json: async () => ({ ok: false, error: "Upstream model call failed." }),
-      } as Response;
-    });
+    const fetchSpy = vi.fn(async () => ({
+      ok: false,
+      json: async () => ({ ok: false, error: "Upstream model call failed." }),
+    } as Response));
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<PlayerInputConsole />);
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
+    fireEvent.change(screen.getByTestId("player-input-textarea"), {
+      target: { value: "Robię coś." },
+    });
     fireEvent.click(screen.getByTestId("player-input-resolve-button"));
 
     await waitFor(() => {
@@ -222,13 +213,13 @@ describe("PlayerInputConsole", () => {
   });
 
   it("Narrate Scene button calls /api/interaction/narrate with the current sessionId", async () => {
-    const sessionWithTurns = {
+    const sessionWithTurns: SessionState = {
       ...fakeSession,
       turns: [
         {
           kind: "narration",
           at: "2026-04-09T00:01:00.000Z",
-          markdown: "You stand in a damp corridor.",
+          markdown: "Stoisz w wilgotnym korytarzu.",
           worldStateHash: "abc12345",
         },
       ],
@@ -236,7 +227,7 @@ describe("PlayerInputConsole", () => {
     const fetchSpy = mockFetchByRoute({
       narrate: {
         ok: true,
-        markdown: "You stand in a damp corridor.",
+        markdown: "Stoisz w wilgotnym korytarzu.",
         worldStateHash: "abc12345",
         warnings: [],
         session: sessionWithTurns,
@@ -244,56 +235,29 @@ describe("PlayerInputConsole", () => {
     });
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<PlayerInputConsole />);
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
     fireEvent.click(screen.getByTestId("player-input-narrate-button"));
 
     await waitFor(() => {
       expect(screen.getByTestId("session-log")).toBeDefined();
     });
 
-    // First call: session create. Second: narrate.
-    expect(fetchSpy.mock.calls[0][0]).toBe("/api/sessions");
-    expect(fetchSpy.mock.calls[1][0]).toBe("/api/interaction/narrate");
-    const narrateBody = JSON.parse(String(fetchSpy.mock.calls[1][1]?.body));
+    expect(fetchSpy.mock.calls[0][0]).toBe("/api/interaction/narrate");
+    const narrateBody = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
     expect(narrateBody.sessionId).toBe(fakeSession.id);
     expect(narrateBody.persist).toBe(true);
 
-    // Session log shows the narration turn.
     expect(screen.getByTestId("session-turn-0").textContent).toContain(
-      "damp corridor"
+      "wilgotnym korytarzu"
     );
   });
 
-  it("reset button clears sessionId and session log", async () => {
-    const fetchSpy = mockFetchByRoute({
-      narrate: {
-        ok: true,
-        markdown: "scene",
-        worldStateHash: "abc",
-        warnings: [],
-        session: {
-          ...fakeSession,
-          turns: [
-            {
-              kind: "narration",
-              at: "2026-04-09T00:01:00.000Z",
-              markdown: "scene",
-              worldStateHash: "abc",
-            },
-          ],
-        },
-      },
-    });
-    vi.stubGlobal("fetch", fetchSpy);
-
-    render(<PlayerInputConsole />);
-    fireEvent.click(screen.getByTestId("player-input-narrate-button"));
-    await waitFor(() => {
-      expect(screen.getByTestId("session-reset-button")).toBeDefined();
-    });
-
-    fireEvent.click(screen.getByTestId("session-reset-button"));
-    expect(screen.queryByTestId("session-log")).toBeNull();
-    expect(screen.queryByTestId("session-id-display")).toBeNull();
+  it("shows the empty-session log hint when no turns are present", () => {
+    render(
+      <PlayerInputConsole sessionId={fakeSession.id} initialSession={fakeSession} />
+    );
+    expect(screen.getByTestId("session-log-empty")).toBeDefined();
   });
 });

@@ -1,37 +1,35 @@
-import { VersionPicker } from "@/components/version-picker";
-import { StoryDNAConfig } from "@/components/story-dna/story-dna-config";
-import { CharacterSheetUploader } from "@/components/character-sheet/uploader";
-import { ZoneGeneratorPanel } from "@/components/zones/zone-generator-panel";
-import { PlayerInputConsole } from "@/components/interaction/player-input-console";
+import { OnboardingHero } from "@/components/shell/onboarding-hero";
+import { SessionList } from "@/components/sessions/session-list";
+import { t } from "@/lib/i18n";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12 flex flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-100">
-          Pathfinder Nexus{" "}
-          <span className="text-amber-500">— AI Game Master</span>
-        </h1>
-        <p className="text-zinc-300 text-base">
-          Deterministic state-driven storytelling. Calibrate your DNA, generate
-          tactical zones, and parse character sheets with vision AI.
-        </p>
-      </header>
+    <main
+      className="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-8 sm:py-12"
+      data-testid="home-page"
+    >
+      <OnboardingHero />
 
-      <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-6">
-        <VersionPicker />
+      <section
+        className="flex flex-col gap-4"
+        aria-labelledby="home-sessions-heading"
+      >
+        <div>
+          <h2
+            id="home-sessions-heading"
+            className="text-xl font-semibold text-zinc-100"
+          >
+            {t("home.sessionsHeading")}
+          </h2>
+          <p className="text-sm text-zinc-400">
+            {t("home.sessionsSubheading")}
+          </p>
+        </div>
+        <SessionList />
       </section>
 
-      <StoryDNAConfig />
-
-      <CharacterSheetUploader />
-
-      <ZoneGeneratorPanel />
-
-      <PlayerInputConsole />
-
-      <footer className="border-t border-zinc-800 pt-4 text-xs text-zinc-300 text-center">
-        PF1e: simulation | PF2e: three-action economy
+      <footer className="border-t border-zinc-800 pt-4 text-center text-xs text-zinc-400">
+        PF1e: symulacja · PF2e: system trzech akcji
       </footer>
     </main>
   );
