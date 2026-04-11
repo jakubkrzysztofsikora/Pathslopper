@@ -4,6 +4,8 @@ import type {
 } from "@/lib/schemas/adjudication";
 import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 import { check, roll, type ModifierTerm } from "@/lib/dice/roll";
+import { t, format } from "@/lib/i18n";
+import { degreeLabelPl } from "@/lib/utils/degree-label-pl";
 
 /**
  * Phase 3 orchestrator — deterministic adjudication.
@@ -48,7 +50,7 @@ export function adjudicate(
         rolls: [],
         modifiers: [],
         total: 0,
-        breakdown: "(brak rzutu — akcja narracyjna)",
+        breakdown: t("adjudication.noRollNarrative"),
       },
       outcome: "narrative",
       summary: intent.description,
@@ -79,7 +81,7 @@ export function adjudicate(
     const result = check({ ...rollInput, dc: intent.dc });
     let summary = summariseCheck(intent, result.degreeOfSuccess, result.total);
     if (options.srdContext) {
-      summary += `\n\nŹródło reguł:\n${options.srdContext}`;
+      summary += `\n\n${t("adjudication.rulesReferenceHeading")}:\n${options.srdContext}`;
     }
     return {
       intent,
@@ -98,9 +100,11 @@ export function adjudicate(
   }
 
   const result = roll(rollInput);
-  let needsDcSummary = `Wyrzucono ${result.total} — brak KT, Mistrz Gry musi ustalić trudność.`;
+  let needsDcSummary = format(t("adjudication.noDcSummary"), {
+    total: result.total,
+  });
   if (options.srdContext) {
-    needsDcSummary += `\n\nŹródło reguł:\n${options.srdContext}`;
+    needsDcSummary += `\n\n${t("adjudication.rulesReferenceHeading")}:\n${options.srdContext}`;
   }
   return {
     intent,
@@ -139,19 +143,17 @@ function summariseCheck(
   degree: string,
   total: number
 ): string {
-  const target = intent.target ? ` na cel: ${intent.target}` : "";
   const verb = intent.skillOrAttack ?? intent.action;
-  const degreeLabel =
-    degree === "critical-success"
-      ? "krytyczny sukces"
-      : degree === "success"
-      ? "sukces"
-      : degree === "failure"
-      ? "porażka"
-      : degree === "critical-failure"
-      ? "krytyczna porażka"
-      : degree;
-  return `${verb}${target}: wyrzucono ${total} — ${degreeLabel}.`;
+  const degreeLabel = degreeLabelPl(degree);
+  const template = intent.target
+    ? t("adjudication.summariseCheckWithTarget")
+    : t("adjudication.summariseCheckNoTarget");
+  return format(template, {
+    verb,
+    target: intent.target ?? "",
+    total,
+    degreeLabel,
+  });
 }
 
 function abilityMod(score: number): number {

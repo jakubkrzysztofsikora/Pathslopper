@@ -55,22 +55,66 @@ interface BookmarksState {
   _reset: () => void;
 }
 
+/**
+ * Parse and normalise localStorage bookmarks.
+ *
+ * Validates every required field and its shape, and backfills sane
+ * defaults for older / partially-written entries:
+ *  - `lastOpenedAt` missing → default to `createdAt`
+ *  - `version` missing or unknown → drop the entry (can't render a badge)
+ *  - `storyDnaSnapshot` missing or malformed → synthesise a neutral stub
+ *    so the UI never reads undefined nested fields
+ *
+ * Anything that still fails the minimum contract (id/name/createdAt) is
+ * silently dropped — corrupt entries must not crash the hub.
+ */
 function safeParse(raw: string | null): SessionBookmark[] {
   if (!raw) return [];
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (b): b is SessionBookmark =>
-        typeof b === "object" &&
-        b !== null &&
-        typeof (b as SessionBookmark).id === "string" &&
-        typeof (b as SessionBookmark).name === "string" &&
-        typeof (b as SessionBookmark).createdAt === "string"
-    );
+    parsed = JSON.parse(raw);
   } catch {
     return [];
   }
+  if (!Array.isArray(parsed)) return [];
+
+  const neutralDna = {
+    version: "pf2e" as const,
+    sliders: { narrativePacing: 50, tacticalLethality: 50, npcImprov: 50 },
+    tags: { include: [], exclude: [] },
+  };
+
+  const out: SessionBookmark[] = [];
+  for (const raw of parsed) {
+    if (!raw || typeof raw !== "object") continue;
+    const b = raw as Partial<SessionBookmark>;
+    if (typeof b.id !== "string" || b.id.length === 0) continue;
+    if (typeof b.name !== "string" || b.name.length === 0) continue;
+    if (typeof b.createdAt !== "string") continue;
+    if (b.version !== "pf1e" && b.version !== "pf2e") continue;
+
+    const lastOpenedAt =
+      typeof b.lastOpenedAt === "string" ? b.lastOpenedAt : b.createdAt;
+
+    const snapshot =
+      b.storyDnaSnapshot &&
+      typeof b.storyDnaSnapshot === "object" &&
+      "sliders" in b.storyDnaSnapshot &&
+      "tags" in b.storyDnaSnapshot
+        ? b.storyDnaSnapshot
+        : { ...neutralDna, version: b.version };
+
+    out.push({
+      id: b.id,
+      name: b.name,
+      version: b.version,
+      createdAt: b.createdAt,
+      lastOpenedAt,
+      storyDnaSnapshot: snapshot,
+      ...(typeof b.expired === "boolean" ? { expired: b.expired } : {}),
+    });
+  }
+  return out;
 }
 
 function writeToStorage(bookmarks: SessionBookmark[]) {
@@ -166,13 +210,19 @@ export const useSessionBookmarks = create<BookmarksState>((set, get) => ({
         return { id: b.id, status: res.status };
       })
     );
+    // Collapse the settled results into a single id→status map so the
+    // merge step below is O(n) instead of O(n²) (rebuilding a find() per
+    // bookmark was pointless work once the list grew past a handful).
+    const statusById = new Map<string, number>();
+    for (const probe of probes) {
+      if (probe.status === "fulfilled") {
+        statusById.set(probe.value.id, probe.value.status);
+      }
+    }
     set((prev) => {
       const next = prev.bookmarks.map((b) => {
-        const probe = probes.find(
-          (p) => p.status === "fulfilled" && p.value.id === b.id
-        );
-        if (!probe || probe.status !== "fulfilled") return b;
-        const httpStatus = probe.value.status;
+        const httpStatus = statusById.get(b.id);
+        if (httpStatus === undefined) return b;
         if (httpStatus === 404) return { ...b, expired: true };
         if (httpStatus >= 200 && httpStatus < 300) return { ...b, expired: false };
         return b;

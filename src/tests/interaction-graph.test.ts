@@ -9,6 +9,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildInteractionGraph } from "@/lib/orchestration/graph/interaction-graph";
 import { InMemorySessionStore } from "@/lib/state/server/session-store";
+import { pl } from "@/lib/i18n";
 
 const BASE_OPTIMIZED_INTENT = {
   version: "pf2e",
@@ -104,7 +105,7 @@ describe("buildInteractionGraph", () => {
     expect(result.error).toBeNull();
     expect(result.result).not.toBeNull();
     // Synthetic override result: no dice rolled
-    expect(result.result?.roll.breakdown).toContain("Panel Mistrza Gry");
+    expect(result.result?.roll.breakdown).toBe(pl.adjudication.managerOverrideNoRoll);
     expect(result.result?.roll.rolls).toHaveLength(0);
     expect(result.result?.summary).toBe("The goblin surrenders immediately.");
 
@@ -208,7 +209,7 @@ describe("buildInteractionGraph", () => {
 
     expect(result.error).toBeNull();
     expect(result.result).not.toBeNull();
-    expect(result.result?.summary).toContain("Źródło reguł");
+    expect(result.result?.summary).toContain(pl.adjudication.rulesReferenceHeading);
     expect(result.result?.summary).toContain("Longsword");
   });
 });
@@ -326,7 +327,7 @@ describe("resolveInteraction feature flag routing", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.result.summary).toBe("The goblin is struck down by fate.");
-      expect(result.result.roll.breakdown).toContain("Panel Mistrza Gry");
+      expect(result.result.roll.breakdown).toBe(pl.adjudication.managerOverrideNoRoll);
       expect(result.result.roll.rolls).toHaveLength(0);
     }
     // The override bypass must not call the LLM regardless of USE_LANGGRAPH

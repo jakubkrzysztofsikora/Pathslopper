@@ -46,24 +46,10 @@ function formatDateShortPl(date: Date): string {
 
 function defaultSessionName(preset: PresetId): string {
   const p = STORY_PRESETS.find((x) => x.id === preset);
-  const title =
-    p?.id === "custom"
-      ? "Sesja własna"
-      : (() => {
-          // These are stable runtime lookups — the titleKey is a literal.
-          // We inline a tiny switch rather than reach into i18n for
-          // "keys as values" dynamics.
-          switch (p?.id) {
-            case "classic":
-              return "Klasyczna wyprawa";
-            case "intrigue":
-              return "Polityczna intryga";
-            case "horror":
-              return "Mroczny horror";
-            default:
-              return "Sesja";
-          }
-        })();
+  // Derive the title from the preset's own i18n key so this stays in
+  // lockstep with the UI copy. Previously each preset title lived in two
+  // places (the dictionary + a hardcoded switch), which invited drift.
+  const title = p ? t(p.titleKey) : t("wizard.pageTitle");
   return `${title} · ${formatDateShortPl(new Date())}`;
 }
 
@@ -79,7 +65,10 @@ export function NewSessionWizard() {
 
   const version = useStoryDNAStore((s) => s.version);
   const setVersion = useStoryDNAStore((s) => s.setVersion);
-  const storyStore = useStoryDNAStore();
+  // Avoid subscribing to the whole Story DNA store: slider tweaks elsewhere
+  // (e.g., inside StoryDNAConfig during the "custom" preset branch) must
+  // not rerender every step of the wizard. We read the snapshot directly
+  // from `getState()` only when submitting — that's a pull, not a push.
   const addBookmark = useSessionBookmarks((s) => s.add);
 
   // When the user switches preset, push its DNA into the shared store so
@@ -113,7 +102,8 @@ export function NewSessionWizard() {
         return;
       }
       const session = json.session as SessionState;
-      const snapshot = storyStore.getSnapshot();
+      const liveStore = useStoryDNAStore.getState();
+      const snapshot = liveStore.getSnapshot();
       addBookmark({
         id: session.id,
         name: sessionName.trim() || defaultSessionName(preset),
@@ -123,8 +113,8 @@ export function NewSessionWizard() {
           ? snapshot.data
           : {
               version,
-              sliders: storyStore.sliders,
-              tags: storyStore.tags,
+              sliders: liveStore.sliders,
+              tags: liveStore.tags,
             },
       });
       router.push(`/sesja/${session.id}`);
@@ -145,7 +135,7 @@ export function NewSessionWizard() {
 
       <ol
         className="flex flex-wrap items-center gap-2 text-xs"
-        aria-label="Kroki kreatora"
+        aria-label={t("wizard.stepsLabel")}
       >
         {STEP_KEYS.map((key, idx) => {
           const state =

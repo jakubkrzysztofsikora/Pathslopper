@@ -5,6 +5,7 @@ import type { PlayerIntent } from "@/lib/schemas/player-intent";
 import type { SessionStore } from "@/lib/state/server/session-store";
 import type { VectorStore } from "@/lib/rag/vector-store";
 import type { InteractionStateType } from "./state";
+import { t } from "@/lib/i18n";
 
 /**
  * Build a minimal PlayerIntent from the graph state without calling the LLM.
@@ -178,7 +179,7 @@ export function createAdjudicateNode(deps: GraphDeps) {
             rolls: [],
             modifiers: [],
             total: 0,
-            breakdown: "(Panel Mistrza Gry — bez rzutu)",
+            breakdown: t("adjudication.managerOverrideNoRoll"),
           },
           outcome: "resolved" as const,
           summary: session.activeOverride.forcedOutcome,

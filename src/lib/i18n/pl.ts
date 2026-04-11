@@ -33,7 +33,24 @@ export const pl = {
   nav: {
     home: "Strona główna",
     help: "Pomoc",
+    mainNavLabel: "Główna nawigacja",
     newSession: "Nowa sesja",
+  },
+  versionPicker: {
+    heading: "Wybierz edycję Pathfindera",
+    pf1eLabel: "Pathfinder 1e — symulacja fabularna",
+    pf2eLabel: "Pathfinder 2e — system trzech akcji",
+  },
+  adjudication: {
+    noRollNarrative: "(brak rzutu — akcja narracyjna)",
+    rulesReferenceHeading: "Źródło reguł",
+    managerOverrideNoRoll: "(Panel Mistrza Gry — bez rzutu)",
+    noDcSummary:
+      "Wyrzucono {total} — brak KT, Mistrz Gry musi ustalić trudność.",
+    summariseCheckWithTarget:
+      "{verb} na cel: {target}: wyrzucono {total} — {degreeLabel}.",
+    summariseCheckNoTarget: "{verb}: wyrzucono {total} — {degreeLabel}.",
+    managerOverrideFallbackSummary: "Panel Mistrza Gry",
   },
   home: {
     heroTitle: "Pathfinder Nexus",
@@ -66,6 +83,7 @@ export const pl = {
     stepStyle: "Styl gry",
     stepCharacters: "Postacie",
     stepSummary: "Podsumowanie",
+    stepsLabel: "Kroki kreatora",
     versionHeading: "Wybierz edycję Pathfindera",
     versionLead:
       "PF1e to symulacja skoncentrowana na narracji. PF2e korzysta z systemu trzech akcji.",
@@ -187,7 +205,7 @@ export const pl = {
   zones: {
     heading: "Protokół środowiska taktycznego",
     lead:
-      "Generuje strefę taktyczną w trzech etapach: Etap A (PL) → Etap B (EN + JSON) → Etap C (weryfikacja i skan slopa).",
+      "Generuje strefę taktyczną w trzech etapach: Etap A (PL) → Etap B (PL + JSON) → Etap C (weryfikacja i skan slopa).",
     biomeLabel: "Biom",
     intentLabel: "Zamiar starcia",
     generate: "Wygeneruj strefę",
@@ -195,6 +213,8 @@ export const pl = {
     markdownHeading: "Narracja (Markdown)",
     jsonHeading: "JSON strefy (przelicz matematykę)",
     genericError: "Generowanie strefy nie powiodło się.",
+    invalidDnaState:
+      "Stan DNA opowieści jest nieprawidłowy. Odśwież stronę lub zresetuj ustawienia.",
   },
   help: {
     title: "Pomoc — jak działa Pathfinder Nexus",

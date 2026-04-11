@@ -4,6 +4,7 @@ import * as React from "react";
 import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { cn } from "@/lib/utils/cn";
 import { t } from "@/lib/i18n";
+import { degreeLabelPl } from "@/lib/utils/degree-label-pl";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
 import type { SessionState, Turn } from "@/lib/schemas/session";
 
@@ -56,20 +57,11 @@ function degreeBadgeClass(degree?: string): string {
   }
 }
 
-function degreeLabel(degree?: string): string {
-  switch (degree) {
-    case "critical-success":
-      return t("session.degreeCriticalSuccess");
-    case "success":
-      return t("session.degreeSuccess");
-    case "failure":
-      return t("session.degreeFailure");
-    case "critical-failure":
-      return t("session.degreeCriticalFailure");
-    default:
-      return "";
-  }
-}
+// Local alias so existing JSX sites don't grow an import-site rename;
+// the real implementation lives in @/lib/utils/degree-label-pl so that
+// the adjudicator on the server can reuse the same mapping without
+// pulling in client code.
+const degreeLabel = degreeLabelPl;
 
 function TurnEntry({ turn, index }: { turn: Turn; index: number }) {
   if (turn.kind === "narration") {
@@ -307,7 +299,7 @@ export function PlayerInputConsole({
     try {
       const n = parseInt(lastN, 10);
       const turnsConsidered = Number.isFinite(n) ? n : 5;
-      const summary = deadlockSummary ?? "Panel Mistrza Gry";
+      const summary = deadlockSummary ?? t("session.turnOverrideLabel");
       const res = await fetch(`/api/sessions/${sessionId}/override`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

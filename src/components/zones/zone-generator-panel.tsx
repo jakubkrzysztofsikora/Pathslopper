@@ -57,9 +57,12 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
     if (inFlightRef.current) return;
     const snapshot = getSnapshot();
     if (!snapshot.success) {
+      // Distinct error from generic "zone generation failed" so the player
+      // (and future support diagnostics) can tell a bad client state from
+      // an upstream model/API failure.
       setState({
         status: "error",
-        message: t("zones.genericError"),
+        message: t("zones.invalidDnaState"),
       });
       return;
     }

@@ -19,7 +19,7 @@ export function AppHeader() {
         </Link>
         <nav
           className="flex items-center gap-1 text-sm"
-          aria-label="Główna nawigacja"
+          aria-label={t("nav.mainNavLabel")}
         >
           <Link
             href="/"

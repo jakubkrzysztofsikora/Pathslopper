@@ -18,7 +18,7 @@ export interface SessionHeaderProps {
 }
 
 export function SessionHeader({ session }: SessionHeaderProps) {
-  useHydratedSessionBookmarks();
+  const hydrated = useHydratedSessionBookmarks();
   const router = useRouter();
   const bookmark = useSessionBookmarks((s) =>
     s.bookmarks.find((b) => b.id === session.id)
@@ -34,11 +34,15 @@ export function SessionHeader({ session }: SessionHeaderProps) {
   const versionLabel =
     session.version === "pf1e" ? "Pathfinder 1e" : "Pathfinder 2e";
 
-  // On first mount, touch the lastOpenedAt so the session bubbles up the
-  // hub list. If the server-side session exists but we have no bookmark
-  // for it (e.g., the user pasted a URL), create a placeholder bookmark
-  // so the hub shows it next time.
+  // Touch or create the bookmark once hydration has completed. Gating on
+  // `hydrated` is essential — before the store loads from localStorage,
+  // `bookmark` will always be undefined, so an unguarded effect would
+  // overwrite a real persisted entry with a placeholder. We also include
+  // `bookmark` in the dependency list so the effect reruns the moment
+  // the hydrated entry appears and can update `lastOpenedAt` + sync the
+  // rename draft.
   React.useEffect(() => {
+    if (!hydrated) return;
     if (bookmark) {
       touch(session.id);
       if (!draftName) setDraftName(bookmark.name);
@@ -62,9 +66,8 @@ export function SessionHeader({ session }: SessionHeaderProps) {
         },
       });
     }
-    // Only on id change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.id]);
+  }, [hydrated, session.id, bookmark?.id]);
 
   function commitRename() {
     const trimmed = draftName.trim();
