@@ -101,6 +101,21 @@ export function normalizeLlmIntent(raw: unknown): unknown {
 // `PlayerIntentSchema`.
 const LlmPlayerIntentSchema = z.preprocess(normalizeLlmIntent, PlayerIntentSchema);
 
+// The optimizer is a deterministic prose → JSON transform. There is no
+// upside to creative sampling here — we want the model to emit the same
+// shape every time. A low temperature dramatically reduces the rate of
+// schema-invalid responses (wrong action enum, stringified numbers,
+// extra commentary) without changing the contract.
+const OPTIMIZER_TEMPERATURE = 0.1;
+
+// Number of attempts (initial + retries) for the optimize call. Even at
+// low temperature LLMs are not perfectly deterministic, and a single
+// schema-invalid response should not fail the request when a retry has
+// a >95% chance of succeeding. We retry only on parse/schema failures
+// (not on upstream network errors — those bubble up immediately so the
+// caller can decide whether to surface or retry at a higher level).
+const OPTIMIZER_MAX_ATTEMPTS = 3;
+
 export async function optimizeInput(
   rawInput: string,
   version: PathfinderVersion,
@@ -111,27 +126,46 @@ export async function optimizeInput(
 
   const messages: ChatMessage[] = [{ role: "user", content: user }];
 
-  let response: string;
-  try {
-    response = await callLLM({ system, messages });
-  } catch (err) {
-    logger?.("optimize-input", err);
-    return { ok: false, error: UPSTREAM_ERROR_MESSAGE };
+  let lastError: string | undefined;
+  let lastRaw: string | undefined;
+
+  for (let attempt = 1; attempt <= OPTIMIZER_MAX_ATTEMPTS; attempt++) {
+    let response: string;
+    try {
+      response = await callLLM({
+        system,
+        messages,
+        temperature: OPTIMIZER_TEMPERATURE,
+      });
+    } catch (err) {
+      // Network / upstream errors are not retried here — let the caller
+      // (route handler, integration test, graph runner) decide. The
+      // retry loop only exists to absorb LLM nondeterminism on the
+      // structured-output side.
+      logger?.("optimize-input", err);
+      return { ok: false, error: UPSTREAM_ERROR_MESSAGE };
+    }
+
+    // The optimizer is instructed to emit bare JSON. extractJsonBlock
+    // handles both fenced and bare shapes. The schema is wrapped in a
+    // preprocess step that normalizes null / empty-string values for
+    // optional fields — see normalizeLlmIntent for the rationale.
+    const extracted = extractJsonBlock(response, LlmPlayerIntentSchema);
+    if (extracted.ok && extracted.data) {
+      return { ok: true, intent: extracted.data };
+    }
+
+    lastError = extracted.error ?? PARSE_ERROR_MESSAGE;
+    lastRaw = extracted.raw ?? response.trim();
+    logger?.(
+      `optimize-input:attempt-${attempt}`,
+      new Error(`${lastError} (raw=${lastRaw.slice(0, 200)})`)
+    );
   }
 
-  // The optimizer is instructed to emit bare JSON. extractJsonBlock now
-  // handles both fenced and bare shapes so we pass the raw response
-  // through without pre-wrapping. The schema is wrapped in a preprocess
-  // step that normalizes null / empty-string values the LLM emits for
-  // optional fields — see normalizeLlmIntent for the rationale.
-  const extracted = extractJsonBlock(response, LlmPlayerIntentSchema);
-  if (!extracted.ok || !extracted.data) {
-    return {
-      ok: false,
-      error: extracted.error ?? PARSE_ERROR_MESSAGE,
-      raw: extracted.raw ?? response.trim(),
-    };
-  }
-
-  return { ok: true, intent: extracted.data };
+  return {
+    ok: false,
+    error: lastError ?? PARSE_ERROR_MESSAGE,
+    raw: lastRaw,
+  };
 }

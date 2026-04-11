@@ -55,18 +55,49 @@ describe("optimizeInput orchestrator", () => {
     expect(JSON.stringify(result)).not.toContain("req_id=xyz");
   });
 
-  it("returns error when response is not valid JSON", async () => {
-    const callLLM = vi.fn().mockResolvedValueOnce("not json at all");
+  it("returns error when response is not valid JSON (after retries are exhausted)", async () => {
+    // mockResolvedValue (not mockResolvedValueOnce) so every retry sees
+    // the same bad response — exercises the retry-then-give-up path.
+    const callLLM = vi.fn().mockResolvedValue("not json at all");
     const result = await optimizeInput("any input", "pf2e", { callLLM });
     expect(result.ok).toBe(false);
+    // Optimizer retries up to 3 times before surfacing the error.
+    expect(callLLM).toHaveBeenCalledTimes(3);
   });
 
-  it("returns error when response is valid JSON but fails schema", async () => {
+  it("returns error when response is valid JSON but fails schema (after retries)", async () => {
     const callLLM = vi
       .fn()
-      .mockResolvedValueOnce(JSON.stringify({ version: "pf2e", action: "strike" }));
+      .mockResolvedValue(JSON.stringify({ version: "pf2e", action: "strike" }));
     const result = await optimizeInput("any input", "pf2e", { callLLM });
     expect(result.ok).toBe(false);
+    expect(callLLM).toHaveBeenCalledTimes(3);
+  });
+
+  it("retries and succeeds after a transient bad response", async () => {
+    // First call: garbage. Second call: valid. The retry loop should
+    // absorb the first failure and surface ok=true.
+    const callLLM = vi
+      .fn()
+      .mockResolvedValueOnce("totally not json")
+      .mockResolvedValueOnce(JSON.stringify(validIntent));
+    const result = await optimizeInput("any input", "pf2e", { callLLM });
+    expect(result.ok).toBe(true);
+    expect(callLLM).toHaveBeenCalledTimes(2);
+    if (result.ok) {
+      expect(result.intent.action).toBe("strike");
+    }
+  });
+
+  it("calls the LLM with low temperature for deterministic output", async () => {
+    const callLLM = vi.fn().mockResolvedValueOnce(JSON.stringify(validIntent));
+    await optimizeInput("any input", "pf2e", { callLLM });
+    // Optimizer is a deterministic transform — temperature must be low
+    // to keep schema-invalid responses rare. The exact value isn't part
+    // of the contract; we just assert it's <= 0.2.
+    const temperature = callLLM.mock.calls[0][0].temperature;
+    expect(typeof temperature).toBe("number");
+    expect(temperature).toBeLessThanOrEqual(0.2);
   });
 
   it("passes version into the system prompt for PF1e and PF2e", async () => {
