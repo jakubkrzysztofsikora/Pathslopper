@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { cn } from "@/lib/utils/cn";
+import { t, format } from "@/lib/i18n";
 import type { CharacterSheetParsed } from "@/lib/schemas/character-sheet";
 
 type State =
@@ -119,14 +120,19 @@ export function CharacterSheetUploader({
     if (!isAcceptedMime(file.type)) {
       setState({
         status: "error",
-        message: `Unsupported file type: ${file.type || "unknown"}.`,
+        message: format(t("characterSheet.unsupportedMime"), {
+          mime: file.type || "nieznany",
+        }),
       });
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
       setState({
         status: "error",
-        message: `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is ${(MAX_FILE_BYTES / 1024 / 1024).toFixed(0)} MB.`,
+        message: format(t("characterSheet.fileTooLarge"), {
+          sizeMb: (file.size / 1024 / 1024).toFixed(1),
+          maxMb: (MAX_FILE_BYTES / 1024 / 1024).toFixed(0),
+        }),
       });
       return;
     }
@@ -157,7 +163,7 @@ export function CharacterSheetUploader({
         if (!res.ok || !json.ok) {
           setState({
             status: "error",
-            message: formatApiError(json.error, "Character sheet parsing failed."),
+            message: formatApiError(json.error, t("characterSheet.genericError")),
           });
           return;
         }
@@ -182,7 +188,7 @@ export function CharacterSheetUploader({
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Upload failed.",
+        message: err instanceof Error ? err.message : t("characterSheet.genericError"),
       });
     } finally {
       inFlightRef.current = false;
@@ -208,11 +214,12 @@ export function CharacterSheetUploader({
           id="character-sheet-uploader-heading"
           className="text-lg font-semibold text-zinc-100"
         >
-          Character Sheet — Vision Ingest
+          {t("characterSheet.heading")}
         </h2>
         <p className="text-sm text-zinc-300 mt-1">
-          Upload a photo or scan of a paper sheet. The VLM parses layout-aware
-          data for {version === "pf1e" ? "Pathfinder 1e" : "Pathfinder 2e"}.
+          {format(t("characterSheet.lead"), {
+            versionLabel: version === "pf1e" ? "Pathfinder 1e" : "Pathfinder 2e",
+          })}
         </p>
       </div>
 
@@ -221,7 +228,7 @@ export function CharacterSheetUploader({
           htmlFor={fileInputId}
           className="text-sm font-medium text-zinc-200"
         >
-          Upload character sheet image
+          {t("characterSheet.uploadLabel")}
         </label>
         <input
           id={fileInputId}
@@ -238,7 +245,7 @@ export function CharacterSheetUploader({
 
         {state.status === "loading" && (
           <p className="text-sm text-amber-400" role="status">
-            Parsing sheet with vision model...
+            {t("characterSheet.parsing")}
           </p>
         )}
 

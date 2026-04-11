@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useStoryDNAStore } from "@/lib/state/story-dna-store";
 import { cn } from "@/lib/utils/cn";
+import { t } from "@/lib/i18n";
 import type { TacticalZone } from "@/lib/schemas/zone";
 
 type State =
@@ -58,7 +59,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
     if (!snapshot.success) {
       setState({
         status: "error",
-        message: "Story DNA state is invalid. Reload and try again.",
+        message: t("zones.genericError"),
       });
       return;
     }
@@ -77,7 +78,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
       if (!res.ok || !json.ok) {
         setState({
           status: "error",
-          message: formatApiError(json.error, "Zone generation failed."),
+          message: formatApiError(json.error, t("zones.genericError")),
           warnings: Array.isArray(json.warnings) ? json.warnings : undefined,
           markdown: typeof json.markdown === "string" ? json.markdown : undefined,
         });
@@ -92,7 +93,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
     } catch (err) {
       setState({
         status: "error",
-        message: err instanceof Error ? err.message : "Request failed.",
+        message: err instanceof Error ? err.message : t("zones.genericError"),
       });
     } finally {
       inFlightRef.current = false;
@@ -112,18 +113,15 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
           id="zone-generator-heading"
           className="text-lg font-semibold text-zinc-100"
         >
-          Tactical Environment Protocol
+          {t("zones.heading")}
         </h2>
-        <p className="text-sm text-zinc-300 mt-1">
-          Generate a zone via the Polish-thinking chain. Stage A (PL) →
-          Stage B (EN + JSON) → Stage C (verify + slop scan).
-        </p>
+        <p className="text-sm text-zinc-300 mt-1">{t("zones.lead")}</p>
       </div>
 
       <div className="flex flex-col gap-3">
         <label className="flex flex-col gap-1">
           <span className="text-xs uppercase tracking-wide text-zinc-300">
-            Biome
+            {t("zones.biomeLabel")}
           </span>
           <input
             type="text"
@@ -135,7 +133,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs uppercase tracking-wide text-zinc-300">
-            Encounter Intent
+            {t("zones.intentLabel")}
           </span>
           <input
             type="text"
@@ -152,7 +150,9 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
           data-testid="zone-generate-button"
           className="self-start rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
         >
-          {state.status === "loading" ? "Generating..." : "Generate Zone"}
+          {state.status === "loading"
+            ? t("zones.generating")
+            : t("zones.generate")}
         </button>
 
         {state.status === "error" && (
@@ -188,7 +188,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
 
             <div>
               <h4 className="text-xs uppercase tracking-wide text-zinc-300 mb-1">
-                Narration (Markdown)
+                {t("zones.markdownHeading")}
               </h4>
               <pre className="text-xs text-zinc-200 whitespace-pre-wrap border border-zinc-800 rounded p-2 max-h-48 overflow-auto">
                 {state.markdown}
@@ -197,7 +197,7 @@ export function ZoneGeneratorPanel({ className }: ZoneGeneratorPanelProps) {
 
             <div>
               <h4 className="text-xs uppercase tracking-wide text-zinc-300 mb-1">
-                Zone JSON (Audit the Math)
+                {t("zones.jsonHeading")}
               </h4>
               <pre className="text-xs text-zinc-200 whitespace-pre-wrap border border-zinc-800 rounded p-2 max-h-48 overflow-auto">
                 {JSON.stringify(state.zone, null, 2)}

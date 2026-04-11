@@ -3,7 +3,7 @@ import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { TacticalZone } from "@/lib/schemas/zone";
 import { TacticalZoneSchema } from "@/lib/schemas/zone";
 import { scanBannedPhrases, DEFAULT_BANNED_PHRASES } from "./banned-phrases";
-import { ANTI_SYCOPHANCY_CLAUSE } from "./system/gm-core";
+import { ANTI_SYCOPHANCY_CLAUSE, POLISH_OUTPUT_CLAUSE } from "./system/gm-core";
 import { extractJsonBlock } from "@/lib/llm/structured-output";
 
 export interface ZoneSeed {
@@ -64,9 +64,13 @@ export function buildZonePromptChain(
 
 ${ANTI_SYCOPHANCY_CLAUSE}
 
+${POLISH_OUTPUT_CLAUSE}
+
 ${versionNote}
 
-Translate the mechanical skeleton below into Markdown narration with concrete sensory details (wet wool, cheap ale, damp stone). Include an embedded \`\`\`json\`\`\` code block that matches the TacticalZone schema exactly.
+Translate the mechanical skeleton below into Markdown narration in Polish, with concrete sensory details (mokra wełna, tanie piwo, wilgotny kamień). Include an embedded \`\`\`json\`\`\` code block that matches the TacticalZone schema exactly.
+
+The JSON SCHEMA KEYS (name, terrain, lighting, elevation, etc.) must stay in English exactly as specified by the schema. Only the string VALUES that surface in the UI (zone name, terrain type, notes) may be in Polish. Internal enum values required by the Zod schema (e.g., terrain = "forest"/"swamp"/"urban"/"dungeon") must remain English.
 
 Do NOT use banned phrases: ${bannedList}.
 

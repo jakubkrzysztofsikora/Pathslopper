@@ -1,7 +1,7 @@
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { SessionState, Turn } from "@/lib/schemas/session";
 import { DEFAULT_BANNED_PHRASES } from "./banned-phrases";
-import { ANTI_SYCOPHANCY_CLAUSE } from "./system/gm-core";
+import { ANTI_SYCOPHANCY_CLAUSE, POLISH_OUTPUT_CLAUSE } from "./system/gm-core";
 
 /**
  * Phase 1 — Narration prompt.
@@ -69,14 +69,16 @@ export function buildNarratorPrompt(input: NarratorInput): NarratorPrompts {
 
 ${ANTI_SYCOPHANCY_CLAUSE}
 
+${POLISH_OUTPUT_CLAUSE}
+
 ${versionNote}
 
 Rules:
 1. The session state below is AUTHORITATIVE. You are narrating against the current world-state hash \`${worldStateHash}\`. Do not re-imagine or contradict resolved turns; treat every dice outcome in the log as canon.
-2. Write 2 to 4 paragraphs of evocative second-person present-tense narration. Use concrete sensory detail: wet wool, cheap ale, scraped iron. Avoid abstract metaphor.
+2. Write 2 to 4 paragraphs of evocative second-person present-tense narration in Polish. Use concrete sensory detail: wet wool, cheap ale, scraped iron — translated to Polish idiom (mokra wełna, tanie piwo, zadrapany metal). Avoid abstract metaphor.
 3. Do NOT describe what the PCs intend or decide — that is the player's job. Describe the scene, the environment, and the observable reactions of NPCs, not character interiority.
 4. Do NOT use any of these banned phrases: ${bannedList}.
-5. Output plain Markdown. No JSON, no code fences, no headings, no lists — just prose.`;
+5. Output plain Markdown in Polish. No JSON, no code fences, no headings, no lists — just prose.`;
 
   const seedLine = sceneSeed
     ? `Scene seed from player: "${sceneSeed}"\n\n`

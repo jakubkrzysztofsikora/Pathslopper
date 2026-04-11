@@ -104,7 +104,7 @@ describe("buildInteractionGraph", () => {
     expect(result.error).toBeNull();
     expect(result.result).not.toBeNull();
     // Synthetic override result: no dice rolled
-    expect(result.result?.roll.breakdown).toContain("manager override");
+    expect(result.result?.roll.breakdown).toContain("Panel Mistrza Gry");
     expect(result.result?.roll.rolls).toHaveLength(0);
     expect(result.result?.summary).toBe("The goblin surrenders immediately.");
 
@@ -208,7 +208,7 @@ describe("buildInteractionGraph", () => {
 
     expect(result.error).toBeNull();
     expect(result.result).not.toBeNull();
-    expect(result.result?.summary).toContain("Rules Reference");
+    expect(result.result?.summary).toContain("Źródło reguł");
     expect(result.result?.summary).toContain("Longsword");
   });
 });
@@ -326,7 +326,7 @@ describe("resolveInteraction feature flag routing", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.result.summary).toBe("The goblin is struck down by fate.");
-      expect(result.result.roll.breakdown).toContain("manager override");
+      expect(result.result.roll.breakdown).toContain("Panel Mistrza Gry");
       expect(result.result.roll.rolls).toHaveLength(0);
     }
     // The override bypass must not call the LLM regardless of USE_LANGGRAPH

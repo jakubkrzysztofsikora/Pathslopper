@@ -178,7 +178,7 @@ export function createAdjudicateNode(deps: GraphDeps) {
             rolls: [],
             modifiers: [],
             total: 0,
-            breakdown: "(manager override — no dice rolled)",
+            breakdown: "(Panel Mistrza Gry — bez rzutu)",
           },
           outcome: "resolved" as const,
           summary: session.activeOverride.forcedOutcome,

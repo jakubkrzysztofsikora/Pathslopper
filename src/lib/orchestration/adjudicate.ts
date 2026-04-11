@@ -48,7 +48,7 @@ export function adjudicate(
         rolls: [],
         modifiers: [],
         total: 0,
-        breakdown: "(no roll — narrative intent)",
+        breakdown: "(brak rzutu — akcja narracyjna)",
       },
       outcome: "narrative",
       summary: intent.description,
@@ -79,7 +79,7 @@ export function adjudicate(
     const result = check({ ...rollInput, dc: intent.dc });
     let summary = summariseCheck(intent, result.degreeOfSuccess, result.total);
     if (options.srdContext) {
-      summary += `\n\nRules Reference:\n${options.srdContext}`;
+      summary += `\n\nŹródło reguł:\n${options.srdContext}`;
     }
     return {
       intent,
@@ -98,9 +98,9 @@ export function adjudicate(
   }
 
   const result = roll(rollInput);
-  let needsDcSummary = `Rolled ${result.total} — no DC provided, GM must set difficulty.`;
+  let needsDcSummary = `Wyrzucono ${result.total} — brak KT, Mistrz Gry musi ustalić trudność.`;
   if (options.srdContext) {
-    needsDcSummary += `\n\nRules Reference:\n${options.srdContext}`;
+    needsDcSummary += `\n\nŹródło reguł:\n${options.srdContext}`;
   }
   return {
     intent,
@@ -139,9 +139,19 @@ function summariseCheck(
   degree: string,
   total: number
 ): string {
-  const target = intent.target ? ` against ${intent.target}` : "";
+  const target = intent.target ? ` na cel: ${intent.target}` : "";
   const verb = intent.skillOrAttack ?? intent.action;
-  return `${verb}${target}: rolled ${total} — ${degree.replace("-", " ")}.`;
+  const degreeLabel =
+    degree === "critical-success"
+      ? "krytyczny sukces"
+      : degree === "success"
+      ? "sukces"
+      : degree === "failure"
+      ? "porażka"
+      : degree === "critical-failure"
+      ? "krytyczna porażka"
+      : degree;
+  return `${verb}${target}: wyrzucono ${total} — ${degreeLabel}.`;
 }
 
 function abilityMod(score: number): number {

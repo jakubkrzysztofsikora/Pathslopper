@@ -46,7 +46,7 @@ describe("resolveInteraction with active override", () => {
       );
       // Should not have actually rolled dice
       expect(result.result.roll.rolls).toHaveLength(0);
-      expect(result.result.roll.breakdown).toContain("manager override");
+      expect(result.result.roll.breakdown).toContain("Panel Mistrza Gry");
     }
     // callLLM must NOT be invoked — the override bypass is LLM-independent
     expect(callLLM).not.toHaveBeenCalled();

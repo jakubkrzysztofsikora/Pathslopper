@@ -127,7 +127,7 @@ export async function resolveInteraction(
           rolls: [],
           modifiers: [],
           total: 0,
-          breakdown: "(manager override — no dice rolled)",
+          breakdown: "(Panel Mistrza Gry — bez rzutu)",
         },
         outcome: "resolved",
         summary: currentSession.activeOverride.forcedOutcome,

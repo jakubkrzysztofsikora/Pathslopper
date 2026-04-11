@@ -22,14 +22,14 @@ describe("StoryDNAConfig", () => {
 
   it("renders the three slider labels", () => {
     render(<StoryDNAConfig />);
-    expect(screen.getByText("Narrative Pacing")).toBeDefined();
-    expect(screen.getByText("Tactical Lethality")).toBeDefined();
-    expect(screen.getByText("NPC Improv")).toBeDefined();
+    expect(screen.getByText("Tempo narracji")).toBeDefined();
+    expect(screen.getByText("Taktyczna śmiertelność")).toBeDefined();
+    expect(screen.getByText("Improwizacja BN")).toBeDefined();
   });
 
   it("displays the calibration label for the current version", () => {
     render(<StoryDNAConfig />);
-    expect(screen.getByText(/Calibrated for Pathfinder 2e/i)).toBeDefined();
+    expect(screen.getByText(/Skalibrowane dla Pathfinder 2e/i)).toBeDefined();
   });
 
   it("switches the calibration label when the store version changes", () => {
@@ -38,13 +38,13 @@ describe("StoryDNAConfig", () => {
       useStoryDNAStore.getState().setVersion("pf1e");
     });
     rerender(<StoryDNAConfig />);
-    expect(screen.getByText(/Calibrated for Pathfinder 1e/i)).toBeDefined();
+    expect(screen.getByText(/Skalibrowane dla Pathfinder 1e/i)).toBeDefined();
   });
 
   it("renders include and exclude tag sections", () => {
     render(<StoryDNAConfig />);
-    expect(screen.getByText("Include Themes")).toBeDefined();
-    expect(screen.getByText(/Slop Filter/i)).toBeDefined();
+    expect(screen.getByText("Motywy do włączenia")).toBeDefined();
+    expect(screen.getByText(/Filtr slopa/i)).toBeDefined();
   });
 
   it("pre-seeds exclude tags with all default banned phrases", () => {
@@ -56,9 +56,11 @@ describe("StoryDNAConfig", () => {
 
   it("adding a new include tag via FilterTags updates the store", () => {
     render(<StoryDNAConfig />);
-    const input = screen.getByPlaceholderText(/Add include theme/i);
-    fireEvent.change(input, { target: { value: "Undead Rising" } });
+    const input = screen.getByPlaceholderText(/Dodaj motyw/i);
+    fireEvent.change(input, { target: { value: "Powstanie nieumarłych" } });
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(useStoryDNAStore.getState().tags.include).toContain("Undead Rising");
+    expect(useStoryDNAStore.getState().tags.include).toContain(
+      "Powstanie nieumarłych"
+    );
   });
 });

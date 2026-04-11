@@ -1,6 +1,7 @@
 import type { CallLLM, ChatMessage } from "@/lib/llm/client";
 import type { SessionState } from "@/lib/schemas/session";
 import { scanBannedPhrases } from "@/lib/prompts/banned-phrases";
+import { POLISH_OUTPUT_CLAUSE } from "@/lib/prompts/system/gm-core";
 
 /**
  * Summarize the last N turns of a session to help the GM identify a deadlock
@@ -45,7 +46,9 @@ export async function summarizeDeadlock(
     })
     .join("\n");
 
-  const system = `You are a neutral game state summarizer for a Pathfinder TTRPG session. Summarize the given turns in 2-3 sentences. Identify any deadlock, stalemate, or repetitive pattern. Reference specific actions and outcomes. Be factual and concise. Do not add interpretation beyond what the turns show.`;
+  const system = `You are a neutral game state summarizer for a Pathfinder TTRPG session. Summarize the given turns in 2-3 sentences in Polish. Identify any deadlock, stalemate, or repetitive pattern. Reference specific actions and outcomes. Be factual and concise. Do not add interpretation beyond what the turns show.
+
+${POLISH_OUTPUT_CLAUSE}`;
 
   const user = `Summarize these ${recentTurns.length} recent game turns:\n\n${turnsText}`;
 
