@@ -2,6 +2,7 @@ import type { CallLLM } from "@/lib/llm/client";
 import type { PathfinderVersion } from "@/lib/schemas/version";
 import type { AdjudicationResult } from "@/lib/schemas/adjudication";
 import type { SessionState } from "@/lib/schemas/session";
+import type { PlayerIntent } from "@/lib/schemas/player-intent";
 import type { SessionStore } from "@/lib/state/server/session-store";
 import type { VectorStore } from "@/lib/rag/vector-store";
 import type { embedTexts as EmbedTextsFn } from "@/lib/rag/embed";
@@ -57,14 +58,107 @@ export type ResolveInteractionResult =
       raw?: string;
     };
 
+/**
+ * Build a minimal PlayerIntent from the raw input without calling the LLM.
+ * Used on the manager-override bypass path, where the optimized intent is
+ * never consulted by the dice engine (the forced outcome comes straight
+ * from the session's activeOverride). Avoiding optimizeInput on this path
+ * keeps the override path deterministic — real LLMs are occasionally
+ * flaky at temperature 0.7 and a bad JSON parse on an ignored field must
+ * not fail a request the GM has already decided.
+ */
+function buildOverrideStubIntent(
+  input: ResolveInteractionInput
+): PlayerIntent {
+  const trimmed = input.rawInput.trim();
+  const description = trimmed.length > 0 ? trimmed.slice(0, 300) : "Player action";
+  return {
+    version: input.version,
+    rawInput: description,
+    action: "narrative",
+    description,
+    ...(input.overrideModifier !== undefined && {
+      modifier: input.overrideModifier,
+    }),
+    ...(input.overrideDc !== undefined && { dc: input.overrideDc }),
+  };
+}
+
 export async function resolveInteraction(
   input: ResolveInteractionInput,
   deps: ResolveInteractionDeps
 ): Promise<ResolveInteractionResult> {
+  // Phase 0 — Early session load + override bypass.
+  //
+  // Done BEFORE the graph/imperative split so that manager overrides bypass
+  // the LLM on BOTH execution paths (USE_LANGGRAPH=true and false).
+  //
+  // When the session has an activeOverride the GM has already decided the
+  // outcome and the optimized intent would be discarded anyway. Calling
+  // the LLM here is both wasteful and a source of flakiness: if the model
+  // returns invalid JSON or a schema-invalid intent, the whole request
+  // fails even though the LLM's answer was never going to be used. Do
+  // the override check BEFORE optimize so the bypass path is
+  // LLM-independent.
+  let currentSession: SessionState | undefined;
+  if (input.sessionId) {
+    if (!deps.sessionStore) {
+      return {
+        ok: false,
+        stage: "session",
+        error: "sessionStore dependency is required when sessionId is provided.",
+      };
+    }
+    currentSession = await deps.sessionStore.get(input.sessionId);
+    if (!currentSession) {
+      return {
+        ok: false,
+        stage: "session",
+        error: `Unknown session: ${input.sessionId}`,
+      };
+    }
+
+    if (currentSession.activeOverride) {
+      const stubIntent = buildOverrideStubIntent(input);
+      const syntheticResult: AdjudicationResult = {
+        intent: stubIntent,
+        roll: {
+          formula: "",
+          rolls: [],
+          modifiers: [],
+          total: 0,
+          breakdown: "(manager override — no dice rolled)",
+        },
+        outcome: "resolved",
+        summary: currentSession.activeOverride.forcedOutcome,
+      };
+      // Atomic: clear override + append resolved turn in one write.
+      // Returns undefined if the session disappeared or the override
+      // was already consumed between Phase 0 load and this call.
+      const updated = await deps.sessionStore.consumeOverride(input.sessionId, {
+        intent: stubIntent,
+        result: syntheticResult,
+      });
+      if (!updated) {
+        return {
+          ok: false,
+          stage: "session",
+          error: `Unknown session: ${input.sessionId}`,
+        };
+      }
+      return {
+        ok: true,
+        result: syntheticResult,
+        session: updated,
+      };
+    }
+  }
+
   if (process.env.USE_LANGGRAPH === "true") {
     return resolveViaGraph(input, deps);
   }
 
+  // Phase 2 — Input optimization via LLM.
   const optimized = await optimizeInput(input.rawInput, input.version, {
     callLLM: deps.callLLM,
     logger: deps.logger,
@@ -107,70 +201,24 @@ export async function resolveInteraction(
     }
   }
 
-  // Phase 4 — Resolution: append to the server-owned session log.
-  // If characterName is provided, load the session first to find the character
-  // and use it to auto-derive the modifier.
+  // Phase 3/4 — Adjudication + persistence.
   let session: SessionState | undefined;
   let adjudicateOptions = deps.adjudicateOptions ?? {};
 
-  if (input.sessionId) {
-    if (!deps.sessionStore) {
-      return {
-        ok: false,
-        stage: "session",
-        error: "sessionStore dependency is required when sessionId is provided.",
-      };
-    }
-
-    // Load the session to check for an active override and optionally derive
-    // modifier from the character sheet.
-    const currentSession = await deps.sessionStore.get(input.sessionId);
-    if (!currentSession) {
-      return {
-        ok: false,
-        stage: "session",
-        error: `Unknown session: ${input.sessionId}`,
-      };
-    }
-
-    // Check for active override — produce a synthetic result without rolling dice.
-    if (currentSession.activeOverride) {
-      const syntheticResult: AdjudicationResult = {
-        intent,
-        roll: {
-          formula: "",
-          rolls: [],
-          modifiers: [],
-          total: 0,
-          breakdown: "(manager override — no dice rolled)",
-        },
-        outcome: "resolved",
-        summary: currentSession.activeOverride.forcedOutcome,
-      };
-      // Clear the override and append a resolved turn.
-      await deps.sessionStore.clearActiveOverride(input.sessionId);
-      const updated = await deps.sessionStore.appendResolved(input.sessionId, {
-        intent,
-        result: syntheticResult,
-      });
-      return { ok: true, result: syntheticResult, session: updated ?? undefined };
-    }
-
-    // Find the character if characterName is provided.
-    if (input.characterName) {
-      const character = currentSession.characters.find(
-        (c) => c.name === input.characterName
-      );
-      if (character) {
-        adjudicateOptions = { ...adjudicateOptions, character };
-      }
+  // Character lookup uses the session we already loaded during Phase 0.
+  if (currentSession && input.characterName) {
+    const character = currentSession.characters.find(
+      (c) => c.name === input.characterName
+    );
+    if (character) {
+      adjudicateOptions = { ...adjudicateOptions, character };
     }
   }
 
   const result = adjudicate(intent, { ...adjudicateOptions, srdContext });
 
   if (input.sessionId) {
-    // sessionStore already verified above.
+    // sessionStore already verified in Phase 0.
     const updated = await deps.sessionStore!.appendResolved(input.sessionId, {
       intent,
       result,

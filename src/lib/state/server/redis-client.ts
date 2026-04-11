@@ -1,3 +1,5 @@
+import * as net from "net";
+
 /**
  * Minimal Redis client port.
  *
@@ -112,8 +114,16 @@ function parseRedisUrl(raw: string): IoRedisOptions {
     // by a private CA; trust is established by the password + network
     // ACL rather than the public CA chain. rejectUnauthorized: false
     // keeps the connection encrypted but skips cert verification.
-    // servername is set so Node's TLS stack sends the correct SNI.
-    opts.tls = { rejectUnauthorized: false, servername: host };
+    //
+    // SNI servername is only set when the host is a DNS name. RFC 6066
+    // forbids sending an IP address as SNI, and Node currently warns
+    // (DEP0123) and will strip it in a future version, so setting it
+    // on an IP host is both incorrect and noisy.
+    // net.isIP returns 4 (IPv4), 6 (IPv6), or 0 (not an IP literal).
+    opts.tls = { rejectUnauthorized: false };
+    if (net.isIP(host) === 0) {
+      opts.tls.servername = host;
+    }
   }
   return opts;
 }

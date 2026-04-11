@@ -48,6 +48,8 @@ describe("resolveInteraction with active override", () => {
       expect(result.result.roll.rolls).toHaveLength(0);
       expect(result.result.roll.breakdown).toContain("manager override");
     }
+    // callLLM must NOT be invoked — the override bypass is LLM-independent
+    expect(callLLM).not.toHaveBeenCalled();
   });
 
   it("after consuming the override, activeOverride is cleared", async () => {
@@ -77,6 +79,8 @@ describe("resolveInteraction with active override", () => {
 
     const after = await store.get(session.id);
     expect(after?.activeOverride).toBeNull();
+    // callLLM must NOT be invoked on the override bypass path
+    expect(callLLM).not.toHaveBeenCalled();
   });
 
   it("after consuming the override, a resolved turn is appended", async () => {
@@ -111,5 +115,7 @@ describe("resolveInteraction with active override", () => {
       const resolvedTurns = after?.turns.filter((t) => t.kind === "resolved");
       expect(resolvedTurns?.length).toBeGreaterThanOrEqual(1);
     }
+    // callLLM must NOT be invoked on the override bypass path
+    expect(callLLM).not.toHaveBeenCalled();
   });
 });

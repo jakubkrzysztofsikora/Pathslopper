@@ -111,6 +111,19 @@ describe("buildInteractionGraph", () => {
     // Override should be cleared from the session
     const updatedSession = await store.get(session.id);
     expect(updatedSession?.activeOverride).toBeNull();
+
+    // The graph must NEVER call the LLM on the override path — the
+    // overrideCheck node runs before optimize and short-circuits it.
+    // This is the regression guard for the flakiness that surfaced in
+    // the integration test against Scaleway Generative APIs.
+    expect(callLLM).not.toHaveBeenCalled();
+
+    // Resolved turn must be appended to the session log atomically
+    // alongside clearing the override (consumeOverride contract).
+    const resolvedTurns = updatedSession?.turns.filter(
+      (t) => t.kind === "resolved"
+    );
+    expect(resolvedTurns?.length).toBe(1);
   });
 
   it("MUST: graph applies UI modifier override on top of LLM-inferred modifier", async () => {
@@ -280,5 +293,43 @@ describe("resolveInteraction feature flag routing", () => {
     if (!result.ok) {
       expect(result.stage).toBe("optimize");
     }
+  });
+
+  it("MUST: USE_LANGGRAPH=true with activeOverride bypasses LLM and returns synthetic result", async () => {
+    process.env.USE_LANGGRAPH = "true";
+
+    const { resolveInteraction } = await import(
+      "@/lib/orchestration/resolve-interaction"
+    );
+
+    const store = new InMemorySessionStore();
+    const session = await store.create("pf2e");
+    await store.setActiveOverride(
+      session.id,
+      "The goblin is struck down by fate.",
+      "Two prior failed attempts.",
+      2
+    );
+
+    // callLLM should never be invoked — the override bypass runs before the graph
+    const callLLM = vi.fn();
+
+    const result = await resolveInteraction(
+      {
+        rawInput: "I strike the goblin",
+        version: "pf2e",
+        sessionId: session.id,
+      },
+      { callLLM, sessionStore: store }
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.result.summary).toBe("The goblin is struck down by fate.");
+      expect(result.result.roll.breakdown).toContain("manager override");
+      expect(result.result.roll.rolls).toHaveLength(0);
+    }
+    // The override bypass must not call the LLM regardless of USE_LANGGRAPH
+    expect(callLLM).not.toHaveBeenCalled();
   });
 });
