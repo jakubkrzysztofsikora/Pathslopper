@@ -34,12 +34,13 @@ export function PlayShell({ session }: PlayShellProps) {
   const [ended, setEnded] = useState(session.phase === "ended");
   const [endingData, setEndingData] = useState<Ending | null>(null);
   const [autoCapReached, setAutoCapReached] = useState(false);
-  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
 
   // Hydrate TTS toggle from localStorage after mount (avoid SSR mismatch)
+  // Default is ON — narration plays automatically when game starts
   useEffect(() => {
     const stored = localStorage.getItem("pfnexus:tts-enabled");
-    if (stored === "1") setTtsEnabled(true);
+    if (stored === "0") setTtsEnabled(false);
   }, []);
 
   const graph = session.graph;
