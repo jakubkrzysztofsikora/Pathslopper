@@ -17,7 +17,7 @@
  * Env vars consumed at runtime:
  *   LLM_API_KEY         — Scaleway API key with generative-api permission
  *   LLM_BASE_URL        — default https://api.scaleway.ai/v1
- *   LLM_TEXT_MODEL      — default llama-3.1-70b-instruct
+ *   LLM_TEXT_MODEL      — default mistral-small-3.2-24b-instruct-2506
  *   LLM_VISION_MODEL    — default pixtral-12b-2409
  */
 
@@ -67,7 +67,7 @@ export interface CallLLMOptions {
 export type CallLLM = (opts: CallLLMOptions) => Promise<string>;
 
 const DEFAULT_BASE_URL = "https://api.scaleway.ai/v1";
-const DEFAULT_TEXT_MODEL = "llama-3.1-70b-instruct";
+const DEFAULT_TEXT_MODEL = "mistral-small-3.2-24b-instruct-2506";
 const DEFAULT_VISION_MODEL = "pixtral-12b-2409";
 
 function resolveModel(opts: CallLLMOptions): string {

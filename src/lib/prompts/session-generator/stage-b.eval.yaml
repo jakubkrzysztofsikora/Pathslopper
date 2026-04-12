@@ -5,7 +5,7 @@
 description: "Stage B — generacja scen sesji (min. 8 scen z metadanymi)"
 
 providers:
-  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+  - id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     config:
       apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
       apiKey: "${LLM_API_KEY}"
@@ -23,7 +23,7 @@ tests:
       - type: llm-rubric
         value: "Odpowiedź powinna być poprawnym JSON z polem 'scenes' — listą co najmniej 8 scen. Każda scena powinna mieć: 'id' (unikalny string), 'title' (tytuł), 'synopsis' (opis), 'kind' (np. scene, combat-narrative, ending), 'act' (numer aktu), 'tensionLevel' (0-10), 'estimatedMinutes'. Sprawdź poprawność struktury."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -31,7 +31,7 @@ tests:
       - type: llm-rubric
         value: "Tytuły i opisy scen muszą być w języku polskim. Żadnych angielskich wtrętów. Synopsisy powinny być konkretne, klimatyczne i nawiązywać do twierdzy tyrana."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -39,7 +39,7 @@ tests:
       - type: llm-rubric
         value: "Lista scen powinna zawierać przynajmniej jedną scenę typu 'strong-start' (mocny start), kilka scen eksploracyjnych lub fabularnych, przynajmniej jedną konfrontację i co najmniej dwie sceny kończące ('ending'). Dramaturgiczna krzywa napięcia powinna rosnąć w kierunku aktu 2."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"

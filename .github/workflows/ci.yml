@@ -108,7 +108,7 @@ jobs:
     env:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_BASE_URL: https://api.scaleway.ai/v1
-      LLM_TEXT_MODEL: llama-3.1-70b-instruct
+      LLM_TEXT_MODEL: mistral-small-3.2-24b-instruct-2506
       LLM_EMBEDDING_MODEL: bge-multilingual-gemma2
       REDIS_URL: ${{ secrets.REDIS_URL }}
     steps:

@@ -5,7 +5,7 @@
 description: "Stage D — okablowanie grafu: startNodeId, krawędzie, zakończenia"
 
 providers:
-  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+  - id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     config:
       apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
       apiKey: "${LLM_API_KEY}"
@@ -25,7 +25,7 @@ tests:
       - type: llm-rubric
         value: "Odpowiedź powinna być poprawnym JSON z polami: 'startNodeId' (string wskazujący scenę startową), 'edges' (lista krawędzi grafu, każda z polami id, from, to, kind), 'endings' (lista zakończeń z polami id, nodeId, type, title, epilogue). Sprawdź poprawność struktury."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -33,7 +33,7 @@ tests:
       - type: llm-rubric
         value: "Zakończenia ('endings') powinny być napisane w języku polskim. Epilogi powinny być narracyjne i fabularne, nie suche opisy techniczne. Powinien istnieć co najmniej jeden finał pozytywny (sukces drużyny) i jeden negatywny (porażka lub pyrrusowe zwycięstwo)."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -41,7 +41,7 @@ tests:
       - type: llm-rubric
         value: "Graf powinien być logicznie spójny: krawędzie muszą odnosić się do scen zdefiniowanych w Stage B. Scena startowa powinna być opisana jako mocny start ('strong-start'). Krawędzie powinny tworzyć napięcie dramaturgiczne."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"

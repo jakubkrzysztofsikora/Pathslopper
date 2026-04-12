@@ -5,7 +5,7 @@
 description: "Stage E — generacja narracyjnych seedsów dla każdej sceny (nodePrompts)"
 
 providers:
-  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+  - id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     config:
       apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
       apiKey: "${LLM_API_KEY}"
@@ -26,7 +26,7 @@ tests:
       - type: llm-rubric
         value: "Odpowiedź powinna być poprawnym JSON z polem 'nodePrompts' — słownikiem mapującym id sceny na krótki tekst narracyjny (string). Każdy seed powinien mieć od 2 do 5 zdań w języku polskim. Sprawdź poprawność struktury JSON."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -34,7 +34,7 @@ tests:
       - type: llm-rubric
         value: "Narracje muszą być pisane w czasie teraźniejszym lub trybie bezpośredniego zwrotu do graczy ('stoisz', 'widzisz', 'czujesz'). Każda narracja powinna angażować co najmniej jeden zmysł poza wzrokiem (dźwięk, zapach, dotyk, smak). Teksty muszą być w języku polskim."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -42,7 +42,7 @@ tests:
       - type: llm-rubric
         value: "Narracje scen walki ('combat-narrative') powinny budować napięcie i zagrożenie. Narracje scen kończących ('ending') powinny mieć charakter epilogu — podsumowujący, emocjonalny, zamykający wątek drużyny. Żadna narracja nie powinna zdradzać rozwiązań zagadek."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"

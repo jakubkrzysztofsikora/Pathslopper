@@ -5,7 +5,7 @@
 description: "Stage F — generacja bloków statystyk PF2e dla NPC (zgodnych z GMG Table 2-5)"
 
 providers:
-  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+  - id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     config:
       apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
       apiKey: "${LLM_API_KEY}"
@@ -27,7 +27,7 @@ tests:
       - type: llm-rubric
         value: "Odpowiedź powinna być poprawnym JSON z polem 'statBlocks' — słownikiem mapującym id NPC na blok statystyk. Każdy blok powinien zawierać: 'tier' (wartość 'pf2e'), 'level' (poziom stworzenia), 'ac' (klasa pancerza), 'hp' (punkty życia), 'perception' (percepcja), 'saves' (obiekt z fort/ref/will), 'strikes' (lista ataków). Sprawdź poprawność struktury."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -35,7 +35,7 @@ tests:
       - type: llm-rubric
         value: "Wartości mechaniczne bloków statystyk powinny być zgodne z poziomem stworzenia według tabel GMG Table 2-5. Kapitan straży (antagonista) powinien mieć wyższy poziom niż zwykły strażnik. Nazwy ataków ('strikes') powinny być w języku polskim."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -43,7 +43,7 @@ tests:
       - type: llm-rubric
         value: "Cechy specjalne ('specialAbilities') i reakcje ('reactions') powinny być opisane w języku polskim i mechanicznie sensowne w kontekście postaci. Bloki statystyk powinny odzwierciedlać charakter NPC: antagonista powinien być groźny, sojusznik słabszy mechanicznie."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"

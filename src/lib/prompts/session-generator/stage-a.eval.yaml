@@ -6,7 +6,7 @@
 description: "Stage A — generacja szkieletu sesji (akty, fronty, główny konflikt)"
 
 providers:
-  - id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+  - id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     config:
       apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
       apiKey: "${LLM_API_KEY}"
@@ -20,12 +20,12 @@ tests:
     vars:
       brief: "file://../../../../tests/fixtures/promptfoo/brief.json"
     options:
-      provider: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+      provider: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
     assert:
       - type: llm-rubric
         value: "Odpowiedź powinna być poprawnym JSON zawierającym pola: 'acts' (lista aktów z tytułem i stawkami), 'fronts' (lista frontów z nazwą, niebezpieczeństwami i portentami), 'primaryConflict' (główny konflikt). Sprawdź czy JSON jest dobrze sformułowany."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -33,7 +33,7 @@ tests:
       - type: llm-rubric
         value: "Całość odpowiedzi powinna być napisana w języku polskim. Żadnych angielskich fraz ani kluczy JSON w wartościach — tylko poprawna polszczyzna w polach tekstowych takich jak 'title', 'stakes', 'name', 'primaryConflict'."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"
@@ -41,7 +41,7 @@ tests:
       - type: llm-rubric
         value: "Akt pierwszy powinien wprowadzać główny konflikt, a akt drugi eskalować napięcie ku kulminacji. Stawki ('stakes') każdego aktu powinny być konkretne i dotyczące drużyny."
         provider:
-          id: openai:chat:${LLM_TEXT_MODEL:-llama-3.1-70b-instruct}
+          id: openai:chat:${LLM_TEXT_MODEL:-mistral-small-3.2-24b-instruct-2506}
           config:
             apiBaseUrl: "${LLM_BASE_URL:-https://api.scaleway.ai/v1}"
             apiKey: "${LLM_API_KEY}"

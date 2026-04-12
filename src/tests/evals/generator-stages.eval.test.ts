@@ -48,12 +48,12 @@ async function callStageViaLLM(
 ): Promise<string> {
   init({
     client: getLlmClient(),
-    defaultModel: process.env.LLM_TEXT_MODEL ?? "llama-3.1-70b-instruct",
+    defaultModel: process.env.LLM_TEXT_MODEL ?? "mistral-small-3.2-24b-instruct-2506",
   });
 
   const client = getLlmClient();
   const response = await client.chat.completions.create({
-    model: process.env.LLM_TEXT_MODEL ?? "llama-3.1-70b-instruct",
+    model: process.env.LLM_TEXT_MODEL ?? "mistral-small-3.2-24b-instruct-2506",
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },

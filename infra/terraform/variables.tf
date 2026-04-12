@@ -16,7 +16,7 @@ variable "llm_base_url" {
 variable "llm_text_model" {
   description = "Default text-only model used by the GM prompt chains and the player-input optimizer. Must be available on the configured endpoint."
   type        = string
-  default     = "llama-3.1-70b-instruct"
+  default     = "mistral-small-3.2-24b-instruct-2506"
 }
 
 variable "llm_vision_model" {
