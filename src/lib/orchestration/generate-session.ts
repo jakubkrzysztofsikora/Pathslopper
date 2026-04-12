@@ -483,6 +483,9 @@ export async function generateSession(
     .map((e) => `${e.path.join(".")}: ${e.message}`)
     .join("\n");
 
+  // Log the specific validation errors for CI debugging
+  logger?.("validate", { errors: repairErrors });
+
   const repairSystem =
     "You are a JSON repair assistant. Fix the SessionGraph JSON to satisfy all validation errors listed below. " +
     "Return ONLY the corrected JSON object — no markdown, no explanation.";
@@ -504,7 +507,12 @@ export async function generateSession(
 
   const repairedJsonStr = extractJsonBlock(repairedRaw);
   if (!repairedJsonStr) {
-    return { ok: false, stage: "validate", error: PARSE_ERROR, partial: assembled };
+    return {
+      ok: false,
+      stage: "validate",
+      error: `${PARSE_ERROR} Validation: ${repairErrors.slice(0, 500)}`,
+      partial: assembled,
+    };
   }
 
   const repairedParsed: unknown = JSON.parse(repairedJsonStr);
