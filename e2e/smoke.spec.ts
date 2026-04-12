@@ -141,6 +141,6 @@ test.describe("Pathfinder Nexus — Smoke", () => {
     await expect(page.getByText(pl.help.sectionDnaTitle)).toBeVisible();
     await expect(page.getByText(pl.help.sectionDegreesTitle)).toBeVisible();
     await expect(page.getByText(pl.help.sectionMgTitle)).toBeVisible();
-    await expect(page.getByText(pl.help.sectionSessionsTitle)).toBeVisible();
+    await expect(page.getByRole("heading", { name: pl.help.sectionSessionsTitle })).toBeVisible();
   });
 });
