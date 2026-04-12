@@ -59,20 +59,23 @@ class LocalStorageShim implements Storage {
 }
 
 // Replace jsdom localStorage with our shim only if the native one is broken.
-// We detect this by checking whether clear() is a real function.
-try {
-  const testKey = "__shim_test__";
-  window.localStorage.setItem(testKey, "1");
-  window.localStorage.clear();
-  // If clear() didn't actually remove the item, replace with shim
-  if (window.localStorage.getItem(testKey) !== null) {
-    throw new Error("clear() is broken");
+// Guard: integration tests run with environment: "node" where window is
+// undefined — skip the shim entirely in that case.
+if (typeof window !== "undefined") {
+  try {
+    const testKey = "__shim_test__";
+    window.localStorage.setItem(testKey, "1");
+    window.localStorage.clear();
+    // If clear() didn't actually remove the item, replace with shim
+    if (window.localStorage.getItem(testKey) !== null) {
+      throw new Error("clear() is broken");
+    }
+  } catch {
+    Object.defineProperty(window, "localStorage", {
+      value: new LocalStorageShim(),
+      writable: true,
+    });
   }
-} catch {
-  Object.defineProperty(window, "localStorage", {
-    value: new LocalStorageShim(),
-    writable: true,
-  });
 }
 
 // ---------------------------------------------------------------------------
