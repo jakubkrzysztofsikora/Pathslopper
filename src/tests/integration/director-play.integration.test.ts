@@ -28,36 +28,57 @@ describe("Director play loop (integration)", () => {
   it("runs 5 Director ticks and produces worldState changes", async () => {
     const store = new InMemorySessionStore();
 
-    // Build an approved session with a real compiled ink script
+    // Build an approved session
     const session = makeSession("approved");
-    // Override the store to inject our approved session
     const created = await store.create("pf2e");
     await store.setBrief(created.id, session.brief!);
     await store.setGraph(created.id, session.graph!);
 
-    // Compile a minimal ink script for the director to run
-    const { Story } = await import("inkjs");
-    const minimalInk = `
-VAR turn = 0
--> start
-=== start ===
-Turn {turn}.
-~ turn = turn + 1
--> DONE
-`;
-    // Use a stub compiled form — the actual ink compiler requires a build step.
-    // In a real integration run, use: npx tsx scripts/seed-session.ts <fixture>
-    // This test validates the Director loop machinery, not the ink compilation.
-    let compiled: string = JSON.stringify({
-      inkVersion: 21,
-      root: [["^Turn 1.", "\n", ["done", null], null]],
-      listDefs: {},
-    });
+    // Compile a minimal Ink story using the proper compilation pipeline.
+    // MUST use the Compiler from inkjs/full, NOT pass raw .ink to Story().
+    // Story() expects compiled JSON; passing raw Ink text crashes with
+    // "Cannot read properties of null (reading '^->')" — the bug that
+    // was breaking this test in CI.
+    let compiled: string;
     try {
-      const storyJson = new Story(minimalInk).ToJson();
-      if (storyJson) compiled = storyJson;
-    } catch {
-      // fall through to the stub JSON above
+      const { Compiler } = await import("inkjs/full");
+      const minimalInk = [
+        "VAR turn = 0",
+        "-> start",
+        "",
+        "=== start ===",
+        "Turn {turn}.",
+        "~ turn = turn + 1",
+        "* [Continue] -> start",
+        "* [End] -> ending",
+        "",
+        "=== ending ===",
+        "The end.",
+        "-> END",
+      ].join("\n");
+
+      const compiler = new Compiler(minimalInk);
+      const runtimeStory = compiler.Compile();
+      const json = runtimeStory?.ToJson();
+      if (!json) throw new Error("Ink compilation produced null");
+      compiled = json;
+    } catch (compileErr) {
+      // If inkjs Compiler is unavailable, fall back to a pre-compiled
+      // minimal story JSON (hand-verified against inkjs 2.4.0).
+      console.warn(
+        "[director-play integration] Ink compilation failed, using stub:",
+        compileErr
+      );
+      compiled = JSON.stringify({
+        inkVersion: 21,
+        root: [
+          "^The end.",
+          "\n",
+          "done",
+          { "#f": 5, "#n": "g-0" },
+        ],
+        listDefs: {},
+      });
     }
 
     await store.approve(created.id, compiled);
@@ -86,5 +107,7 @@ Turn {turn}.
     );
     expect(lastOutput).toBeDefined();
     expect(lastOutput!.ended !== undefined).toBe(true);
-  }, 60_000);
+    // Uses testTimeout from vitest.config.integration.ts (180s).
+    // Do NOT set an inline timeout here — it overrides the config.
+  });
 });

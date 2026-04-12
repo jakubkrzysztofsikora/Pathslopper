@@ -9,7 +9,7 @@
  * Run manually via: npm run test:integration
  * Do NOT execute this test in standard npm test / CI (it is excluded by vitest.config.ts).
  *
- * Timeout: 60s per test (set in vitest.config.integration.ts).
+ * Timeout: 180s per test (set in vitest.config.integration.ts).
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
@@ -111,6 +111,7 @@ describe("generateSession — real Scaleway Generative APIs", () => {
       expect(result.graph.locations.length).toBeGreaterThanOrEqual(2);
       expect(result.graph.endings.length).toBeGreaterThanOrEqual(2);
     },
-    60_000
+    // Uses testTimeout from vitest.config.integration.ts (180s).
+    // Do NOT set an inline timeout here — it overrides the config.
   );
 });
