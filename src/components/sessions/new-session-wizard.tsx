@@ -368,9 +368,10 @@ export function NewSessionWizard() {
                 min={3}
                 max={10}
                 value={targetDurationHours}
-                onChange={(e) =>
-                  setTargetDurationHours(Number(e.target.value))
-                }
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setTargetDurationHours(v < 3 ? 3 : v > 10 ? 10 : v);
+                }}
                 data-testid="wizard-duration"
                 className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
               />
