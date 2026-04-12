@@ -149,9 +149,16 @@ export function evaluateTriggersNode(deps: DirectorDeps) {
       const isFull = filled >= clock.segments;
       if (!isFull) continue;
 
-      // Divert the ink story to the edge's target node
+      // Divert the ink story to the edge's target node.
+      // Sanitize edge.to identically to render-ink.ts so hyphenated
+      // node IDs resolve to the correct knot (e.g. "node-defeat" →
+      // "knot_node_defeat"). Without this, the try/catch silently
+      // swallows the divert failure and the trigger never fires.
+      const sanitizedTo = edge.to
+        .replace(/[^a-zA-Z0-9_]/g, "_")
+        .replace(/^([0-9])/, "_$1");
       try {
-        story.ChoosePathString(`knot_${edge.to}`);
+        story.ChoosePathString(`knot_${sanitizedTo}`);
       } catch {
         // If the knot doesn't exist, skip silently
         continue;

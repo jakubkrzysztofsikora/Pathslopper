@@ -38,3 +38,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated build artifacts (regenerate via scripts)
+src/lib/rag/srd-embeddings.json
+openapi.yaml
+
+# env (defence in depth — convention is .env.local but guard plain .env too)
+.env
