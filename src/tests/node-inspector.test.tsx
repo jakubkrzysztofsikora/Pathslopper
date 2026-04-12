@@ -18,7 +18,7 @@ describe("NodeInspector", () => {
       />
     );
     // The "select a node" placeholder text
-    expect(screen.getByText(/wybierz węzeł/i)).toBeDefined();
+    expect(screen.getByText(/kliknij węzeł/i)).toBeDefined();
   });
 
   it("in read mode all inputs are disabled", () => {

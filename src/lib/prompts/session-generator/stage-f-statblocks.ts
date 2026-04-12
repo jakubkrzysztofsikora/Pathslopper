@@ -75,7 +75,7 @@ STAT BLOCK RULES (Table 2-5 — moderate values unless role calls for high/low):
 
 DICE EXPRESSIONS: use standard notation — "1d8+4 slashing", "2d6+3 fire"
 TRAITS: use PF2e official trait names — "agile", "finesse", "reach 10 ft", "deadly d8", "versatile P"
-SPECIAL ABILITIES: brief string descriptions — "Attack of Opportunity [Reaction]", "Breath Weapon (2d6 fire, DC 18, 30-foot cone)"
+SPECIAL ABILITIES: brief string descriptions — "Attack of Opportunity [Reaction]", "Breath Weapon (2d6 fire, ST 18, 30-foot cone)"
 RESISTANCES/WEAKNESSES: only if thematically justified (undead → positive damage weakness, etc.)
 
 OUTPUT SCHEMA — emit ONLY this JSON, no prose:

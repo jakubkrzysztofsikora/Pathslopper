@@ -1,4 +1,5 @@
 export const DEFAULT_BANNED_PHRASES: string[] = [
+  // English LLM-isms
   "moreover",
   "it's crucial to",
   "delve",
@@ -6,6 +7,11 @@ export const DEFAULT_BANNED_PHRASES: string[] = [
   "tapestry",
   "in the realm of",
   "testament to",
+  // Polish LLM fabrications
+  "walczenie",
+  "kradnienie",
+  "ogniomiotacz",
+  "złodziejnik",
 ];
 
 /**

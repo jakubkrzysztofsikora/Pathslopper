@@ -40,6 +40,15 @@ STYL:
 - Dla kind="cutscene": autonarracja bez pytań do graczy
 - Dla kind="combat-narrative" lub "combat-rolled": opis pola walki + taktycznych możliwości
 
+ZNACZNIKI EMOCJI DLA NARRACJI GŁOSOWEJ:
+- Wplataj znaczniki emocji w nawiasach kwadratowych PO ANGIELSKU (system TTS rozumie tylko angielskie tagi):
+  [whispers], [softly], [angrily], [fearfully], [dramatic pause], [solemnly], [urgently], [sadly], [hopefully], [laughs], [sighs]
+- Używaj oszczędnie: 1-3 na prompt, w kluczowych momentach dramatycznych
+- Dla combat: [urgently], [angrily]
+- Dla cutscene: więcej emocji — to scena filmowa
+- Dla ending: [solemnly] lub [sadly] zależnie od kategorii
+- Znaczniki zostaną usunięte z tekstu wyświetlanego graczowi, a przekazane do silnika głosu
+
 NPC W SCENIE (name → role):
 ${Object.entries(npcIndex).map(([id, desc]) => `${id}: ${desc}`).join("\n")}
 

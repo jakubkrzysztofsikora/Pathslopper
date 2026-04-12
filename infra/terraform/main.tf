@@ -202,6 +202,8 @@ resource "scaleway_container" "app" {
     LLM_TEXT_MODEL          = var.llm_text_model
     LLM_VISION_MODEL        = var.llm_vision_model
     LLM_EMBEDDING_MODEL     = var.llm_embedding_model
+    ELEVENLABS_VOICE_ID     = var.elevenlabs_voice_id
+    ELEVENLABS_MODEL_ID     = var.elevenlabs_model_id
   }
 
   # Runtime-only secrets. Scaleway resolves these at cold-start and
@@ -218,6 +220,9 @@ resource "scaleway_container" "app" {
     },
     var.enable_redis ? {
       REDIS_URL = local.redis_url
+    } : {},
+    var.elevenlabs_api_key != "" ? {
+      ELEVENLABS_API_KEY = var.elevenlabs_api_key
     } : {},
     var.enable_object_storage ? {
       SCW_OBJECT_STORAGE_ACCESS_KEY = scaleway_iam_api_key.object_storage[0].access_key

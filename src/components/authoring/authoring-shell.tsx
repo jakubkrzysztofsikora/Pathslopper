@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { SessionState } from "@/lib/schemas/session";
 import type { SessionGraph, SessionNode, Npc, Secret } from "@/lib/schemas/session-graph";
 import { GraphCanvas } from "./graph-canvas";
@@ -21,6 +21,12 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
   const [editMode, setEditMode] = useState(false);
   const [warningCount, setWarningCount] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("pfnexus:authoring-onboarding-dismissed");
+    if (!dismissed) setShowOnboarding(true);
+  }, []);
 
   const selectedNode = graph.nodes.find((n) => n.id === selectedNodeId) ?? null;
 
@@ -105,6 +111,36 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
         onRegenNode={handleRegenNode}
         onRegenAll={handleRegenAll}
       />
+
+      {/* Onboarding banner */}
+      {showOnboarding && (
+        <div className="border-b border-amber-700/40 bg-amber-950/20 px-4 py-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <p className="font-display text-sm font-semibold text-amber-300">
+                {t("authoring.onboardingTitle")}
+              </p>
+              <p className="mt-1 text-xs text-zinc-300">{t("authoring.onboardingBody")}</p>
+              <ol className="mt-2 list-inside list-decimal space-y-0.5 text-xs text-zinc-400">
+                <li>{t("authoring.onboardingStep1")}</li>
+                <li>{t("authoring.onboardingStep2")}</li>
+                <li>{t("authoring.onboardingStep3")}</li>
+              </ol>
+              <p className="mt-2 text-[11px] text-zinc-500">{t("authoring.onboardingNote")}</p>
+            </div>
+            <button
+              type="button"
+              className="shrink-0 rounded-md border border-amber-700/40 bg-amber-900/30 px-3 py-1 text-xs text-amber-300 transition-colors hover:bg-amber-900/50"
+              onClick={() => {
+                setShowOnboarding(false);
+                localStorage.setItem("pfnexus:authoring-onboarding-dismissed", "1");
+              }}
+            >
+              {t("authoring.onboardingDismiss")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Status bar */}
       {statusMessage && (

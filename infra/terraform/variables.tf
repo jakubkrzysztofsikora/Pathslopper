@@ -73,6 +73,25 @@ variable "llm_embedding_model" {
   default     = "bge-multilingual-gemma2"
 }
 
+variable "elevenlabs_api_key" {
+  description = "ElevenLabs API key for TTS narration. Leave empty to disable TTS."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "elevenlabs_voice_id" {
+  description = "ElevenLabs voice ID for GM narrator."
+  type        = string
+  default     = "P2244jTXPnenPJjaAnTC"
+}
+
+variable "elevenlabs_model_id" {
+  description = "ElevenLabs model ID. eleven_v3 supports emotion tags."
+  type        = string
+  default     = "eleven_v3"
+}
+
 variable "enable_object_storage" {
   description = "Provision Scaleway Object Storage for character-sheet uploads. When false the app uses base64 POST."
   type        = bool

@@ -19,8 +19,13 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
 
   if (!node) {
     return (
-      <div className="flex h-full items-center justify-center px-4 text-center text-sm text-zinc-500">
-        {t("authoring.inspectorNoSelection")}
+      <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="font-display text-sm font-medium text-zinc-400">
+          {t("authoring.inspectorNoSelection")}
+        </p>
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {t("authoring.inspectorNoSelectionDetails")}
+        </p>
       </div>
     );
   }

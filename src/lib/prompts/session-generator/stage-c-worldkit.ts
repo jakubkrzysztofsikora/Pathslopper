@@ -62,7 +62,7 @@ ${safetyBlock}
 REGUŁY TAJEMNIC (Aleksandryjska Reguła Trzech Wskazówek):
 - KAŻDY conclusionTag (odkrycie lub wniosek fabularny) MUSI być osiągalny z CO NAJMNIEJ 3 różnych tajemnic
 - Tajemnice różnią się metodą dostarczenia (delivery): npc-dialog, environmental, document, overheard, pc-backstory, skill-check
-- Sekret z delivery="skill-check" zakłada konkretny test umiejętności (np. "Recall Knowledge: Historia DC 18")
+- Sekret z delivery="skill-check" zakłada konkretny test umiejętności (np. "Przypominanie Wiedzy: Historia ST 18")
 - Tajemnica może wymagać wcześniejszego odkrycia innej (requires: [id]) — ale nie twórz łańcuchów dłuższych niż 2
 
 REGUŁY ZEGARÓW (Blades in the Dark / PbtA):
@@ -107,7 +107,7 @@ SCHEMA WYJŚCIA:
   { "id": "s01", "text": "Ledger shows payments to city guards signed 'V.H.'", "conclusionTag": "veras_holt_winny", "delivery": "document" },
   { "id": "s02", "text": "Stary doker widział Holta w magazynie noc przed śmiercią Kowalskiego", "conclusionTag": "veras_holt_winny", "delivery": "npc-dialog" },
   { "id": "s03", "text": "Wyryte inicjały V.H. na zamku piwnicy obok ciała", "conclusionTag": "veras_holt_winny", "delivery": "environmental" },
-  { "id": "s04", "text": "Test Przypominania Wiedzy: Prawo DC 18 — Holt ma immunitet dyplomatyczny wygasający pojutrze", "conclusionTag": "veras_holt_winny", "delivery": "skill-check" }
+  { "id": "s04", "text": "Test Przypominania Wiedzy: Prawo ST 18 — Holt ma immunitet dyplomatyczny wygasający pojutrze", "conclusionTag": "veras_holt_winny", "delivery": "skill-check" }
 ]
 Cztery drogi do jednego wniosku — drużyna nie może go przeoczyć.`;
 

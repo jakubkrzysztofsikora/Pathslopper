@@ -34,6 +34,13 @@ export function PlayShell({ session }: PlayShellProps) {
   const [ended, setEnded] = useState(session.phase === "ended");
   const [endingData, setEndingData] = useState<Ending | null>(null);
   const [autoCapReached, setAutoCapReached] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+
+  // Hydrate TTS toggle from localStorage after mount (avoid SSR mismatch)
+  useEffect(() => {
+    const stored = localStorage.getItem("pfnexus:tts-enabled");
+    if (stored === "1") setTtsEnabled(true);
+  }, []);
 
   const graph = session.graph;
   const clocks = graph?.clocks ?? [];
@@ -150,6 +157,22 @@ export function PlayShell({ session }: PlayShellProps) {
         <h1 className="font-display text-sm font-semibold text-amber-400">
           {session.brief?.tone ?? t("play.pageTitle")}
         </h1>
+        <button
+          type="button"
+          className={`rounded px-2 py-1 text-xs transition-colors ${
+            ttsEnabled
+              ? "bg-amber-900/30 text-amber-300"
+              : "text-zinc-500 hover:text-zinc-300"
+          }`}
+          onClick={() => {
+            const next = !ttsEnabled;
+            setTtsEnabled(next);
+            localStorage.setItem("pfnexus:tts-enabled", next ? "1" : "0");
+          }}
+          title={ttsEnabled ? t("play.ttsToggleOff") : t("play.ttsToggleOn")}
+        >
+          {ttsEnabled ? "🔊" : "🔇"}
+        </button>
         <div className="flex-1 overflow-x-auto">
           <ClockTracker clocks={clocks} worldState={worldState} />
         </div>
@@ -171,7 +194,7 @@ export function PlayShell({ session }: PlayShellProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* Narration feed */}
         <main className="flex flex-1 flex-col overflow-hidden">
-          <NarrationFeed entries={entries} />
+          <NarrationFeed entries={entries} ttsEnabled={ttsEnabled} />
           <ChoicePane
             choices={output?.choices ?? []}
             phase={output?.phase ?? "narrating"}

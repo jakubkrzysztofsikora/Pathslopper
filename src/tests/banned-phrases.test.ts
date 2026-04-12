@@ -66,7 +66,7 @@ describe("scanBannedPhrases", () => {
     expect(hits).toHaveLength(1);
   });
 
-  it("DEFAULT_BANNED_PHRASES contains exactly 7 entries", () => {
-    expect(DEFAULT_BANNED_PHRASES).toHaveLength(7);
+  it("DEFAULT_BANNED_PHRASES contains expected number of entries", () => {
+    expect(DEFAULT_BANNED_PHRASES).toHaveLength(11);
   });
 });
