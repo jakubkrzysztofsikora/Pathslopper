@@ -46,9 +46,9 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-amber-400 uppercase tracking-wide">{node.kind}</span>
-        <span className="text-xs text-zinc-500">Akt {node.act}</span>
+      <div className="flex items-center justify-between rounded-md bg-zinc-800/60 px-3 py-2">
+        <span className="font-display text-xs font-semibold uppercase tracking-wide text-amber-400">{node.kind}</span>
+        <span className="font-display text-xs text-zinc-500">Akt {node.act}</span>
       </div>
 
       {field(t("authoring.inspectorTitleLabel"),

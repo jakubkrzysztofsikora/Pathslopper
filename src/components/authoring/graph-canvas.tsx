@@ -51,6 +51,17 @@ interface SessionNodeData {
   selected: boolean;
 }
 
+const KIND_LABEL_PL: Record<string, string> = {
+  "strong-start": "Silny start",
+  scene: "Scena",
+  hub: "Węzeł",
+  cutscene: "Przerywnik",
+  "combat-narrative": "Walka narracyjna",
+  "combat-rolled": "Walka z kostkami",
+  exploration: "Eksploracja",
+  ending: "Zakończenie",
+};
+
 const SessionNodeComponent = memo(function SessionNodeComponent({
   data,
 }: {
@@ -58,28 +69,32 @@ const SessionNodeComponent = memo(function SessionNodeComponent({
 }) {
   const { node } = data;
   const color = KIND_COLOR[node.kind] ?? "#52525b";
+  const highTension = node.tensionLevel >= 8;
 
   return (
     <div
-      style={{ borderColor: color }}
-      className="min-w-[160px] max-w-[200px] rounded border-2 bg-zinc-800 px-3 py-2 shadow-lg"
+      style={{
+        borderLeftColor: color,
+        boxShadow: highTension ? `0 0 16px rgba(220, 38, 38, 0.3)` : undefined,
+      }}
+      className="min-w-[160px] max-w-[200px] rounded border border-zinc-700 border-l-4 bg-gradient-to-r from-zinc-800 to-zinc-800/80 px-3 py-2 shadow-lg transition-all hover:border-zinc-500 hover:shadow-xl"
     >
       <Handle type="target" position={Position.Left} className="!bg-zinc-500" />
       <div className="mb-1 flex items-center gap-1">
         <span
-          className="rounded px-1 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: color + "33", color }}
+          className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+          style={{ backgroundColor: color + "20", color }}
         >
-          {node.kind}
+          {KIND_LABEL_PL[node.kind] ?? node.kind}
         </span>
-        <span className="ml-auto text-[10px] text-zinc-500">Akt {node.act}</span>
+        <span className="ml-auto font-display text-[10px] text-zinc-500">Akt {node.act}</span>
       </div>
       <p className="truncate text-xs font-medium text-zinc-100">{node.title}</p>
       {node.synopsis && (
         <p className="mt-0.5 line-clamp-2 text-[10px] text-zinc-400">{node.synopsis}</p>
       )}
-      {node.tensionLevel >= 8 && (
-        <span className="mt-1 inline-block rounded bg-red-900/50 px-1 text-[9px] text-red-400">
+      {highTension && (
+        <span className="mt-1 inline-block rounded-full bg-red-900/50 px-1.5 py-0.5 text-[9px] text-red-400">
           Napięcie {node.tensionLevel}
         </span>
       )}
@@ -92,14 +107,21 @@ const SessionNodeComponent = memo(function SessionNodeComponent({
 // Group node — act swim lane
 // ---------------------------------------------------------------------------
 
+const ACT_TINT: Record<string, string> = {
+  "Akt I": "from-emerald-950/10 to-transparent border-emerald-800/30",
+  "Akt II": "from-amber-950/10 to-transparent border-amber-800/30",
+  "Akt III": "from-red-950/10 to-transparent border-red-800/30",
+};
+
 const ActGroupNode = memo(function ActGroupNode({
   data,
 }: {
   data: { label: string };
 }) {
+  const tint = ACT_TINT[data.label] ?? "from-zinc-900/30 to-transparent border-zinc-600";
   return (
-    <div className="h-full w-full rounded-lg border border-dashed border-zinc-600 bg-zinc-900/30">
-      <div className="px-3 pt-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+    <div className={`h-full w-full rounded-lg border border-dashed bg-gradient-to-b ${tint}`}>
+      <div className="px-3 pt-2 font-display text-xs font-semibold uppercase tracking-widest text-zinc-400">
         {data.label}
       </div>
     </div>

@@ -80,6 +80,7 @@ export const ClockWheel = memo(function ClockWheel({
       viewBox={`0 0 ${size} ${size}`}
       aria-label={`Zegar ${filled}/${segments}`}
       role="img"
+      className="drop-shadow-md"
     >
       {Array.from({ length: segments }).map((_, i) => {
         const startAngle = i * anglePerSeg;

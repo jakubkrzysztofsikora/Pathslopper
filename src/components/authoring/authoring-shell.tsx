@@ -144,11 +144,16 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
             {graph.npcs.length === 0 ? (
               <p className="text-xs text-zinc-600">{t("authoring.sidebarNpcsEmpty")}</p>
             ) : (
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {graph.npcs.map((npc: Npc) => (
-                  <li key={npc.id} className="text-xs text-zinc-300">
-                    <span className="font-medium">{npc.name}</span>
-                    <span className="ml-1 text-zinc-500">{npc.role}</span>
+                  <li key={npc.id} className="flex items-center gap-2 text-xs">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-900/30 text-[10px] font-bold text-amber-400">
+                      {npc.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <span className="font-medium text-zinc-200">{npc.name}</span>
+                      <span className="ml-1 text-zinc-500">{npc.role}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -175,10 +180,13 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
             {graph.secrets.length === 0 ? (
               <p className="text-xs text-zinc-600">{t("authoring.sidebarSecretsEmpty")}</p>
             ) : (
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {graph.secrets.map((s: Secret) => (
-                  <li key={s.id} className="text-xs text-zinc-400">
-                    {s.text.slice(0, 60)}{s.text.length > 60 ? "…" : ""}
+                  <li key={s.id} className="flex items-start gap-1.5 text-xs text-zinc-400">
+                    <span className="mt-0.5 shrink-0 text-zinc-600">🔒</span>
+                    <span className="line-clamp-2 hover:line-clamp-none transition-all cursor-help">
+                      {s.text}
+                    </span>
                   </li>
                 ))}
               </ul>

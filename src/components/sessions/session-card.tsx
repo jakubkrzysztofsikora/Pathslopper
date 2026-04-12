@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,80 +48,85 @@ export function SessionCard({
     bookmark.version === "pf1e" ? "Pathfinder 1e" : "Pathfinder 2e";
 
   return (
-    <Card
-      className={cn(
-        "flex flex-col gap-3 transition-colors hover:border-amber-700/60",
-        bookmark.expired && "opacity-70",
-        className
-      )}
-      data-testid="session-card"
-      data-session-id={bookmark.id}
+    <motion.div
+      whileHover={{ y: -4, boxShadow: "0 0 20px rgba(245, 158, 11, 0.15)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            {editing ? (
-              <input
-                autoFocus
-                value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
-                onBlur={commitRename}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") commitRename();
-                  if (e.key === "Escape") {
-                    setDraftName(bookmark.name);
-                    setEditing(false);
-                  }
-                }}
-                className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1 text-base text-zinc-100 focus:border-amber-500 focus:outline-none"
-                data-testid="session-card-rename-input"
-              />
-            ) : (
-              <CardTitle className="truncate">{bookmark.name}</CardTitle>
-            )}
-            <div className="mt-2 flex items-center gap-2">
-              <Badge tone="amber">{versionLabel}</Badge>
-              {bookmark.expired && (
-                <Badge tone="red">{t("session.expiredTitle")}</Badge>
+      <Card
+        className={cn(
+          "flex flex-col gap-3 transition-colors hover:border-amber-700/60",
+          bookmark.expired && "opacity-70",
+          className
+        )}
+        data-testid="session-card"
+        data-session-id={bookmark.id}
+      >
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              {editing ? (
+                <input
+                  autoFocus
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitRename();
+                    if (e.key === "Escape") {
+                      setDraftName(bookmark.name);
+                      setEditing(false);
+                    }
+                  }}
+                  className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1 text-base text-zinc-100 focus:border-amber-500 focus:outline-none"
+                  data-testid="session-card-rename-input"
+                />
+              ) : (
+                <CardTitle className="truncate">{bookmark.name}</CardTitle>
               )}
+              <div className="mt-2 flex items-center gap-2">
+                <Badge tone="amber">{versionLabel}</Badge>
+                {bookmark.expired && (
+                  <Badge tone="red">{t("session.expiredTitle")}</Badge>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className="flex flex-col gap-3 pt-0">
-        <p className="text-xs text-zinc-400">
-          {relativeTimePl(bookmark.lastOpenedAt)}
-        </p>
+        <CardContent className="flex flex-col gap-3 pt-0">
+          <p className="text-xs text-zinc-400">
+            {relativeTimePl(bookmark.lastOpenedAt)}
+          </p>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/sesja/${bookmark.id}`}
-            className="inline-flex"
-            data-testid="session-card-open"
-          >
-            <Button size="sm" variant={bookmark.expired ? "ghost" : "primary"}>
-              {bookmark.expired ? t("session.expiredCreate") : t("common.next")}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/sesja/${bookmark.id}`}
+              className="inline-flex"
+              data-testid="session-card-open"
+            >
+              <Button size="sm" variant={bookmark.expired ? "ghost" : "primary"}>
+                {bookmark.expired ? t("session.expiredCreate") : t("common.next")}
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setEditing((v) => !v)}
+              data-testid="session-card-rename"
+            >
+              {t("common.rename")}
             </Button>
-          </Link>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setEditing((v) => !v)}
-            data-testid="session-card-rename"
-          >
-            {t("common.rename")}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onRemove(bookmark.id)}
-            data-testid="session-card-remove"
-          >
-            {t("common.delete")}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onRemove(bookmark.id)}
+              data-testid="session-card-remove"
+            >
+              {t("common.delete")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

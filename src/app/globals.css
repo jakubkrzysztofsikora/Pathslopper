@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +13,9 @@
   --accent: #f59e0b;
   --accent-muted: #78350f;
   --text-muted: #71717a;
+  --glow-amber: 0 0 20px rgba(245, 158, 11, 0.4);
+  --glow-red: 0 0 20px rgba(220, 38, 38, 0.4);
+  --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.4);
 }
 
 html {
@@ -31,6 +36,17 @@ body {
 ::selection {
   background-color: var(--accent-muted);
   color: var(--foreground);
+}
+
+/* Subtle noise texture overlay for dark fantasy depth */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  z-index: 9999;
 }
 
 :focus-visible {

@@ -10,6 +10,8 @@ export default function HomePage() {
     >
       <OnboardingHero />
 
+      <div className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-amber-600/60 to-transparent" />
+
       <section
         className="flex flex-col gap-4"
         aria-labelledby="home-sessions-heading"

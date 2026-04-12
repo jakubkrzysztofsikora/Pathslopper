@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -164,35 +165,56 @@ export function NewSessionWizard() {
       </div>
 
       <ol
-        className="flex flex-wrap items-center gap-2 text-xs"
+        className="flex flex-wrap items-center gap-1 text-xs"
         aria-label={t("wizard.stepsLabel")}
       >
         {STEP_KEYS.map((key, idx) => {
           const state =
             idx === step ? "current" : idx < step ? "done" : "pending";
           return (
-            <li
-              key={key}
-              className={cn(
-                "flex items-center gap-2 rounded-full border px-3 py-1",
-                state === "current" &&
-                  "border-amber-500 bg-amber-900/20 text-amber-300",
-                state === "done" &&
-                  "border-emerald-700 bg-emerald-900/10 text-emerald-400",
-                state === "pending" &&
-                  "border-zinc-700 bg-zinc-900 text-zinc-400"
+            <React.Fragment key={key}>
+              {idx > 0 && (
+                <div
+                  className={cn(
+                    "hidden h-px w-6 sm:block",
+                    idx <= step ? "bg-amber-600/60" : "bg-zinc-700"
+                  )}
+                />
               )}
-              data-testid={`wizard-step-indicator-${idx}`}
-              data-state={state}
-            >
-              <span className="font-mono">{idx + 1}</span>
-              <span>{t(key)}</span>
-            </li>
+              <motion.li
+                className={cn(
+                  "flex items-center gap-2 rounded-full border px-3 py-1 transition-all",
+                  state === "current" &&
+                    "border-amber-500 bg-amber-900/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]",
+                  state === "done" &&
+                    "border-emerald-700 bg-emerald-900/10 text-emerald-400",
+                  state === "pending" &&
+                    "border-zinc-700 bg-zinc-900 text-zinc-400"
+                )}
+                data-testid={`wizard-step-indicator-${idx}`}
+                data-state={state}
+                animate={state === "current" ? { scale: 1.05 } : { scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              >
+                <span className="font-mono">
+                  {state === "done" ? "✓" : idx + 1}
+                </span>
+                <span>{t(key)}</span>
+              </motion.li>
+            </React.Fragment>
           );
         })}
       </ol>
 
+      <AnimatePresence mode="wait">
       {step === 0 && (
+        <motion.div
+          key="step-0"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.3 }}
+        >
         <Card data-testid="wizard-step-0">
           <CardHeader>
             <CardTitle>{t("wizard.versionHeading")}</CardTitle>
@@ -223,9 +245,17 @@ export function NewSessionWizard() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {step === 1 && (
+        <motion.div
+          key="step-1"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.3 }}
+        >
         <Card data-testid="wizard-step-1">
           <CardHeader>
             <CardTitle>{t("wizard.styleHeading")}</CardTitle>
@@ -242,10 +272,10 @@ export function NewSessionWizard() {
                     onClick={() => applyPreset(p.id, version)}
                     data-testid={`wizard-preset-${p.id}`}
                     className={cn(
-                      "flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors",
+                      "flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-all duration-300",
                       active
-                        ? "border-amber-500 bg-amber-900/10"
-                        : "border-zinc-700 bg-zinc-900 hover:border-zinc-500"
+                        ? "border-amber-500 bg-amber-900/10 shadow-[0_0_16px_rgba(245,158,11,0.2)]"
+                        : "border-zinc-700 bg-zinc-900 hover:border-amber-500/40 hover:shadow-[0_0_12px_rgba(245,158,11,0.1)]"
                     )}
                     aria-pressed={active}
                   >
@@ -280,9 +310,17 @@ export function NewSessionWizard() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {step === 2 && (
+        <motion.div
+          key="step-2"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.3 }}
+        >
         <Card data-testid="wizard-step-2">
           <CardHeader>
             <CardTitle>Sesja — zarys</CardTitle>
@@ -498,9 +536,17 @@ export function NewSessionWizard() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {step === 3 && (
+        <motion.div
+          key="step-3"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.3 }}
+        >
         <Card data-testid="wizard-step-3">
           <CardHeader>
             <CardTitle>{t("wizard.charactersHeading")}</CardTitle>
@@ -534,9 +580,17 @@ export function NewSessionWizard() {
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {step === 4 && (
+        <motion.div
+          key="step-4"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.3 }}
+        >
         <Card data-testid="wizard-step-4">
           <CardHeader>
             <CardTitle>{t("wizard.summaryHeading")}</CardTitle>
@@ -599,13 +653,16 @@ export function NewSessionWizard() {
                 onClick={handleFinish}
                 disabled={submitting}
                 data-testid="wizard-finish"
+                className={submitting ? "" : "animate-pulse-glow"}
               >
                 {submitting ? t("wizard.startingCta") : t("wizard.startCta")}
               </Button>
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

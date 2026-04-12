@@ -74,6 +74,8 @@ export function GraphEditorToolbar({
         {editMode ? t("authoring.toolbarReadMode") : t("authoring.toolbarEditMode")}
       </Button>
 
+      <div className="mx-1 h-6 w-px bg-zinc-700" />
+
       <div className="flex-1" />
 
       <ConfidenceBadge
@@ -138,6 +140,8 @@ export function GraphEditorToolbar({
         {regenning ? t("authoring.toolbarRegenerating") : t("authoring.toolbarRegenAll")}
       </Button>
 
+      <div className="mx-1 h-6 w-px bg-zinc-700" />
+
       <Button
         variant="secondary"
         size="sm"
@@ -156,11 +160,14 @@ export function GraphEditorToolbar({
         {saving ? t("authoring.toolbarSaving") : t("authoring.toolbarSaveDraft")}
       </Button>
 
+      <div className="mx-1 h-6 w-px bg-zinc-700" />
+
       <Button
         variant="primary"
         size="sm"
         onClick={handleApprove}
         disabled={approving}
+        className={warningCount === 0 && !approving ? "animate-pulse-glow" : ""}
       >
         {approving ? t("authoring.toolbarApproving") : t("authoring.toolbarApprove")}
       </Button>

@@ -46,39 +46,54 @@ describe("ClockTracker", () => {
     const { container } = render(
       <ClockTracker clocks={clocks} worldState={makeWorldState()} />
     );
-    // Each segment is a div — find segment divs inside the clock widget
-    const segmentDivs = container.querySelectorAll(".h-4.w-4");
-    expect(segmentDivs).toHaveLength(4);
+    // SVG-based clock: each segment is a <path> inside the <svg>
+    const svg = container.querySelector("svg");
+    expect(svg).toBeDefined();
+    const paths = svg?.querySelectorAll("path");
+    expect(paths).toHaveLength(4);
   });
 
-  it("filled segments use danger color (red) for danger polarity", () => {
+  it("filled segments use danger fill color for danger polarity", () => {
     const clocks: Clock[] = [
       { id: "c1", label: "Danger", segments: 4, filled: 0, polarity: "danger", tickSources: [] },
     ];
     const worldState = makeWorldState({ clocks: { c1: 2 } });
     const { container } = render(<ClockTracker clocks={clocks} worldState={worldState} />);
-    const filled = container.querySelectorAll(".bg-red-500");
-    expect(filled).toHaveLength(2);
+    const svg = container.querySelector("svg");
+    const paths = svg?.querySelectorAll("path") ?? [];
+    // First 2 segments should have full opacity (filled), last 2 lower opacity
+    const filledPaths = Array.from(paths).filter(
+      (p) => p.getAttribute("opacity") === "0.9"
+    );
+    expect(filledPaths).toHaveLength(2);
   });
 
-  it("filled segments use opportunity color (emerald) for opportunity polarity", () => {
+  it("filled segments use opportunity fill color for opportunity polarity", () => {
     const clocks: Clock[] = [
       { id: "c2", label: "Opportunity", segments: 6, filled: 0, polarity: "opportunity", tickSources: [] },
     ];
     const worldState = makeWorldState({ clocks: { c2: 3 } });
     const { container } = render(<ClockTracker clocks={clocks} worldState={worldState} />);
-    const filled = container.querySelectorAll(".bg-emerald-500");
-    expect(filled).toHaveLength(3);
+    const svg = container.querySelector("svg");
+    const paths = svg?.querySelectorAll("path") ?? [];
+    const filledPaths = Array.from(paths).filter(
+      (p) => p.getAttribute("opacity") === "0.9"
+    );
+    expect(filledPaths).toHaveLength(3);
   });
 
-  it("unfilled segments use zinc (empty) background", () => {
+  it("unfilled segments use lower opacity", () => {
     const clocks: Clock[] = [
       { id: "c1", label: "Mixed", segments: 4, filled: 0, polarity: "danger", tickSources: [] },
     ];
     const worldState = makeWorldState({ clocks: { c1: 1 } }); // 1 filled, 3 empty
     const { container } = render(<ClockTracker clocks={clocks} worldState={worldState} />);
-    const empty = container.querySelectorAll(".bg-zinc-800");
-    expect(empty).toHaveLength(3);
+    const svg = container.querySelector("svg");
+    const paths = svg?.querySelectorAll("path") ?? [];
+    const emptyPaths = Array.from(paths).filter(
+      (p) => p.getAttribute("opacity") === "0.35"
+    );
+    expect(emptyPaths).toHaveLength(3);
   });
 
   it("clock label is displayed", () => {
@@ -96,8 +111,12 @@ describe("ClockTracker", () => {
     ];
     const worldState = makeWorldState({ clocks: { c1: 4 } });
     const { container } = render(<ClockTracker clocks={clocks} worldState={worldState} />);
-    // All 4 segments should be filled (red)
-    const filled = container.querySelectorAll(".bg-red-500");
-    expect(filled).toHaveLength(4);
+    const svg = container.querySelector("svg");
+    const paths = svg?.querySelectorAll("path") ?? [];
+    // All 4 segments should be filled (high opacity)
+    const filledPaths = Array.from(paths).filter(
+      (p) => p.getAttribute("opacity") === "0.9"
+    );
+    expect(filledPaths).toHaveLength(4);
   });
 });

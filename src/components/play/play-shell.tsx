@@ -146,8 +146,8 @@ export function PlayShell({ session }: PlayShellProps) {
   return (
     <div className="flex h-screen flex-col bg-zinc-950 text-zinc-100">
       {/* Header */}
-      <header className="flex items-center gap-4 border-b border-zinc-700 bg-zinc-900 px-4 py-2">
-        <h1 className="text-sm font-semibold text-amber-400">
+      <header className="flex items-center gap-4 border-b border-zinc-700/60 bg-gradient-to-r from-zinc-900 to-zinc-900/95 px-4 py-2 backdrop-blur-sm">
+        <h1 className="font-display text-sm font-semibold text-amber-400">
           {session.brief?.tone ?? t("play.pageTitle")}
         </h1>
         <div className="flex-1 overflow-x-auto">
