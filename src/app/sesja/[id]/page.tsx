@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
-import { ExpiredSessionScreen } from "@/components/sessions/expired-session-screen";
-import { SessionHeader } from "@/components/sessions/session-header";
+import { notFound, redirect } from "next/navigation";
 import { getSessionStore } from "@/lib/state/server/store-factory";
 import { SessionIdSchema } from "@/lib/schemas/session";
+import { ExpiredSessionScreen } from "@/components/sessions/expired-session-screen";
+import { SessionHeader } from "@/components/sessions/session-header";
+import { PlayShell } from "@/components/play/play-shell";
 
 interface SessionPageProps {
   params: { id: string };
@@ -24,6 +25,21 @@ export default async function SessionPage({ params }: SessionPageProps) {
     );
   }
 
+  // Redirect to authoring if in that phase
+  if (session.phase === "authoring") {
+    redirect(`/sesja/${idParse.data}/przygotowanie`);
+  }
+
+  // Play phases
+  if (
+    session.phase === "approved" ||
+    session.phase === "playing" ||
+    session.phase === "ended"
+  ) {
+    return <PlayShell session={session} />;
+  }
+
+  // brief / generating — show the waiting UI with header
   return (
     <main
       className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12"
@@ -31,8 +47,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
     >
       <SessionHeader session={session} />
       <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-6 text-zinc-400">
-        Sesja {session.id} — interfejs przygotowania i prowadzenia gry pojawi
-        się w Fazach 4 i 5.
+        Sesja {session.id} — trwa generowanie grafu sesji.
       </section>
     </main>
   );
