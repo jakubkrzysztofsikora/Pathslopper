@@ -159,6 +159,7 @@ export const ClockSchema = z.object({
   polarity: z.enum(["danger", "opportunity", "neutral"]).default("danger"),
   tickSources: z
     .array(z.enum(["hard-move", "fail", "time-skip", "scene-enter", "manual"]))
+    .max(5) // Cap to prevent LLM degenerate repetition (CI found hundreds of "scene-enter" repeats)
     .default(["hard-move", "fail"]),
   lastTickSource: z
     .enum(["hard-move", "fail", "time-skip", "scene-enter", "manual"])
