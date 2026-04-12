@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import {
   NpcSchema,
@@ -10,7 +11,7 @@ import { POLISH_OUTPUT_CLAUSE } from "@/lib/prompts/system/gm-core";
 import type { StageASkeleton } from "./stage-a-skeleton";
 import type { StageBScenes } from "./stage-b-scenes";
 
-export const STAGE_C_TEMPERATURE = 0.5;
+export const STAGE_C_TEMPERATURE = 0.2;
 
 export const StageCWorldKitSchema = z.object({
   npcs: z.array(NpcSchema).min(3).max(12),
@@ -26,6 +27,17 @@ export const StageCWorldKitSchema = z.object({
 });
 
 export type StageCWorldKit = z.infer<typeof StageCWorldKitSchema>;
+
+/**
+ * JSON Schema for server-side constrained decoding via Scaleway
+ * response_format: { type: "json_schema" }. All $refs are inlined
+ * (no $ref pointers) so the endpoint can validate the schema without
+ * a resolver.
+ */
+export const STAGE_C_JSON_SCHEMA = zodToJsonSchema(StageCWorldKitSchema, {
+  name: "StageCWorldKit",
+  $refStrategy: "none",
+}) as object;
 
 export interface StageCInput {
   brief: SessionBrief;

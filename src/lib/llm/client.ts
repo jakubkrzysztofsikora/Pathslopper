@@ -38,6 +38,13 @@ export interface ChatMessage {
   content: string | ChatContentPart[];
 }
 
+export type ResponseFormat =
+  | { type: "json_object" }
+  | {
+      type: "json_schema";
+      json_schema: { name: string; schema: object; strict?: boolean };
+    };
+
 export interface CallLLMOptions {
   system: string;
   messages: ChatMessage[];
@@ -47,6 +54,14 @@ export interface CallLLMOptions {
   multimodal?: boolean;
   maxTokens?: number;
   temperature?: number;
+  /**
+   * Ask Scaleway Generative APIs for server-side constrained decoding.
+   *   { type: "json_object" }  — forces valid JSON (schemaless)
+   *   { type: "json_schema", json_schema: { name, schema, strict } }
+   *                            — forces output to match an exact JSON Schema
+   * When omitted the model returns free-form text (existing behaviour).
+   */
+  responseFormat?: ResponseFormat;
 }
 
 export type CallLLM = (opts: CallLLMOptions) => Promise<string>;
@@ -102,6 +117,7 @@ export async function callLLM(opts: CallLLMOptions): Promise<string> {
       { role: "system" as const, content: opts.system },
       ...opts.messages,
     ],
+    ...(opts.responseFormat ? { response_format: opts.responseFormat } : {}),
   };
 
   let res: Response;

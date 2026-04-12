@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { CallLLM, ChatMessage } from "@/lib/llm/client";
+import type { CallLLM, ChatMessage, ResponseFormat } from "@/lib/llm/client";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import type { SessionGraph } from "@/lib/schemas/session-graph";
 import { SessionGraphSchema } from "@/lib/schemas/session-graph";
@@ -12,6 +12,9 @@ import {
   type StageEProse,
   type StageFStatBlocks,
 } from "@/lib/prompts/session-generator";
+import { STAGE_C_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-c-worldkit";
+import { STAGE_D_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-d-wiring";
+import { STAGE_F_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-f-statblocks";
 import type { SessionNode, SessionGraph as SG } from "@/lib/schemas/session-graph";
 import { extractJsonBlock } from "@/lib/llm/json-extract";
 import { compileGraph } from "@/lib/orchestration/director/ink";
@@ -35,6 +38,11 @@ const PARSE_ERROR = "Stage output could not be parsed against schema.";
 /**
  * Run one LLM stage with a single retry on parse failure. Returns the parsed
  * value or throws with context so the caller can return a typed failure result.
+ *
+ * When `responseFormat` is provided it is forwarded to `callLLM` so Scaleway
+ * applies server-side constrained decoding — making parse failures much rarer.
+ * The retry path still exists as a safety net (e.g., network hiccup, schema
+ * too complex for the model to satisfy fully).
  */
 async function runStageWithRetry<T>(
   stageLabel: GenerateSessionFailureStage,
@@ -42,13 +50,14 @@ async function runStageWithRetry<T>(
   temperature: number,
   parse: (raw: string) => T | null,
   callLLM: CallLLM,
-  logger: ((stage: string, info: unknown) => void) | undefined
+  logger: ((stage: string, info: unknown) => void) | undefined,
+  responseFormat?: ResponseFormat
 ): Promise<{ ok: true; value: T } | { ok: false; error: string; raw?: string }> {
   const messages: ChatMessage[] = [{ role: "user", content: prompts.user }];
 
   let raw: string;
   try {
-    raw = await callLLM({ system: prompts.system, messages, temperature });
+    raw = await callLLM({ system: prompts.system, messages, temperature, responseFormat });
   } catch (err) {
     logger?.(stageLabel, err);
     return { ok: false, error: UPSTREAM_ERROR };
@@ -72,7 +81,7 @@ async function runStageWithRetry<T>(
 
   let retryRaw: string;
   try {
-    retryRaw = await callLLM({ system: prompts.system, messages: retryMessages, temperature });
+    retryRaw = await callLLM({ system: prompts.system, messages: retryMessages, temperature, responseFormat });
   } catch (err) {
     logger?.(`${stageLabel}-retry`, err);
     return { ok: false, error: UPSTREAM_ERROR, raw };
@@ -163,7 +172,7 @@ export async function generateSession(
   const { callLLM, logger } = deps;
   const chain = buildGeneratorChain();
 
-  // Stage A — skeleton
+  // Stage A — skeleton (json_object: simpler structure, no complex unions)
   const stageAResult = await runStageWithRetry(
     "A",
     chain.stageA.buildPrompt(brief),
@@ -175,12 +184,13 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    { type: "json_object" }
   );
   if (!stageAResult.ok) return { ok: false, stage: "A", error: stageAResult.error, partial: stageAResult.raw };
   const stageA = stageAResult.value;
 
-  // Stage B — scenes
+  // Stage B — scenes (json_object: straightforward array structure)
   const stageBResult = await runStageWithRetry(
     "B",
     chain.stageB.buildPrompt({ brief, skeleton: stageA }),
@@ -192,12 +202,13 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    { type: "json_object" }
   );
   if (!stageBResult.ok) return { ok: false, stage: "B", error: stageBResult.error, partial: stageBResult.raw };
   const stageB = stageBResult.value;
 
-  // Stage C — world kit
+  // Stage C — world kit (json_schema: complex NPC/clock/secret unions, highest failure rate)
   const stageCResult = await runStageWithRetry(
     "C",
     chain.stageC.buildPrompt({ brief, skeleton: stageA, scenes: stageB }),
@@ -209,12 +220,23 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    {
+      type: "json_schema",
+      json_schema: {
+        name: "StageCWorldKit",
+        schema: STAGE_C_JSON_SCHEMA,
+        strict: true,
+      },
+    }
   );
   if (!stageCResult.ok) return { ok: false, stage: "C", error: stageCResult.error, partial: stageCResult.raw };
   const stageC = stageCResult.value;
 
-  // Stage D — wiring
+  // Stage D — wiring (json_schema, strict:false: the Predicate condition type is
+  // recursive — an/or/not trees — which prevents the server from building a finite
+  // constrained-decoding grammar. strict:false lets the endpoint validate the
+  // top-level shape while tolerating the recursive subtree.)
   const stageDResult = await runStageWithRetry(
     "D",
     chain.stageD.buildPrompt({ brief, skeleton: stageA, scenes: stageB, worldKit: stageC }),
@@ -226,7 +248,15 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    {
+      type: "json_schema",
+      json_schema: {
+        name: "StageDWiring",
+        schema: STAGE_D_JSON_SCHEMA,
+        strict: false,
+      },
+    }
   );
   if (!stageDResult.ok) return { ok: false, stage: "D", error: stageDResult.error, partial: stageDResult.raw };
   const stageD = stageDResult.value;
@@ -242,7 +272,7 @@ export async function generateSession(
     { statBlocks: {} }
   );
 
-  // Stage E — prose (node prompts)
+  // Stage E — prose (json_object: simple record of nodeId → string prompts)
   const stageEResult = await runStageWithRetry(
     "E",
     chain.stageE.buildPrompt({
@@ -256,12 +286,13 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    { type: "json_object" }
   );
   if (!stageEResult.ok) return { ok: false, stage: "E", error: stageEResult.error, partial: stageEResult.raw };
   const stageE = stageEResult.value;
 
-  // Stage F — stat blocks
+  // Stage F — stat blocks (json_schema: Pf2eStatBlock union is particularly strict)
   const stageFResult = await runStageWithRetry(
     "F",
     chain.stageF.buildPrompt({
@@ -276,7 +307,15 @@ export async function generateSession(
       return result.success ? result.data : null;
     },
     callLLM,
-    logger
+    logger,
+    {
+      type: "json_schema",
+      json_schema: {
+        name: "StageFStatBlocks",
+        schema: STAGE_F_JSON_SCHEMA,
+        strict: true,
+      },
+    }
   );
   if (!stageFResult.ok) return { ok: false, stage: "F", error: stageFResult.error, partial: stageFResult.raw };
   const stageF = stageFResult.value;

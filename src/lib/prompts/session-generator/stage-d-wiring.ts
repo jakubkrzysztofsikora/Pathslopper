@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import { SessionEdgeSchema, EndingSchema } from "@/lib/schemas/session-graph";
 import { POLISH_OUTPUT_CLAUSE } from "@/lib/prompts/system/gm-core";
@@ -15,6 +16,17 @@ export const StageDWiringSchema = z.object({
 });
 
 export type StageDWiring = z.infer<typeof StageDWiringSchema>;
+
+/**
+ * JSON Schema for server-side constrained decoding via Scaleway
+ * response_format: { type: "json_schema" }. All $refs are inlined
+ * (no $ref pointers) so the endpoint can validate the schema without
+ * a resolver.
+ */
+export const STAGE_D_JSON_SCHEMA = zodToJsonSchema(StageDWiringSchema, {
+  name: "StageDWiring",
+  $refStrategy: "none",
+}) as object;
 
 export interface StageDInput {
   brief: SessionBrief;

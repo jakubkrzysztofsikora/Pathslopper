@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { SessionGraph } from "@/lib/schemas/session-graph";
 import { Pf2eStatBlockSchema } from "@/lib/schemas/session-graph";
 
@@ -9,6 +10,17 @@ export const StageFStatBlocksSchema = z.object({
 });
 
 export type StageFStatBlocks = z.infer<typeof StageFStatBlocksSchema>;
+
+/**
+ * JSON Schema for server-side constrained decoding via Scaleway
+ * response_format: { type: "json_schema" }. All $refs are inlined
+ * (no $ref pointers) so the endpoint can validate the schema without
+ * a resolver.
+ */
+export const STAGE_F_JSON_SCHEMA = zodToJsonSchema(StageFStatBlocksSchema, {
+  name: "StageFStatBlocks",
+  $refStrategy: "none",
+}) as object;
 
 export interface StageFInput {
   graph: Omit<SessionGraph, "createdAt" | "updatedAt" | "validatedAt">;
