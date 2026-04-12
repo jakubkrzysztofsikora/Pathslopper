@@ -126,16 +126,49 @@ export function tickClocksNode(state: DirectorState): Partial<DirectorState> {
 // If a clock is full (filled >= segments), diverts story to onFillNodeId.
 // ---------------------------------------------------------------------------
 
-export function evaluateTriggersNode(
-  state: DirectorState
-): Partial<DirectorState> {
-  // Clock-trigger diversion is handled by the Director at the WorldState
-  // level — we don't have access to the graph here without loading it.
-  // The actual trigger evaluation happens implicitly: the ink VAR
-  // clock_X is updated by setVariable when effects fire, and the Director
-  // checks them between ticks. For MVP, this node is a pass-through that
-  // marks which clocks crossed their fill threshold.
-  return {};
+export function evaluateTriggersNode(deps: DirectorDeps) {
+  return async (state: DirectorState): Promise<Partial<DirectorState>> => {
+    const { story, worldState } = state;
+    if (!story) return {};
+
+    const session = await deps.store.get(state.sessionId);
+    if (!session?.graph) return {};
+
+    const graph = session.graph;
+
+    // Find all clock-trigger edges and check if the referenced clock is full
+    const clockTriggerEdges = graph.edges.filter((e) => e.kind === "clock-trigger" && e.clockId);
+    let updatedWorldState = worldState;
+
+    for (const edge of clockTriggerEdges) {
+      const clockId = edge.clockId!;
+      const clock = graph.clocks.find((c) => c.id === clockId);
+      if (!clock) continue;
+
+      const filled = worldState.clocks[clockId] ?? 0;
+      const isFull = filled >= clock.segments;
+      if (!isFull) continue;
+
+      // Divert the ink story to the edge's target node
+      try {
+        story.ChoosePathString(`knot_${edge.to}`);
+      } catch {
+        // If the knot doesn't exist, skip silently
+        continue;
+      }
+
+      // Update cursorNodeId in worldState
+      updatedWorldState = {
+        ...updatedWorldState,
+        cursorNodeId: edge.to,
+      };
+
+      // Only fire the first matching trigger per tick to avoid cascading
+      break;
+    }
+
+    return { story, worldState: updatedWorldState };
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -203,67 +236,107 @@ export function continueNode(state: DirectorState): Partial<DirectorState> {
 // Classifies the Director's move, updates output.lastMove and worldState.
 // ---------------------------------------------------------------------------
 
-export function pickMoveNode(state: DirectorState): Partial<DirectorState> {
-  const { worldState, output } = state;
-  if (!output) return {};
+export function pickMoveNode(deps: DirectorDeps) {
+  return async (state: DirectorState): Promise<Partial<DirectorState>> => {
+    const { worldState, output } = state;
+    if (!output) return {};
 
-  // Compute pacing pressure
-  const targetMinutes =
-    (state as unknown as { _targetMinutes?: number })._targetMinutes ?? 240;
-  const pacingPressure = Math.min(
-    1,
-    worldState.elapsedMinutes / targetMinutes
-  );
+    // Load session to access graph for real signal computation
+    const session = await deps.store.get(state.sessionId);
+    const graph = session?.graph ?? null;
 
-  // Determine max clock urgency — approximate from clock fill ratios
-  // (Without graph, we use 0 as default — real urgency calc happens with graph access)
-  const maxClockUrgency = 0;
-
-  // Find spotlight owed — character with highest debt
-  const spotlightOwedTo = (() => {
-    const entries = Object.entries(worldState.spotlightDebt);
-    if (entries.length === 0) return null;
-    const [name, debt] = entries.reduce((max, cur) =>
-      cur[1] > max[1] ? cur : max
+    // Compute pacing pressure
+    const targetMinutes =
+      (state as unknown as { _targetMinutes?: number })._targetMinutes ?? 240;
+    const pacingPressure = Math.min(
+      1,
+      worldState.elapsedMinutes / targetMinutes
     );
-    return debt >= 3 ? name : null;
-  })();
 
-  const move = classifyMove({
-    worldState,
-    pendingChoices: output.choices,
-    narrationProduced: (output.narration?.length ?? 0) > 0,
-    anyClockFull: false,
-    anyPortentFired: false,
-    maxClockUrgency,
-    stallTicks: worldState.stallTicks,
-    spotlightOwedTo,
-    pacingPressure,
-    actPosition: "confrontation", // default — route passes act context when available
-  });
+    // Determine max clock urgency from actual clock fill ratios
+    const maxClockUrgency = graph
+      ? Math.max(
+          0,
+          ...graph.clocks.map((c) => {
+            const filled = worldState.clocks[c.id] ?? 0;
+            return c.segments > 0 ? filled / c.segments : 0;
+          })
+        )
+      : 0;
 
-  const lastMove = clampMove(move);
+    // Check if any clock is full
+    const anyClockFull = graph
+      ? graph.clocks.some((c) => {
+          const filled = worldState.clocks[c.id] ?? 0;
+          return filled >= c.segments;
+        })
+      : false;
 
-  // Update spotlight debt — increment all characters, reset spotlighted one
-  const updatedSpotlightDebt: Record<string, number> = {};
-  for (const [name, debt] of Object.entries(worldState.spotlightDebt)) {
-    updatedSpotlightDebt[name] =
-      name === spotlightOwedTo ? 0 : (debt ?? 0) + 1;
-  }
+    // Check if any portent has fired since last recorded count
+    const anyPortentFired = graph
+      ? graph.fronts.some((f) => {
+          const fired = worldState.vars[`front_${f.id}_portents`] ?? 0;
+          return typeof fired === "number" && fired > (f.firedPortents ?? 0);
+        })
+      : false;
 
-  const updatedWorldState: WorldState = {
-    ...worldState,
-    lastDirectorMove: lastMove,
-    spotlightDebt: updatedSpotlightDebt,
-  };
+    // Derive actPosition from the current cursor node's act
+    const cursorNode = graph?.nodes.find(
+      (n) => n.id === worldState.cursorNodeId
+    );
+    const actPosition: "setup" | "confrontation" | "resolution" =
+      cursorNode?.act === 1
+        ? "setup"
+        : cursorNode?.act === 3
+        ? "resolution"
+        : "confrontation";
 
-  return {
-    worldState: updatedWorldState,
-    output: {
-      ...output,
-      lastMove,
+    // Find spotlight owed — character with highest debt
+    const spotlightOwedTo = (() => {
+      const entries = Object.entries(worldState.spotlightDebt);
+      if (entries.length === 0) return null;
+      const [name, debt] = entries.reduce((max, cur) =>
+        cur[1] > max[1] ? cur : max
+      );
+      return debt >= 3 ? name : null;
+    })();
+
+    const move = classifyMove({
+      worldState,
+      pendingChoices: output.choices,
+      narrationProduced: (output.narration?.length ?? 0) > 0,
+      anyClockFull,
+      anyPortentFired,
+      maxClockUrgency,
+      stallTicks: worldState.stallTicks,
+      spotlightOwedTo,
+      pacingPressure,
+      actPosition,
+    });
+
+    const lastMove = clampMove(move);
+
+    // Update spotlight debt — increment all characters, reset spotlighted one
+    const updatedSpotlightDebt: Record<string, number> = {};
+    for (const [name, debt] of Object.entries(worldState.spotlightDebt)) {
+      updatedSpotlightDebt[name] =
+        name === spotlightOwedTo ? 0 : (debt ?? 0) + 1;
+    }
+
+    const updatedWorldState: WorldState = {
+      ...worldState,
+      lastDirectorMove: lastMove,
+      spotlightDebt: updatedSpotlightDebt,
+    };
+
+    return {
       worldState: updatedWorldState,
-    },
+      output: {
+        ...output,
+        lastMove,
+        worldState: updatedWorldState,
+      },
+    };
   };
 }
 

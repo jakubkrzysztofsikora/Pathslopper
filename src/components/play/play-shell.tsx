@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { SessionState } from "@/lib/schemas/session";
 import type { DirectorOutput } from "@/lib/orchestration/director/director";
@@ -28,6 +28,8 @@ export function PlayShell({ session }: PlayShellProps) {
     session.characters[0]?.name ?? null
   );
   const [worldState, setWorldState] = useState(session.worldState);
+  const worldStateRef = useRef(worldState);
+  useEffect(() => { worldStateRef.current = worldState; }, [worldState]);
   const [showPartySplit, setShowPartySplit] = useState(false);
   const [ended, setEnded] = useState(session.phase === "ended");
   const [endingData, setEndingData] = useState<Ending | null>(null);
@@ -36,20 +38,16 @@ export function PlayShell({ session }: PlayShellProps) {
   const graph = session.graph;
   const clocks = graph?.clocks ?? [];
 
-  function appendEntry(text: string, move: DirectorOutput["lastMove"], speaker: "gm" | "player") {
-    setEntries((prev) => [
-      ...prev,
-      { at: worldState.turnCount, speaker, text, move },
-    ]);
-  }
-
-  async function callDirector(
-    type: DirectorOutput["phase"] extends "ended" ? never : Parameters<typeof fetch>[1],
-    inputOverride?: object
-  ): Promise<DirectorOutput | null> {
-    void type; // unused — we pass inputOverride
-    return null;
-  }
+  const appendEntry = useCallback(
+    (text: string, move: DirectorOutput["lastMove"], speaker: "gm" | "player") => {
+      // Read worldState from the ref so this callback never stales
+      setEntries((prev) => [
+        ...prev,
+        { at: worldStateRef.current.turnCount, speaker, text, move },
+      ]);
+    },
+    [] // stable — reads from ref, no closure over worldState
+  );
 
   const sendDirectorInput = useCallback(
     async (input: {
@@ -79,7 +77,7 @@ export function PlayShell({ session }: PlayShellProps) {
       }
       return out;
     },
-    [session.id, worldState.turnCount]
+    [session.id, appendEntry]
   );
 
   // Auto-play on mount: start → continue until choices surface

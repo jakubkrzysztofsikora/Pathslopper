@@ -100,8 +100,14 @@ export function initCombatants(npcs: Npc[]): CombatantState[] {
 export function resolveStrike(
   attacker: CombatantState,
   target: CombatantState,
-  statBlock: Pf2eStatBlock | SimpleStatBlock
+  statBlock: Pf2eStatBlock | SimpleStatBlock,
+  partyLevel: number = 3
 ): StrikeResult {
+  // PF2e moderate AC for a trained PC with moderate armor:
+  // ~10 + level + 8 (trained proficiency + moderate armor bonus)
+  // At level 1: ~19, level 5: ~23, level 10: ~28
+  const targetAc = 10 + partyLevel + 8;
+
   if (statBlock.tier === "simple") {
     // Simplified: 65% hit chance, d6+2 damage
     const roll = rollD20();
@@ -112,7 +118,7 @@ export function resolveStrike(
       targetId: target.npcId,
       roll,
       toHit: 0,
-      ac: 15,
+      ac: targetAc,
       damageDealt,
       outcome: hit ? "hit" : "miss",
     };
@@ -125,14 +131,14 @@ export function resolveStrike(
       targetId: target.npcId,
       roll: 1,
       toHit: statBlock.strikes[0]?.toHit ?? 0,
-      ac: 15,
+      ac: targetAc,
       damageDealt: 0,
       outcome: "miss",
     };
   }
 
   const roll = rollD20();
-  const ac = 15; // PC AC approximation for MVP
+  const ac = targetAc;
   const outcome = getDegreeOfSuccess(roll, strike.toHit, ac);
   let damageDealt = 0;
   if (outcome === "critical-hit") {
@@ -146,7 +152,7 @@ export function resolveStrike(
     targetId: target.npcId,
     roll,
     toHit: strike.toHit,
-    ac,
+    ac: targetAc,
     damageDealt,
     outcome,
   };
@@ -161,7 +167,8 @@ export function resolveCombatRound(
   combatants: CombatantState[],
   npcs: Npc[],
   /** If true, NPCs attack a dummy "PC" tracker; otherwise the first combatant */
-  npcAttacksDummy: boolean = true
+  npcAttacksDummy: boolean = true,
+  partyLevel: number = 3
 ): TurnSummary {
   const npcById = new Map(npcs.map((n) => [n.id, n]));
   const strikes: StrikeResult[] = [];
@@ -183,7 +190,7 @@ export function resolveCombatRound(
       initiative: 0,
     };
 
-    const strike = resolveStrike(combatant, pcTarget, npc.statBlock);
+    const strike = resolveStrike(combatant, pcTarget, npc.statBlock, partyLevel);
     strikes.push(strike);
 
     // Dummy target takes damage (not tracked in states for MVP)

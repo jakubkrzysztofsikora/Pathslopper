@@ -82,7 +82,7 @@ SCHEMA WYJŚCIA:
     "title": string,
     "summary": string,
     "frontResolutions": [{ "frontId": string, "outcome": string }],
-    "category": "victory|partial-victory|pyrrhic|defeat|tpk"
+    "category": "victory|mixed|pyrrhic|defeat|tpk|runaway"
   }]
 }`;
 

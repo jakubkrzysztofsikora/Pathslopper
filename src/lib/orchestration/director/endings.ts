@@ -5,7 +5,7 @@
  * shouldEndSession: determine if the session has hit a terminal condition.
  */
 
-import type { Ending } from "@/lib/schemas/session-graph";
+import type { Ending, SessionGraph } from "@/lib/schemas/session-graph";
 import type { WorldState } from "@/lib/schemas/session";
 import type { Predicate } from "@/lib/schemas/session-graph";
 
@@ -13,7 +13,11 @@ import type { Predicate } from "@/lib/schemas/session-graph";
 // Predicate evaluation
 // ---------------------------------------------------------------------------
 
-export function evaluatePredicate(pred: Predicate, world: WorldState): boolean {
+export function evaluatePredicate(
+  pred: Predicate,
+  world: WorldState,
+  graph?: SessionGraph | null
+): boolean {
   switch (pred.op) {
     case "flag-set":
       return world.flags.includes(pred.flag);
@@ -23,12 +27,11 @@ export function evaluatePredicate(pred: Predicate, world: WorldState): boolean {
 
     case "clock-filled": {
       const filled = world.clocks[pred.clockId] ?? 0;
-      // We need the total segments — not available in WorldState alone.
-      // Convention: "clock-filled" is satisfied when clock value >= its segment count.
-      // Since we only store filled count, treat value >= 4 (minimum segments) as filled.
-      // In practice the Director sets flags when clocks fill, so flag-set is preferred.
-      // This provides a best-effort fallback.
-      return filled >= 4;
+      // Look up the clock's actual segment count from the graph when available.
+      // Fall back to 4 (minimum clock size) when graph is not provided.
+      const clock = graph?.clocks.find((c) => c.id === pred.clockId);
+      const segments = clock?.segments ?? 4;
+      return filled >= segments;
     }
 
     case "clock-gte": {
@@ -42,13 +45,13 @@ export function evaluatePredicate(pred: Predicate, world: WorldState): boolean {
     }
 
     case "and":
-      return pred.children.every((c) => evaluatePredicate(c, world));
+      return pred.children.every((c) => evaluatePredicate(c, world, graph));
 
     case "or":
-      return pred.children.some((c) => evaluatePredicate(c, world));
+      return pred.children.some((c) => evaluatePredicate(c, world, graph));
 
     case "not":
-      return !evaluatePredicate(pred.child, world);
+      return !evaluatePredicate(pred.child, world, graph);
 
     default:
       return false;
@@ -78,10 +81,11 @@ function getNestedVar(vars: Record<string, unknown>, path: string): unknown {
  */
 export function selectEnding(
   endings: Ending[],
-  world: WorldState
+  world: WorldState,
+  graph?: SessionGraph | null
 ): Ending | null {
   for (const ending of endings) {
-    if (evaluatePredicate(ending.condition, world)) {
+    if (evaluatePredicate(ending.condition, world, graph)) {
       return ending;
     }
   }
@@ -117,10 +121,11 @@ export function shouldEndSession(
   endings: Ending[],
   world: WorldState,
   cursorNodeKind: string | undefined,
-  maxTurns: number = 200
+  maxTurns: number = 200,
+  graph?: SessionGraph | null
 ): EndSessionCheck {
   // 1. Predicate-based ending
-  const matchedEnding = selectEnding(endings, world);
+  const matchedEnding = selectEnding(endings, world, graph);
   if (matchedEnding) {
     return { shouldEnd: true, ending: matchedEnding, reason: "ending-condition-met" };
   }
