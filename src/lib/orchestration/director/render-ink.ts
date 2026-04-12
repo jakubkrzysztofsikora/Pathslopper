@@ -6,7 +6,9 @@ import type { Effect, Predicate, SessionEdge } from "@/lib/schemas/session-graph
 // Ink identifiers must match [a-zA-Z_][a-zA-Z0-9_]*
 // ---------------------------------------------------------------------------
 function sanitizeId(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^([0-9])/, "_$1");
+  const sanitized = id.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^([0-9])/, "_$1");
+  // If the result is empty (e.g. all special chars), generate a fallback
+  return sanitized || "_node";
 }
 
 function knotName(nodeId: string): string {
@@ -15,16 +17,43 @@ function knotName(nodeId: string): string {
 
 // ---------------------------------------------------------------------------
 // Ink reserved char escaping for prose text
-// Ink reserves: ~ { } | \ and # at start of line
+//
+// Ink reserves in prose / narrative text (not identifiers):
+//   \        — escape char itself (must be first)
+//   ~        — logic line marker (at any position)
+//   { }      — conditionals / sequences
+//   |        — sequence separator inside { }
+//   #        — tag (at start of line)
+//   ->       — divert (anywhere in line, e.g. "drużyna -> port" would divert)
+//   <> / <>  — glue markers
+//   ===      — knot separator (whole-line pattern, guard at line start)
+//   *  +     — choice markers (at start of line)
+//   //       — comment (at start of line or after whitespace)
 // ---------------------------------------------------------------------------
 function escapeInk(text: string): string {
   return text
+    // 1. Backslash first (must precede all other replacements)
     .replace(/\\/g, "\\\\")
+    // 2. Tilde (logic line — anywhere)
     .replace(/~/g, "\\~")
+    // 3. Braces (conditionals)
     .replace(/\{/g, "\\{")
     .replace(/\}/g, "\\}")
+    // 4. Pipe (sequence separator inside braces, but safe to escape globally)
     .replace(/\|/g, "\\|")
-    .replace(/^(\s*)(#)/gm, "$1\\#");
+    // 5. Divert arrow — -> anywhere in a line becomes prose text mid-sentence
+    .replace(/->/g, "\\-\\>")
+    // 6. Glue markers
+    .replace(/<>/g, "\\<\\>")
+    // 7. Hash — tag marker only when at start of line (after optional whitespace)
+    .replace(/^(\s*)(#)/gm, "$1\\#")
+    // 8. Choice markers at start of line (after optional whitespace)
+    .replace(/^(\s*)(\*)/gm, "$1\\*")
+    .replace(/^(\s*)(\+)/gm, "$1\\+")
+    // 9. Comment double-slash at start of line (after optional whitespace)
+    .replace(/^(\s*)(\/\/)/gm, "$1\\/\\/")
+    // 10. Knot separator === at start of line
+    .replace(/^(\s*)(={3,})/gm, "$1\\$2");
 }
 
 // ---------------------------------------------------------------------------
@@ -216,9 +245,10 @@ export function renderInkSource(graph: SessionGraph): string {
     }
 
     // Node body — the prompt text
-    if (node.prompt.trim()) {
-      lines.push(escapeInk(node.prompt.trim()));
-    }
+    // Guard: empty/undefined prompt would create an empty knot body which can
+    // cause Ink compilation errors. Fall back to a placeholder.
+    const promptText = (node.prompt ?? "").trim();
+    lines.push(escapeInk(promptText || "(brak opisu)"));
     lines.push("");
 
     const outEdges = (edgesByFrom.get(node.id) ?? [])
@@ -231,7 +261,10 @@ export function renderInkSource(graph: SessionGraph): string {
 
     // Choice edges
     for (const edge of choiceEdges) {
-      const label = edge.label ? escapeInk(edge.label) : "";
+      // Guard: empty/undefined label on a choice edge would emit an unlabelled choice
+      // which Ink may not handle well. Provide a default.
+      const rawLabel = (edge.label ?? "").trim();
+      const label = rawLabel ? escapeInk(rawLabel) : "Kontynuuj";
       const traverse = edge.onTraverseEffects.map(renderEffect).join("\n");
       if (edge.condition) {
         const cond = renderPredicate(edge.condition, clockSegments);

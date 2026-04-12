@@ -12,6 +12,8 @@ export { Story };
 // ---------------------------------------------------------------------------
 // compileGraph — render graph to Ink source and compile to JSON
 // Uses dynamic import for Compiler (inkjs/full) to avoid ESM issues in vitest.
+// On any compiler or serialisation error, returns compiledJson:"" with the
+// error surfaced in warnings so callers can treat it as a soft failure.
 // ---------------------------------------------------------------------------
 export async function compileGraph(graph: SessionGraph): Promise<{
   compiledJson: string;
@@ -19,24 +21,83 @@ export async function compileGraph(graph: SessionGraph): Promise<{
 }> {
   const { Compiler } = await import("inkjs/full");
   const source = renderInkSource(graph);
-  const compiler = new Compiler(source);
-  compiler.Compile();
 
-  if (compiler.errors.length > 0) {
-    throw new Error(
-      `Ink compilation errors:\n${compiler.errors.join("\n")}`
-    );
+  let compiledJson: string;
+  let warnings: string[];
+  try {
+    const compiler = new Compiler(source);
+    compiler.Compile();
+
+    if (compiler.errors.length > 0) {
+      const errorMsg = `Ink compilation errors:\n${compiler.errors.join("\n")}`;
+      return { compiledJson: "", warnings: [errorMsg] };
+    }
+
+    const story = compiler.runtimeStory;
+    if (!story) {
+      return {
+        compiledJson: "",
+        warnings: [
+          `Ink compiler produced no runtimeStory. Source excerpt:\n${source.slice(0, 500)}`,
+        ],
+      };
+    }
+
+    const json = story.ToJson() as string | null | undefined;
+    if (!json) {
+      return {
+        compiledJson: "",
+        warnings: [
+          `Ink compiler ToJson() returned empty result. Source excerpt:\n${source.slice(0, 500)}`,
+        ],
+      };
+    }
+
+    // Validate the JSON has expected top-level keys before handing to Story
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(json);
+    } catch (parseErr) {
+      return {
+        compiledJson: "",
+        warnings: [
+          `Ink compiled JSON is not valid JSON: ${String(parseErr)}. Source excerpt:\n${source.slice(0, 500)}`,
+        ],
+      };
+    }
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !("inkVersion" in parsed) ||
+      !("root" in parsed)
+    ) {
+      return {
+        compiledJson: "",
+        warnings: [
+          `Ink compiled JSON missing required keys (inkVersion, root). Source excerpt:\n${source.slice(0, 500)}`,
+        ],
+      };
+    }
+
+    compiledJson = json;
+    warnings = [...compiler.warnings];
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      compiledJson: "",
+      warnings: [
+        `Ink compilation threw unexpectedly: ${message}. Source excerpt:\n${source.slice(0, 500)}`,
+      ],
+    };
   }
 
-  const story = compiler.runtimeStory;
-  const compiledJson = story.ToJson() as string;
-
-  return { compiledJson, warnings: [...compiler.warnings] };
+  return { compiledJson, warnings };
 }
 
 // ---------------------------------------------------------------------------
 // compileInkSource — compile raw .ink source (no graph rendering step)
 // Helper used in tests and inline compilation paths.
+// Throws on compiler errors (unlike compileGraph which returns soft failures).
 // ---------------------------------------------------------------------------
 export async function compileInkSource(source: string): Promise<{
   compiledJson: string;
@@ -44,7 +105,13 @@ export async function compileInkSource(source: string): Promise<{
 }> {
   const { Compiler } = await import("inkjs/full");
   const compiler = new Compiler(source);
-  compiler.Compile();
+
+  try {
+    compiler.Compile();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Ink compiler threw unexpectedly: ${message}`);
+  }
 
   if (compiler.errors.length > 0) {
     throw new Error(
@@ -53,16 +120,55 @@ export async function compileInkSource(source: string): Promise<{
   }
 
   const story = compiler.runtimeStory;
-  const compiledJson = story.ToJson() as string;
+  if (!story) {
+    throw new Error("Ink compiler produced no runtimeStory");
+  }
 
+  const compiledJson = story.ToJson() as string;
   return { compiledJson, warnings: [...compiler.warnings] };
 }
 
 // ---------------------------------------------------------------------------
 // createStory — instantiate a Story from compiled JSON
+// Wraps the Story constructor so a corrupt JSON string (e.g. missing root
+// pointers that cause inkjs JsonSerialisation to throw) surfaces as a
+// structured error rather than an unhandled TypeError crashing the server.
 // ---------------------------------------------------------------------------
 export function createStory(compiledJson: string): Story {
-  return new Story(compiledJson);
+  // Validate JSON structure before handing to the Story constructor.
+  // inkjs can throw TypeError: Cannot read properties of null (reading '^->')
+  // when the compiled JSON has a corrupt container/pointer structure.
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(compiledJson);
+  } catch (err) {
+    throw new Error(
+      `createStory: compiledJson is not valid JSON. ${String(err)}`
+    );
+  }
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("inkVersion" in parsed) ||
+    !("root" in parsed)
+  ) {
+    throw new Error(
+      "createStory: compiledJson missing required inkVersion or root keys. " +
+        "This usually means the Ink source contained syntax that compiled to corrupt JSON. " +
+        "Check render-ink.ts escaping."
+    );
+  }
+
+  try {
+    return new Story(compiledJson);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `inkjs failed to load compiled story: ${message}. ` +
+        "This usually means the Ink source contained syntax that compiled to corrupt JSON. " +
+        "Check render-ink.ts escaping."
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -172,3 +172,25 @@ describe("getVariable / setVariable", () => {
     expect(getVariable(story, "visited")).toBe(false);
   });
 });
+
+describe("createStory — error handling for corrupt / invalid JSON", () => {
+  it("throws descriptive error when compiledJson is not valid JSON", () => {
+    expect(() => createStory("NOT JSON AT ALL")).toThrow(
+      /createStory: compiledJson is not valid JSON/
+    );
+  });
+
+  it("throws descriptive error when compiledJson is missing inkVersion key", () => {
+    const noVersion = JSON.stringify({ root: [[]], listDefs: {} });
+    expect(() => createStory(noVersion)).toThrow(
+      /missing required inkVersion or root keys/
+    );
+  });
+
+  it("throws descriptive error when compiledJson is missing root key", () => {
+    const noRoot = JSON.stringify({ inkVersion: 21, listDefs: {} });
+    expect(() => createStory(noRoot)).toThrow(
+      /missing required inkVersion or root keys/
+    );
+  });
+});

@@ -415,3 +415,97 @@ describe("renderInkSource — ID sanitization", () => {
     expect(src).toContain("-> knot_my_scene");
   });
 });
+
+describe("renderInkSource — Ink reserved syntax in LLM-generated prose", () => {
+  it("escapes -> (divert arrow) in node.prompt so it does not create a divert", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start" ? { ...n, prompt: "Drużyna -> port w mgnieniu oka." } : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    // The raw -> must not appear in the knot body (it would be treated as a divert)
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    // Escaped form should be present
+    expect(knotBlock).toContain("\\-\\>");
+    // Raw unescaped -> must NOT appear in the knot body prose
+    // (The entry-point divert "-> knot_start" is outside this block, so we check the body)
+    const linesInBlock = knotBlock.split("\n").filter((l) => !l.trim().startsWith("~"));
+    const hasRawDivert = linesInBlock.some(
+      (l) => /(?<!\\)->/.test(l) && !l.trim().startsWith("->")
+    );
+    expect(hasRawDivert).toBe(false);
+  });
+
+  it("escapes * at start of line in node.prompt so it does not create a choice", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start"
+        ? { ...n, prompt: "* Opcja pierwsza\n* Opcja druga" }
+        : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    // Escaped * should be present
+    expect(knotBlock).toContain("\\*");
+    // No unescaped * at start of line in the prose region
+    const hasRawChoice = knotBlock
+      .split("\n")
+      .some((l) => /^\s*\*(?!\\)/.test(l) && !l.trim().startsWith("* ->") && !l.trim().startsWith("* {") && !l.trim().startsWith("* ["));
+    expect(hasRawChoice).toBe(false);
+  });
+
+  it("escapes === at start of line in node.prompt so it does not create a knot", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start" ? { ...n, prompt: "=== Separator ===" } : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    // Should not contain an unescaped knot separator in the body
+    expect(knotBlock).not.toMatch(/^\s*===/m);
+    // Escaped form should be present
+    expect(knotBlock).toContain("\\===");
+  });
+
+  it("uses placeholder text when node.prompt is empty string", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start" ? { ...n, prompt: "" } : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    expect(knotBlock).toContain("(brak opisu)");
+  });
+
+  it("uses default label when choice edge has empty label", () => {
+    const graph = makeGraph();
+    const edges = graph.edges.map((e) =>
+      e.id === "e4" ? { ...e, label: "" } : e
+    );
+    const src = renderInkSource({ ...graph, edges });
+    // Default label should be rendered as a choice option
+    expect(src).toContain("[Kontynuuj]");
+  });
+
+  it("escapes // at start of line in node.prompt so it does not become a comment", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start" ? { ...n, prompt: "// This looks like a URL fragment" } : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    expect(knotBlock).toContain("\\/\\/");
+    // Raw comment must not appear as a comment line
+    expect(knotBlock).not.toMatch(/^\s*\/\//m);
+  });
+
+  it("escapes <> glue markers in node.prompt", () => {
+    const graph = makeGraph();
+    const nodes = graph.nodes.map((n) =>
+      n.id === "start" ? { ...n, prompt: "Tekst <>dalej." } : n
+    );
+    const src = renderInkSource({ ...graph, nodes });
+    const knotBlock = src.split("=== knot_start ===")[1]?.split("=== knot_")[0] ?? "";
+    expect(knotBlock).toContain("\\<\\>");
+  });
+});

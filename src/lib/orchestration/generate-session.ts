@@ -14,6 +14,7 @@ import {
 } from "@/lib/prompts/session-generator";
 import type { SessionNode, SessionGraph as SG } from "@/lib/schemas/session-graph";
 import { extractJsonBlock } from "@/lib/llm/json-extract";
+import { compileGraph } from "@/lib/orchestration/director/ink";
 
 type PartialSessionGraph = Omit<SG, "createdAt" | "updatedAt" | "validatedAt">;
 
@@ -286,7 +287,61 @@ export async function generateSession(
   // Validation pass
   const parseResult = SessionGraphSchema.safeParse(assembled);
   if (parseResult.success) {
-    return { ok: true, graph: parseResult.data, warnings: [] };
+    // Compile-check: verify the graph produces valid Ink before returning.
+    // Real LLM output can contain reserved Ink syntax (e.g. ->, ===, *) that
+    // passes schema validation but crashes inkjs at runtime. Catching it here
+    // lets us run the repair path rather than serving a broken graph.
+    const { compiledJson: checkJson, warnings: compileWarnings } = await compileGraph(parseResult.data);
+    if (!checkJson) {
+      // Treat compile failure like a schema validation failure — run repair.
+      const compileError = compileWarnings.join("; ");
+      logger?.("compile-check", { error: compileError });
+
+      const repairSystem =
+        "You are a JSON repair assistant. The SessionGraph JSON below produces invalid Ink syntax when rendered. " +
+        "Fix the node prompt and edge label fields so they contain plain prose text with no Ink reserved syntax " +
+        "(no ->, ===, *, +, ~, {, }, #, //). " +
+        "Return ONLY the corrected JSON object — no markdown, no explanation.";
+      const repairUser =
+        `COMPILE ERRORS:\n${compileError}\n\nPARTIAL GRAPH:\n${JSON.stringify(parseResult.data, null, 2)}\n\n` +
+        "Return the minimally corrected SessionGraph JSON.";
+
+      let compileRepairRaw: string;
+      try {
+        compileRepairRaw = await callLLM({
+          system: repairSystem,
+          messages: [{ role: "user", content: repairUser }],
+          temperature: 0.1,
+        });
+      } catch (err) {
+        logger?.("compile-repair", err);
+        return { ok: false, stage: "validate", error: "Upstream model call failed.", partial: assembled };
+      }
+
+      const compileRepairJsonStr = extractJsonBlock(compileRepairRaw);
+      if (!compileRepairJsonStr) {
+        return { ok: false, stage: "validate", error: "Stage output could not be parsed against schema.", partial: assembled };
+      }
+
+      const compileRepairedParsed: unknown = JSON.parse(compileRepairJsonStr);
+      const compileRepairedResult = SessionGraphSchema.safeParse(compileRepairedParsed);
+      if (!compileRepairedResult.success) {
+        return {
+          ok: false,
+          stage: "validate",
+          error: `Compile-repair failed: ${compileRepairedResult.error.errors.map((e) => e.message).join("; ")}`,
+          partial: compileRepairedParsed,
+        };
+      }
+
+      return {
+        ok: true,
+        graph: compileRepairedResult.data,
+        warnings: ["Graph required Ink compile repair.", ...compileWarnings],
+      };
+    }
+
+    return { ok: true, graph: parseResult.data, warnings: compileWarnings };
   }
 
   // Validator repair — one shot

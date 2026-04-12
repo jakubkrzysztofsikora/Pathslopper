@@ -11,6 +11,16 @@ import stageDFixture from "./fixtures/generate-session/stage-d.json";
 import stageEFixture from "./fixtures/generate-session/stage-e.json";
 import stageFFixture from "./fixtures/generate-session/stage-f.json";
 
+// Mock inkjs compiler so unit tests don't need the full inkjs/full ESM bundle.
+// Individual tests can override these mocks to exercise failure paths.
+vi.mock("@/lib/orchestration/director/ink", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/orchestration/director/ink")>();
+  return {
+    ...actual,
+    compileGraph: vi.fn().mockResolvedValue({ compiledJson: "MOCK_COMPILED", warnings: [] }),
+  };
+});
+
 const MINIMAL_BRIEF: SessionBrief = {
   version: "pf2e",
   partySize: 4,
@@ -218,6 +228,98 @@ describe("generateSession", () => {
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.stage).toBe("validate");
+    });
+  });
+
+  describe("compile-check path", () => {
+    it("returns ok:true on happy path — compileGraph succeeds", async () => {
+      // The vi.mock at top of file mocks compileGraph to return success.
+      const mockCallLLM = buildHappyPathMock();
+      const result = await generateSession(MINIMAL_BRIEF, { callLLM: mockCallLLM });
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      // compileGraph mock returns empty warnings so warnings array should be empty
+      expect(result.warnings).toHaveLength(0);
+    });
+
+    it("runs repair when compileGraph returns empty compiledJson", async () => {
+      const { compileGraph } = await import("@/lib/orchestration/director/ink");
+      const compileGraphMock = vi.mocked(compileGraph);
+
+      // First call fails (compile failure), second call from repair path succeeds
+      compileGraphMock
+        .mockResolvedValueOnce({
+          compiledJson: "",
+          warnings: ["Ink compilation errors: divert to undefined knot 'port'"],
+        })
+        .mockResolvedValue({ compiledJson: "MOCK_COMPILED", warnings: [] });
+
+      // The repair LLM call returns a valid graph JSON (we reuse the assembled fixture)
+      const happyResponses = [
+        JSON.stringify(stageAFixture),
+        JSON.stringify(stageBFixture),
+        JSON.stringify(stageCFixture),
+        JSON.stringify(stageDFixture),
+        JSON.stringify(stageEFixture),
+        JSON.stringify(stageFFixture),
+      ];
+
+      // We need to build a valid full SessionGraph JSON for the repair response.
+      // For simplicity, we trigger the repair path but have the repair LLM return
+      // invalid JSON so we can verify the repair was attempted (7th call).
+      let callCount = 0;
+      const mockCallLLM: CallLLM = vi.fn().mockImplementation(() => {
+        const r = happyResponses[callCount] ?? "REPAIR INVALID JSON";
+        callCount++;
+        return Promise.resolve(r);
+      });
+
+      const result = await generateSession(MINIMAL_BRIEF, { callLLM: mockCallLLM });
+
+      // 7th call was the repair call
+      expect(mockCallLLM).toHaveBeenCalledTimes(7);
+      // Repair returned invalid JSON → ok:false with stage='validate'
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.stage).toBe("validate");
+
+      // Restore mock to default success for subsequent tests
+      compileGraphMock.mockResolvedValue({ compiledJson: "MOCK_COMPILED", warnings: [] });
+    });
+
+    it("returns ok:false stage=validate when compile repair LLM throws", async () => {
+      const { compileGraph } = await import("@/lib/orchestration/director/ink");
+      const compileGraphMock = vi.mocked(compileGraph);
+
+      compileGraphMock.mockResolvedValueOnce({
+        compiledJson: "",
+        warnings: ["Ink compilation errors: reserved syntax in prompt"],
+      });
+
+      const happyResponses = [
+        JSON.stringify(stageAFixture),
+        JSON.stringify(stageBFixture),
+        JSON.stringify(stageCFixture),
+        JSON.stringify(stageDFixture),
+        JSON.stringify(stageEFixture),
+        JSON.stringify(stageFFixture),
+      ];
+      let callCount = 0;
+      const mockCallLLM: CallLLM = vi.fn().mockImplementation(() => {
+        const r = happyResponses[callCount];
+        callCount++;
+        if (r === undefined) return Promise.reject(new Error("Upstream failed"));
+        return Promise.resolve(r);
+      });
+
+      const result = await generateSession(MINIMAL_BRIEF, { callLLM: mockCallLLM });
+
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.stage).toBe("validate");
+
+      // Restore mock
+      compileGraphMock.mockResolvedValue({ compiledJson: "MOCK_COMPILED", warnings: [] });
     });
   });
 });
