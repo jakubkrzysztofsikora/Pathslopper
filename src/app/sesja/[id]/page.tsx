@@ -4,6 +4,7 @@ import { SessionIdSchema } from "@/lib/schemas/session";
 import { ExpiredSessionScreen } from "@/components/sessions/expired-session-screen";
 import { SessionHeader } from "@/components/sessions/session-header";
 import { PlayShell } from "@/components/play/play-shell";
+import { GenerationTrigger } from "@/components/sessions/generation-trigger";
 
 interface SessionPageProps {
   params: { id: string };
@@ -46,9 +47,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
       data-testid="session-page"
     >
       <SessionHeader session={session} />
-      <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-6 text-zinc-400">
-        Sesja {session.id} — trwa generowanie grafu sesji.
-      </section>
+      <GenerationTrigger sessionId={session.id} />
     </main>
   );
 }
