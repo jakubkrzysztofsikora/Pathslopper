@@ -203,6 +203,24 @@ function assembleGraph(
     };
   }
 
+  // 4b) Endings — reconcile frontOutcomes keys (LLM uses front NAMES but
+  // assembly generates front IDs as "front-1", "front-2", etc.)
+  const frontNameToId = new Map(fronts.map((f) => [f.name, f.id]));
+  for (const ending of reconcileEndings) {
+    if (ending.frontOutcomes && typeof ending.frontOutcomes === "object") {
+      const fixed: Record<string, "neutralized" | "delayed" | "escalated" | "triumphed"> = {};
+      for (const [key, value] of Object.entries(ending.frontOutcomes)) {
+        if (frontIds.has(key)) {
+          fixed[key] = value; // key is already a valid front ID
+        } else if (frontNameToId.has(key)) {
+          fixed[frontNameToId.get(key)!] = value; // map name → ID
+        }
+        // else: drop the key (references a non-existent front)
+      }
+      ending.frontOutcomes = fixed;
+    }
+  }
+
   // 5) Clocks — fix frontId references to match generated front-N IDs
   const reconciledClocks = stageC.clocks.map((clock) => {
     const fixed = { ...clock };
