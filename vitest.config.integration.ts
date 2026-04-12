@@ -6,7 +6,7 @@ export default mergeConfig(baseConfig, defineConfig({
     environment: "node",
     include: ["src/tests/integration/**/*.test.ts"],
     exclude: [],
-    testTimeout: 60_000,
+    testTimeout: 180_000, // 3 min — real 6-stage generator takes 60-120s against Scaleway
     // Run integration test files one at a time. Every integration test
     // file that touches Redis calls `store._reset()` in afterAll, which
     // deletes every `pfnexus:session:*` key across the whole instance.

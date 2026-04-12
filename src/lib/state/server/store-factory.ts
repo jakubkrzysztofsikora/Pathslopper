@@ -18,18 +18,21 @@ import type { SessionStore } from "./session-store";
  * requests in a warm Serverless Container instance.
  */
 
-let _store: SessionStore | null = null;
+// Use globalThis to survive Next.js dev-mode hot-module-reload.
+// Module-level `let _store` gets wiped when the module is re-evaluated;
+// globalThis persists across reloads in the same Node.js process.
+const _global = globalThis as unknown as { __pfnexus_session_store?: SessionStore };
 
 export function getSessionStore(): SessionStore {
-  if (_store) return _store;
+  if (_global.__pfnexus_session_store) return _global.__pfnexus_session_store;
 
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl && redisUrl.trim().length > 0) {
-    _store = RedisSessionStore.fromUrl(redisUrl);
+    _global.__pfnexus_session_store = RedisSessionStore.fromUrl(redisUrl);
   } else {
-    _store = new InMemorySessionStore();
+    _global.__pfnexus_session_store = new InMemorySessionStore();
   }
-  return _store;
+  return _global.__pfnexus_session_store;
 }
 
 /**
@@ -39,5 +42,5 @@ export function getSessionStore(): SessionStore {
  * should await store._reset() instead.
  */
 export function _resetSessionStoreSingleton(): void {
-  _store = null;
+  _global.__pfnexus_session_store = undefined;
 }
