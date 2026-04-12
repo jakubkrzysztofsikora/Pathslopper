@@ -147,19 +147,114 @@ function assembleGraph(
     firedPortents: 0,
   }));
 
+  // ---------------------------------------------------------------------------
+  // POST-ASSEMBLY RECONCILIATION
+  //
+  // Each stage independently generates IDs. The LLM may produce edge
+  // referents that don't exactly match node IDs, clock frontIds that
+  // don't match the generated front-N pattern, or endings that reference
+  // non-existent nodes. Rather than relying on the LLM to be perfectly
+  // cross-referentially consistent, we reconcile here.
+  // ---------------------------------------------------------------------------
+
+  const nodeIds = new Set(nodes.map((n) => n.id));
+  const frontIds = new Set(fronts.map((f) => f.id));
+  const clockIds = new Set(stageC.clocks.map((c) => c.id));
+  const secretIds = new Set(stageC.secrets.map((s) => s.id));
+
+  // 1) startNodeId — must point at a strong-start node
+  let startNodeId = stageD.startNodeId;
+  if (!nodeIds.has(startNodeId)) {
+    const strongStart = nodes.find((n) => n.kind === "strong-start");
+    startNodeId = strongStart?.id ?? nodes[0]?.id ?? startNodeId;
+  }
+
+  // 2) Edges — filter out edges referencing non-existent nodes
+  const validEdges = stageD.edges.filter((e) => {
+    const fromOk = nodeIds.has(e.from);
+    const toOk = nodeIds.has(e.to);
+    // For clock-trigger edges, also require a valid clockId
+    if (e.kind === "clock-trigger" && (!e.clockId || !clockIds.has(e.clockId))) {
+      return false;
+    }
+    return fromOk && toOk;
+  });
+
+  // 3) Endings — fix nodeId to point at actual ending nodes
+  const endingNodes = nodes.filter((n) => n.kind === "ending");
+  const reconcileEndings = stageD.endings.map((ending, idx) => {
+    if (nodeIds.has(ending.nodeId) && nodes.find((n) => n.id === ending.nodeId)?.kind === "ending") {
+      return ending; // valid
+    }
+    // Point at the nearest available ending node
+    const fallback = endingNodes[idx % endingNodes.length];
+    return fallback ? { ...ending, nodeId: fallback.id } : ending;
+  });
+
+  // 4) Ensure at least one defeat/tpk ending exists
+  const hasDefeat = reconcileEndings.some(
+    (e) => e.category === "defeat" || e.category === "tpk"
+  );
+  if (!hasDefeat && endingNodes.length > 0 && reconcileEndings.length > 0) {
+    // Flip the last ending to defeat
+    reconcileEndings[reconcileEndings.length - 1] = {
+      ...reconcileEndings[reconcileEndings.length - 1],
+      category: "defeat",
+    };
+  }
+
+  // 5) Clocks — fix frontId references to match generated front-N IDs
+  const reconciledClocks = stageC.clocks.map((clock) => {
+    const fixed = { ...clock };
+    if (fixed.frontId && !frontIds.has(fixed.frontId)) {
+      // Try to match by name similarity or just assign the first front
+      fixed.frontId = fronts[0]?.id;
+    }
+    if (fixed.onFillNodeId && !nodeIds.has(fixed.onFillNodeId)) {
+      fixed.onFillNodeId = undefined;
+    }
+    return fixed;
+  });
+
+  // 6) Secrets — fix requires[] references
+  const reconciledSecrets = stageC.secrets.map((secret) => ({
+    ...secret,
+    requires: secret.requires.filter((r) => secretIds.has(r) && r !== secret.id),
+  }));
+
+  // 7) Ensure every non-start, non-ending node has at least one incoming edge
+  // If any node is orphaned, add an auto edge from the previous act's last node
+  const nodesWithIncoming = new Set(validEdges.map((e) => e.to));
+  const orphanedNodes = nodes.filter(
+    (n) => n.id !== startNodeId && n.kind !== "ending" && !nodesWithIncoming.has(n.id) && !n.when
+  );
+  const autoFixEdges = orphanedNodes.map((orphan) => {
+    // Connect from the previous node in act order
+    const sameActNodes = nodes.filter((n) => n.act === orphan.act && n.id !== orphan.id);
+    const prevNode = sameActNodes[sameActNodes.length - 1] ?? nodes[0];
+    return {
+      id: `auto-fix-${orphan.id}`,
+      from: prevNode.id,
+      to: orphan.id,
+      kind: "auto" as const,
+      onTraverseEffects: [],
+      priority: 0,
+    };
+  });
+
   return {
     id: randomUUID(),
     version: brief.version,
     brief,
-    startNodeId: stageD.startNodeId,
+    startNodeId,
     nodes,
-    edges: stageD.edges,
-    clocks: stageC.clocks,
+    edges: [...validEdges, ...autoFixEdges],
+    clocks: reconciledClocks,
     fronts,
-    secrets: stageC.secrets,
+    secrets: reconciledSecrets,
     npcs,
     locations: stageC.locations,
-    endings: stageD.endings,
+    endings: reconcileEndings,
     createdAt: now,
     updatedAt: now,
   };

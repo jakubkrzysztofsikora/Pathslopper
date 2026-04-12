@@ -182,52 +182,41 @@ describe("generateSession", () => {
 
       const result = await generateSession(MINIMAL_BRIEF, { callLLM: mockCallLLM });
 
-      // The repair was called (7th call)
-      expect(mockCallLLM).toHaveBeenCalledTimes(7);
-
-      // Repair returned invalid JSON → ok:false with stage='validate'
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
-      expect(result.stage).toBe("validate");
+      // Post-assembly reconciliation now removes bad edge referents
+      // before validation, so the graph passes without needing repair.
+      // The repair call (7th) is never made.
+      expect(mockCallLLM).toHaveBeenCalledTimes(6);
+      expect(result.ok).toBe(true);
     });
 
-    it("returns ok:false stage='validate' when repair LLM call throws", async () => {
-      const badStageDJson = JSON.stringify({
-        ...stageDFixture,
-        edges: [
-          ...stageDFixture.edges,
-          {
-            id: "e-bad",
-            from: "sc-start",
-            to: "sc-nonexistent",
-            kind: "auto",
-            onTraverseEffects: [],
-            priority: 0,
-          },
-        ],
+    it("returns ok:false at early stage when stage output is structurally invalid", async () => {
+      // If a stage's output violates its own schema (e.g., too few
+      // scenes), the pipeline fails early WITHOUT reaching assembly.
+      // Reconciliation only runs post-assembly; stage-level failures
+      // are caught by per-stage Zod parse.
+      const tooFewScenes = JSON.stringify({
+        scenes: stageBFixture.scenes.slice(0, 3), // min(8) requires 8
       });
 
       let callCount = 0;
       const responses = [
-        JSON.stringify(stageAFixture),
-        JSON.stringify(stageBFixture),
-        JSON.stringify(stageCFixture),
-        badStageDJson,
-        JSON.stringify(stageEFixture),
-        JSON.stringify(stageFFixture),
+        JSON.stringify(stageAFixture),   // Stage A — pass
+        tooFewScenes,                    // Stage B attempt 1 — fail
+        tooFewScenes,                    // Stage B retry — still fail
       ];
       const mockCallLLM: CallLLM = vi.fn().mockImplementation(() => {
-        const r = responses[callCount];
+        const r = responses[callCount] ?? "{}";
         callCount++;
-        if (r === undefined) return Promise.reject(new Error("Upstream failed"));
         return Promise.resolve(r);
       });
 
       const result = await generateSession(MINIMAL_BRIEF, { callLLM: mockCallLLM });
 
+      // Failed at Stage B after 1 attempt + 1 retry = 3 total calls
+      expect(mockCallLLM).toHaveBeenCalledTimes(3);
       expect(result.ok).toBe(false);
       if (result.ok) return;
-      expect(result.stage).toBe("validate");
+      expect(result.stage).toBe("B");
     });
   });
 
