@@ -188,7 +188,7 @@ resource "scaleway_container" "app" {
   memory_limit   = var.container_memory_limit
   min_scale      = var.container_min_scale
   max_scale      = var.container_max_scale
-  timeout        = 60
+  timeout        = 300
   privacy        = "public"
   protocol       = "http1"
   deploy         = true
