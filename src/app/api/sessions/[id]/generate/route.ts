@@ -58,6 +58,18 @@ export async function POST(
     );
   }
 
+  // Dev-mode fixture shortcut: POST /api/sessions/[id]/generate?mock=true
+  // Uses a hand-authored fixture graph instead of running the 6-stage LLM
+  // chain. Only works when NODE_ENV !== 'production'. Allows full-flow
+  // browser testing without Scaleway credentials.
+  const url = new URL(_request.url);
+  if (url.searchParams.get("mock") === "true" && process.env.NODE_ENV !== "production") {
+    const { makeGraph } = await import("@/tests/factories/graph-factory");
+    const fixtureGraph = makeGraph({ brief: session.brief });
+    const updated = await store.setGraph(idParse.data, fixtureGraph);
+    return NextResponse.json({ ok: true, session: updated, warnings: ["Using fixture graph (mock=true)."] });
+  }
+
   const result = await generateSession(session.brief, {
     callLLM,
     logger: logServerError,
