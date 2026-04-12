@@ -90,6 +90,30 @@
       "discovered": false,
       "delivery": "document",
       "requires": []
+    },
+    {
+      "id": "sec-7",
+      "text": "Więźniowie znają tajne hasło, które dezaktywuje pułapki w korytarzach.",
+      "conclusionTag": "rescue-prisoners",
+      "discovered": false,
+      "delivery": "overheard",
+      "requires": []
+    },
+    {
+      "id": "sec-8",
+      "text": "Tyran boi się wody — ukryta wieża ma sekretny kanał odpływowy.",
+      "conclusionTag": "escape",
+      "discovered": false,
+      "delivery": "document",
+      "requires": []
+    },
+    {
+      "id": "sec-9",
+      "text": "Strażnik Lech pamięta starą drogę ucieczki, którą sam kiedyś odkrył.",
+      "conclusionTag": "escape",
+      "discovered": false,
+      "delivery": "npc-dialog",
+      "requires": []
     }
   ],
   "clocks": [

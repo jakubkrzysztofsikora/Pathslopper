@@ -127,13 +127,17 @@ export const FIXTURE_GRAPH: SessionGraph = {
       firedPortents: 0,
     },
   ],
+  // Three-Clue Rule: each conclusionTag must have ≥3 secrets.
   secrets: [
     { id: "s1", text: "Tyran ma sekretne wejście.", conclusionTag: "end-tyrant", discovered: false, delivery: "npc-dialog", requires: [] },
     { id: "s2", text: "Kapitan straży jest zdrajcą.", conclusionTag: "end-tyrant", discovered: false, delivery: "document", requires: [] },
-    { id: "s3", text: "W lochach są więźniowie.", conclusionTag: "rescue", discovered: false, delivery: "environmental", requires: [] },
     { id: "s4", text: "Klucz jest w wieży.", conclusionTag: "end-tyrant", discovered: false, delivery: "skill-check", requires: [] },
+    { id: "s3", text: "W lochach są więźniowie.", conclusionTag: "rescue", discovered: false, delivery: "environmental", requires: [] },
     { id: "s5", text: "Strażnik to były sojusznik.", conclusionTag: "rescue", discovered: false, delivery: "npc-dialog", requires: [] },
+    { id: "s7", text: "Więźniowie znają hasło do pułapek.", conclusionTag: "rescue", discovered: false, delivery: "overheard", requires: [] },
     { id: "s6", text: "Mapa jest sfałszowana.", conclusionTag: "escape", discovered: false, delivery: "document", requires: [] },
+    { id: "s8", text: "Jest ukryty kanał odpływowy.", conclusionTag: "escape", discovered: false, delivery: "document", requires: [] },
+    { id: "s9", text: "Stary strażnik zna drogę ucieczki.", conclusionTag: "escape", discovered: false, delivery: "npc-dialog", requires: [] },
   ],
   npcs: [
     { id: "npc-1", name: "Kapitan Marek", role: "antagonist", goal: "Chronić twierdzę.", voice: "Zimny, rozkazujący.", disposition: -2 },

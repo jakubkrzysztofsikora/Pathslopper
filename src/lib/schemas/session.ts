@@ -66,6 +66,12 @@ export const SessionStateSchema = z.object({
     .array(CharacterSheetParsedSchema)
     .max(MAX_CHARACTERS_PER_SESSION)
     .default([]),
+  // Manual React Flow node position overrides (authoring UI only).
+  // Stored on SessionState rather than SessionGraph to keep authoring
+  // state separate from runtime graph data (state boundary invariant).
+  editorLayout: z
+    .record(z.string(), z.object({ x: z.number(), y: z.number() }))
+    .optional(),
 });
 
 export type SessionId = z.infer<typeof SessionIdSchema>;

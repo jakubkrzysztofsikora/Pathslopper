@@ -547,6 +547,24 @@ export const SessionGraphSchema = z
         checkEffect(eff, ["edges", i, "onTraverseEffects", j])
       )
     );
+
+    // 9) Three-Clue Rule (design primitive #3): every conclusionTag that appears
+    // in secrets must have at least 3 secrets pointing at it. A tag with fewer
+    // than 3 clues means the party might be blocked if they miss one — violating
+    // the core "Three-Clue Rule" principle from Justin Alexander's node design.
+    const secretsByTag = new Map<string, number>();
+    for (const s of g.secrets) {
+      secretsByTag.set(s.conclusionTag, (secretsByTag.get(s.conclusionTag) ?? 0) + 1);
+    }
+    secretsByTag.forEach((count, tag) => {
+      if (count < 3) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["secrets"],
+          message: `Three-Clue Rule violation: conclusionTag '${tag}' has only ${count} secret(s) — minimum 3 required so the party cannot be permanently blocked.`,
+        });
+      }
+    });
   });
 
 export type SessionGraph = z.infer<typeof SessionGraphSchema>;

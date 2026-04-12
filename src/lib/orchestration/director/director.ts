@@ -144,6 +144,7 @@ export async function director(
     evaluateTriggersNode,
     continueNode,
     pickMoveNode,
+    maybeGrantSecretNode,
     persistNode,
   } = await import("./graph/nodes");
 
@@ -156,6 +157,7 @@ export async function director(
     .addNode("evaluateTriggers", evaluateTriggersNode)
     .addNode("continue", continueNode)
     .addNode("pickMove", pickMoveNode)
+    .addNode("maybeGrantSecret", maybeGrantSecretNode(deps))
     .addNode("persist", persistNode(deps))
     .addEdge(START, "load")
     .addEdge("load", "applyInput")
@@ -163,7 +165,8 @@ export async function director(
     .addEdge("tickClocks", "evaluateTriggers")
     .addEdge("evaluateTriggers", "continue")
     .addEdge("continue", "pickMove")
-    .addEdge("pickMove", "persist")
+    .addEdge("pickMove", "maybeGrantSecret")
+    .addEdge("maybeGrantSecret", "persist")
     .addEdge("persist", END);
 
   const compiled = graph.compile();

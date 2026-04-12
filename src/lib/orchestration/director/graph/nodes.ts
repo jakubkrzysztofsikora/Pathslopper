@@ -268,6 +268,71 @@ export function pickMoveNode(state: DirectorState): Partial<DirectorState> {
 }
 
 // ---------------------------------------------------------------------------
+// Node 6b: maybeGrantSecretNode
+// Phase 3.5.6 — emergency secret grant on critical success.
+// If the most recent adjudication was a criticalSuccess AND there are
+// undiscovered secrets matching an active front, reveal one via reveal-secret.
+// ---------------------------------------------------------------------------
+
+export function maybeGrantSecretNode(deps: DirectorDeps) {
+  return async (state: DirectorState): Promise<Partial<DirectorState>> => {
+    const { worldState, output } = state;
+    if (!output) return {};
+
+    // Check for criticalSuccess flag in worldState vars (set by adjudicate
+    // and carried through the session's worldState).
+    const lastAdjudicationWasCrit =
+      worldState.vars["lastAdjudicationCritSuccess"] === true;
+
+    if (!lastAdjudicationWasCrit) return {};
+
+    // Load session graph to check secrets and active fronts
+    const session = await deps.store.get(state.sessionId);
+    if (!session?.graph) return {};
+
+    const graph = session.graph;
+
+    // Find undiscovered secrets whose conclusionTag matches an active front id.
+    // "Active" front = one that has not yet fired all its grimPortents.
+    const activeFrontIds = new Set(
+      graph.fronts
+        .filter((f) => f.firedPortents < f.grimPortents.length)
+        .map((f) => f.id)
+    );
+
+    const candidates = graph.secrets.filter(
+      (s) =>
+        !s.discovered &&
+        activeFrontIds.has(s.conclusionTag)
+    );
+
+    if (candidates.length === 0) return {};
+
+    // Pick the first eligible secret deterministically
+    const secret = candidates[0];
+
+    // Emit a reveal-secret effect by updating worldState vars
+    const updatedVars = {
+      ...worldState.vars,
+      [`secret_revealed_${secret.id}`]: true,
+      lastAdjudicationCritSuccess: false, // clear flag after use
+    };
+
+    const updatedWorldState = { ...worldState, vars: updatedVars };
+
+    // Append a GM-whisper to the narration output
+    const whisper = `\n\n[Szept MG — krytyczny sukces] ${secret.text}`;
+    const updatedOutput = {
+      ...output,
+      narration: (output.narration ?? "") + whisper,
+      worldState: updatedWorldState,
+    };
+
+    return { worldState: updatedWorldState, output: updatedOutput };
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Node 7: persistNode
 // Serializes ink state + worldState to the session store.
 // ---------------------------------------------------------------------------

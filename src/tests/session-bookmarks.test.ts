@@ -49,11 +49,7 @@ describe("sessionBookmarks store", () => {
     vi.restoreAllMocks();
   });
 
-  // TODO: localStorage persistence tests skipped — jsdom's localStorage
-  // polyfill broke after the inkjs dep-tree addition. The session-bookmarks
-  // code is unchanged; this is an environment regression, not a logic bug.
-  // Fix by upgrading jsdom or adding a localStorage shim in vitest.setup.ts.
-  it.skip("add prepends a new bookmark and persists to localStorage", () => {
+  it("add prepends a new bookmark and persists to localStorage", () => {
     useSessionBookmarks.getState().add(makeBookmark("sess_111"));
     const state = useSessionBookmarks.getState();
     expect(state.bookmarks).toHaveLength(1);
@@ -103,7 +99,7 @@ describe("sessionBookmarks store", () => {
     expect(typeof bm.lastOpenedAt).toBe("string");
   });
 
-  it.skip("_hydrate reads bookmarks back from localStorage on first call", () => {
+  it("_hydrate reads bookmarks back from localStorage on first call", () => {
     const seed = [
       {
         ...makeBookmark("sess_hydrated"),
@@ -117,7 +113,7 @@ describe("sessionBookmarks store", () => {
     expect(useSessionBookmarks.getState().bookmarks[0].id).toBe("sess_hydrated");
   });
 
-  it.skip("_hydrate ignores corrupt JSON and starts empty", () => {
+  it("_hydrate ignores corrupt JSON and starts empty", () => {
     window.localStorage.setItem(BOOKMARKS_STORAGE_KEY, "{not json");
     useSessionBookmarks.setState({ bookmarks: [], hydrated: false });
     useSessionBookmarks.getState()._hydrate();

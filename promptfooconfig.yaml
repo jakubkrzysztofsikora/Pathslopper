@@ -1,0 +1,15 @@
+# Pathfinder Nexus — promptfoo evaluation config
+# References all 6 per-stage eval.yaml files from the session generator prompt chain.
+# Run all evals: npx promptfoo eval
+# Run a single stage: npx promptfoo eval --config src/lib/prompts/session-generator/stage-a.eval.yaml
+
+description: Pathfinder Nexus session generator — all 6 stages
+
+# Include each stage eval as a nested config reference
+configs:
+  - src/lib/prompts/session-generator/stage-a.eval.yaml
+  - src/lib/prompts/session-generator/stage-b.eval.yaml
+  - src/lib/prompts/session-generator/stage-c.eval.yaml
+  - src/lib/prompts/session-generator/stage-d.eval.yaml
+  - src/lib/prompts/session-generator/stage-e.eval.yaml
+  - src/lib/prompts/session-generator/stage-f.eval.yaml

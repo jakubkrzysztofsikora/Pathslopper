@@ -62,8 +62,16 @@ export function NewSessionWizard() {
     defaultSessionName("classic")
   );
   const [targetDurationHours, setTargetDurationHours] = React.useState(5);
+  const [partySize, setPartySize] = React.useState(4);
+  const [partyLevel, setPartyLevel] = React.useState(3);
   const [tone, setTone] = React.useState("");
   const [setting, setSetting] = React.useState("");
+  const [characterHooks, setCharacterHooks] = React.useState<string[]>([""]);
+  const [safetyLines, setSafetyLines] = React.useState<string[]>([]);
+  const [safetyVeils, setSafetyVeils] = React.useState<string[]>([]);
+  const [xCardEnabled, setXCardEnabled] = React.useState(true);
+  const [safetyTagInput, setSafetyTagInput] = React.useState("");
+  const [safetyVeilInput, setSafetyVeilInput] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -106,13 +114,22 @@ export function NewSessionWizard() {
           version,
           brief: {
             version,
-            partySize: 4,
-            partyLevel: 1,
+            partySize,
+            partyLevel,
             targetDurationHours,
             tone: tone.trim(),
             setting: setting.trim(),
             presetId: preset,
             storyDna,
+            characterHooks: characterHooks
+              .map((h) => h.trim())
+              .filter(Boolean)
+              .map((h, i) => ({ characterName: `Postać ${i + 1}`, hook: h })),
+            safetyTools: {
+              lines: safetyLines,
+              veils: safetyVeils,
+              xCardEnabled,
+            },
           },
         }),
       });
@@ -274,6 +291,36 @@ export function NewSessionWizard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                  Liczba graczy
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={8}
+                  value={partySize}
+                  onChange={(e) => setPartySize(Number(e.target.value))}
+                  data-testid="wizard-party-size"
+                  className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                  Poziom drużyny
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={partyLevel}
+                  onChange={(e) => setPartyLevel(Number(e.target.value))}
+                  data-testid="wizard-party-level"
+                  className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+            </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
                 Czas trwania (godziny)
@@ -317,6 +364,122 @@ export function NewSessionWizard() {
                 data-testid="wizard-setting"
                 className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
               />
+            </div>
+            {/* Character hooks — one text input per hook, up to 8 */}
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-zinc-400">
+                Haki postaci (opcjonalnie)
+              </label>
+              <div className="flex flex-col gap-2">
+                {characterHooks.map((hook, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      type="text"
+                      maxLength={400}
+                      placeholder={`Postać ${idx + 1} — hak fabularny`}
+                      value={hook}
+                      onChange={(e) => {
+                        const next = [...characterHooks];
+                        next[idx] = e.target.value;
+                        setCharacterHooks(next);
+                      }}
+                      data-testid={`wizard-hook-${idx}`}
+                      className="flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+                    />
+                    {characterHooks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setCharacterHooks(characterHooks.filter((_, i) => i !== idx))}
+                        className="rounded border border-zinc-700 px-2 text-zinc-500 hover:text-zinc-300"
+                        aria-label="Usuń"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {characterHooks.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={() => setCharacterHooks([...characterHooks, ""])}
+                    className="self-start rounded border border-dashed border-zinc-700 px-3 py-1 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-300"
+                  >
+                    + Dodaj hak
+                  </button>
+                )}
+              </div>
+            </div>
+            {/* Safety tools */}
+            <div className="rounded-md border border-zinc-800 bg-zinc-900/50 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Narzędzia bezpieczeństwa
+              </p>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="mb-1 block text-xs text-zinc-400">
+                    Linie (absolutne zakazy)
+                  </label>
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {safetyLines.map((line, i) => (
+                      <span key={i} className="flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-300">
+                        {line}
+                        <button type="button" onClick={() => setSafetyLines(safetyLines.filter((_, j) => j !== i))} className="text-zinc-500 hover:text-zinc-200">×</button>
+                      </span>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={safetyTagInput}
+                    placeholder="Dodaj linię i naciśnij Enter"
+                    onChange={(e) => setSafetyTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && safetyTagInput.trim()) {
+                        setSafetyLines([...safetyLines, safetyTagInput.trim()]);
+                        setSafetyTagInput("");
+                      }
+                    }}
+                    data-testid="wizard-safety-lines"
+                    className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-zinc-400">
+                    Welony (tematy do zaciemnienia)
+                  </label>
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {safetyVeils.map((veil, i) => (
+                      <span key={i} className="flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-300">
+                        {veil}
+                        <button type="button" onClick={() => setSafetyVeils(safetyVeils.filter((_, j) => j !== i))} className="text-zinc-500 hover:text-zinc-200">×</button>
+                      </span>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={safetyVeilInput}
+                    placeholder="Dodaj welony i naciśnij Enter"
+                    onChange={(e) => setSafetyVeilInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && safetyVeilInput.trim()) {
+                        setSafetyVeils([...safetyVeils, safetyVeilInput.trim()]);
+                        setSafetyVeilInput("");
+                      }
+                    }}
+                    data-testid="wizard-safety-veils"
+                    className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+                <label className="flex items-center gap-2 text-xs text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={xCardEnabled}
+                    onChange={(e) => setXCardEnabled(e.target.checked)}
+                    data-testid="wizard-x-card"
+                    className="accent-amber-500"
+                  />
+                  Karta X włączona (domyślnie tak)
+                </label>
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <Button

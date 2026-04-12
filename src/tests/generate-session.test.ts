@@ -77,7 +77,7 @@ describe("generateSession", () => {
       expect(result.graph.nodes.length).toBeGreaterThanOrEqual(8);
       expect(result.graph.fronts).toHaveLength(1);
       expect(result.graph.clocks).toHaveLength(2);
-      expect(result.graph.secrets).toHaveLength(6);
+      expect(result.graph.secrets).toHaveLength(9); // stage-c fixture updated to 9 (Three-Clue Rule: ≥3 per conclusionTag)
       expect(result.graph.npcs).toHaveLength(3);
       expect(result.graph.locations).toHaveLength(3);
       expect(result.graph.endings).toHaveLength(2);

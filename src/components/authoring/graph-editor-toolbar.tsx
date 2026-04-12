@@ -11,6 +11,8 @@ interface GraphEditorToolbarProps {
   onToggleMode: () => void;
   selectedNodeId: string | null;
   warningCount: number;
+  statBlockClamps?: number;
+  threeClueViolations?: number;
   onSaveDraft: () => Promise<void>;
   onValidate: () => Promise<void>;
   onApprove: () => Promise<void>;
@@ -23,6 +25,8 @@ export function GraphEditorToolbar({
   onToggleMode,
   selectedNodeId,
   warningCount,
+  statBlockClamps = 0,
+  threeClueViolations = 0,
   onSaveDraft,
   onValidate,
   onApprove,
@@ -72,7 +76,49 @@ export function GraphEditorToolbar({
 
       <div className="flex-1" />
 
-      <ConfidenceBadge warningCount={warningCount} />
+      <ConfidenceBadge
+        warningCount={warningCount}
+        statBlockClamps={statBlockClamps}
+        threeClueViolations={threeClueViolations}
+      />
+
+      {/* Amendment S — Regen-at-level buttons */}
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={regenning || !editMode}
+        title={t("authoring.toolbarRegenFront")}
+        onClick={() => {
+          // TODO: POST to /api/sessions/[id]/generate with { scope: "front" }
+          // when the route supports granular regen. For now, stub is visible.
+        }}
+      >
+        {t("authoring.toolbarRegenFront")}
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={regenning || !editMode}
+        title={t("authoring.toolbarRegenClock")}
+        onClick={() => {
+          // TODO: POST to /api/sessions/[id]/generate with { scope: "clock" }
+        }}
+      >
+        {t("authoring.toolbarRegenClock")}
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={regenning || !editMode}
+        title={t("authoring.toolbarRegenNpc")}
+        onClick={() => {
+          // TODO: POST to /api/sessions/[id]/generate with { scope: "npc" }
+        }}
+      >
+        {t("authoring.toolbarRegenNpc")}
+      </Button>
 
       <Button
         variant="ghost"

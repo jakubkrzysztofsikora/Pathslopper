@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from "react";
 import type { SessionState } from "@/lib/schemas/session";
-import type { SessionGraph, SessionNode, Npc, Clock, Secret } from "@/lib/schemas/session-graph";
+import type { SessionGraph, SessionNode, Npc, Secret } from "@/lib/schemas/session-graph";
 import { GraphCanvas } from "./graph-canvas";
 import { NodeInspector } from "./node-inspector";
 import { GraphEditorToolbar } from "./graph-editor-toolbar";
+import { ClockTracker } from "./clock-tracker";
 import { t } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 
@@ -162,22 +163,7 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
             {graph.clocks.length === 0 ? (
               <p className="text-xs text-zinc-600">{t("authoring.sidebarClocksEmpty")}</p>
             ) : (
-              <ul className="space-y-1.5">
-                {graph.clocks.map((clock: Clock) => (
-                  <li key={clock.id}>
-                    <div className="mb-0.5 flex justify-between text-xs">
-                      <span className="text-zinc-300">{clock.label}</span>
-                      <span className="text-zinc-500">{clock.filled}/{clock.segments}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-zinc-700">
-                      <div
-                        className="h-full bg-amber-500 transition-all"
-                        style={{ width: `${(clock.filled / clock.segments) * 100}%` }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <ClockTracker clocks={graph.clocks} />
             )}
           </section>
 
