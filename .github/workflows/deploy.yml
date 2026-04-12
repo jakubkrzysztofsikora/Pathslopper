@@ -93,7 +93,8 @@ jobs:
           terraform apply -auto-approve \
             -target=scaleway_registry_namespace.this \
             -var image_tag=bootstrap \
-            -var redis_version=${{ steps.redis.outputs.redis_version }}
+            -var redis_version=${{ steps.redis.outputs.redis_version }} \
+            -var elevenlabs_api_key="${{ secrets.ELEVENLABS_API_KEY }}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -122,7 +123,8 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var image_tag=${{ steps.tag.outputs.sha }} \
-            -var redis_version=${{ steps.redis.outputs.redis_version }}
+            -var redis_version=${{ steps.redis.outputs.redis_version }} \
+            -var elevenlabs_api_key="${{ secrets.ELEVENLABS_API_KEY }}"
 
       - name: Capture outputs
         id: outputs
