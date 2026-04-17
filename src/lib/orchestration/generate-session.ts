@@ -1,23 +1,15 @@
-import { randomUUID } from "node:crypto";
 import type { CallLLM, ChatMessage, ResponseFormat } from "@/lib/llm/client";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import type { SessionGraph } from "@/lib/schemas/session-graph";
 import { SessionGraphSchema } from "@/lib/schemas/session-graph";
-import {
-  buildGeneratorChain,
-  type StageASkeleton,
-  type StageBScenes,
-  type StageCWorldKit,
-  type StageDWiring,
-  type StageEProse,
-  type StageFStatBlocks,
-} from "@/lib/prompts/session-generator";
+import { buildGeneratorChain } from "@/lib/prompts/session-generator";
 import { STAGE_C_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-c-worldkit";
 import { STAGE_D_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-d-wiring";
 import { STAGE_F_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-f-statblocks";
-import type { SessionNode, SessionGraph as SG } from "@/lib/schemas/session-graph";
+import type { SessionGraph as SG } from "@/lib/schemas/session-graph";
 import { extractJsonBlock } from "@/lib/llm/json-extract";
 import { compileGraph } from "@/lib/orchestration/director/ink";
+import { assembleGraph } from "@/lib/orchestration/generate-session-assembler";
 
 type PartialSessionGraph = Omit<SG, "createdAt" | "updatedAt" | "validatedAt">;
 
@@ -93,190 +85,6 @@ async function runStageWithRetry<T>(
   return { ok: false, error: PARSE_ERROR, raw: retryRaw };
 }
 
-/**
- * Assemble a partial SessionGraph from all six stage outputs, then fill in
- * the node prompt fields from Stage E.
- */
-function assembleGraph(
-  brief: SessionBrief,
-  stageA: StageASkeleton,
-  stageB: StageBScenes,
-  stageC: StageCWorldKit,
-  stageD: StageDWiring,
-  stageE: StageEProse,
-  stageF: StageFStatBlocks
-): Partial<SessionGraph> {
-  const now = new Date().toISOString();
-
-  // Build SessionNodes from Stage B scenes + Stage E prompts
-  const nodes: SessionNode[] = stageB.scenes.map((scene) => ({
-    id: scene.id,
-    kind: scene.kind,
-    act: scene.act,
-    title: scene.title,
-    synopsis: scene.synopsis,
-    // Stage E fills in the per-node narration seed
-    prompt: stageE.nodePrompts[scene.id] ?? "",
-    estimatedMinutes: scene.estimatedMinutes,
-    tensionLevel: scene.tensionLevel,
-    npcsPresent: scene.npcsPresent ?? [],
-    locationId: scene.locationRef,
-    // Defaults for optional session-node fields
-    obstacles: [],
-    contentWarnings: [],
-    tags: [],
-    onEnterEffects: [],
-    repeatable: false,
-  }));
-
-  // Merge Stage F stat blocks into Stage C NPCs
-  const npcs = stageC.npcs.map((npc) => {
-    const statBlock = stageF.statBlocks[npc.id];
-    if (statBlock) return { ...npc, statBlock };
-    return npc;
-  });
-
-  // Build Fronts from Stage A (add firedPortents=0 and required id)
-  const fronts = stageA.fronts.map((f, idx) => ({
-    id: `front-${idx + 1}`,
-    name: f.name,
-    stakes: f.stakes,
-    dangers: f.dangers,
-    grimPortents: f.grimPortents,
-    impendingDoom: f.impendingDoom,
-    firedPortents: 0,
-  }));
-
-  // ---------------------------------------------------------------------------
-  // POST-ASSEMBLY RECONCILIATION
-  //
-  // Each stage independently generates IDs. The LLM may produce edge
-  // referents that don't exactly match node IDs, clock frontIds that
-  // don't match the generated front-N pattern, or endings that reference
-  // non-existent nodes. Rather than relying on the LLM to be perfectly
-  // cross-referentially consistent, we reconcile here.
-  // ---------------------------------------------------------------------------
-
-  const nodeIds = new Set(nodes.map((n) => n.id));
-  const frontIds = new Set(fronts.map((f) => f.id));
-  const clockIds = new Set(stageC.clocks.map((c) => c.id));
-  const secretIds = new Set(stageC.secrets.map((s) => s.id));
-
-  // 1) startNodeId — must point at a strong-start node
-  let startNodeId = stageD.startNodeId;
-  if (!nodeIds.has(startNodeId)) {
-    const strongStart = nodes.find((n) => n.kind === "strong-start");
-    startNodeId = strongStart?.id ?? nodes[0]?.id ?? startNodeId;
-  }
-
-  // 2) Edges — filter out edges referencing non-existent nodes
-  const validEdges = stageD.edges.filter((e) => {
-    const fromOk = nodeIds.has(e.from);
-    const toOk = nodeIds.has(e.to);
-    // For clock-trigger edges, also require a valid clockId
-    if (e.kind === "clock-trigger" && (!e.clockId || !clockIds.has(e.clockId))) {
-      return false;
-    }
-    return fromOk && toOk;
-  });
-
-  // 3) Endings — fix nodeId to point at actual ending nodes
-  const endingNodes = nodes.filter((n) => n.kind === "ending");
-  const reconcileEndings = stageD.endings.map((ending, idx) => {
-    if (nodeIds.has(ending.nodeId) && nodes.find((n) => n.id === ending.nodeId)?.kind === "ending") {
-      return ending; // valid
-    }
-    // Point at the nearest available ending node
-    const fallback = endingNodes[idx % endingNodes.length];
-    return fallback ? { ...ending, nodeId: fallback.id } : ending;
-  });
-
-  // 4) Ensure at least one defeat/tpk ending exists
-  const hasDefeat = reconcileEndings.some(
-    (e) => e.category === "defeat" || e.category === "tpk"
-  );
-  if (!hasDefeat && endingNodes.length > 0 && reconcileEndings.length > 0) {
-    // Flip the last ending to defeat
-    reconcileEndings[reconcileEndings.length - 1] = {
-      ...reconcileEndings[reconcileEndings.length - 1],
-      category: "defeat",
-    };
-  }
-
-  // 4b) Endings — reconcile frontOutcomes keys (LLM uses front NAMES but
-  // assembly generates front IDs as "front-1", "front-2", etc.)
-  const frontNameToId = new Map(fronts.map((f) => [f.name, f.id]));
-  for (const ending of reconcileEndings) {
-    if (ending.frontOutcomes && typeof ending.frontOutcomes === "object") {
-      const fixed: Record<string, "neutralized" | "delayed" | "escalated" | "triumphed"> = {};
-      for (const [key, value] of Object.entries(ending.frontOutcomes)) {
-        if (frontIds.has(key)) {
-          fixed[key] = value; // key is already a valid front ID
-        } else if (frontNameToId.has(key)) {
-          fixed[frontNameToId.get(key)!] = value; // map name → ID
-        }
-        // else: drop the key (references a non-existent front)
-      }
-      ending.frontOutcomes = fixed;
-    }
-  }
-
-  // 5) Clocks — fix frontId references to match generated front-N IDs
-  const reconciledClocks = stageC.clocks.map((clock) => {
-    const fixed = { ...clock };
-    if (fixed.frontId && !frontIds.has(fixed.frontId)) {
-      // Try to match by name similarity or just assign the first front
-      fixed.frontId = fronts[0]?.id;
-    }
-    if (fixed.onFillNodeId && !nodeIds.has(fixed.onFillNodeId)) {
-      fixed.onFillNodeId = undefined;
-    }
-    return fixed;
-  });
-
-  // 6) Secrets — fix requires[] references
-  const reconciledSecrets = stageC.secrets.map((secret) => ({
-    ...secret,
-    requires: secret.requires.filter((r) => secretIds.has(r) && r !== secret.id),
-  }));
-
-  // 7) Ensure every non-start, non-ending node has at least one incoming edge
-  // If any node is orphaned, add an auto edge from the previous act's last node
-  const nodesWithIncoming = new Set(validEdges.map((e) => e.to));
-  const orphanedNodes = nodes.filter(
-    (n) => n.id !== startNodeId && n.kind !== "ending" && !nodesWithIncoming.has(n.id) && !n.when
-  );
-  const autoFixEdges = orphanedNodes.map((orphan) => {
-    // Connect from the previous node in act order
-    const sameActNodes = nodes.filter((n) => n.act === orphan.act && n.id !== orphan.id);
-    const prevNode = sameActNodes[sameActNodes.length - 1] ?? nodes[0];
-    return {
-      id: `auto-fix-${orphan.id}`,
-      from: prevNode.id,
-      to: orphan.id,
-      kind: "auto" as const,
-      onTraverseEffects: [],
-      priority: 0,
-    };
-  });
-
-  return {
-    id: randomUUID(),
-    version: brief.version,
-    brief,
-    startNodeId,
-    nodes,
-    edges: [...validEdges, ...autoFixEdges],
-    clocks: reconciledClocks,
-    fronts,
-    secrets: reconciledSecrets,
-    npcs,
-    locations: stageC.locations,
-    endings: reconcileEndings,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
 
 export async function generateSession(
   brief: SessionBrief,
