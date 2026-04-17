@@ -47,7 +47,7 @@ describe("ImportStep", () => {
       // POST /api/sessions → create
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, id: "sess-abc123", phase: "brief" }),
+        json: async () => ({ ok: true, session: { id: "sess-abc123", phase: "brief" } }),
       })
       // POST /api/sessions/sess-abc123/import → success
       .mockResolvedValueOnce({
@@ -78,7 +78,7 @@ describe("ImportStep", () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, id: "sess-xyz", phase: "brief" }),
+        json: async () => ({ ok: true, session: { id: "sess-xyz", phase: "brief" } }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -104,7 +104,7 @@ describe("ImportStep", () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ ok: true, id: "sess-err", phase: "brief" }),
+        json: async () => ({ ok: true, session: { id: "sess-err", phase: "brief" } }),
       })
       .mockResolvedValueOnce({
         ok: false,

@@ -25,14 +25,13 @@ import { importSession } from "@/lib/orchestration/import/import-session";
 const BodySchema = z.object({
   content: z.string().optional(),
   uploadKey: z.string().optional(),
-  consent: z
-    .object({
-      clocks: z.boolean().optional(),
-      fronts: z.boolean().optional(),
-      endings: z.boolean().optional(),
-    })
-    .optional(),
 });
+// NOTE: a `consent` channel (GM-approved synthesis of missing clocks/
+// fronts/endings before any LLM stages run) is planned for v2. Today the
+// orchestrator always synthesises missing sections and flags them in
+// `graph.provenance.synthesized` so the UI shows them as AI-generated
+// and the GM reviews them in the editor. Do not re-add the input until
+// the orchestrator implements the short-circuit path.
 
 function logServerError(stage: string, err: unknown): void {
   const message = err instanceof Error ? err.message : String(err);
@@ -122,7 +121,7 @@ export async function POST(
   }
 
   const result = await importSession(
-    { raw, consent: bodyParse.data.consent },
+    { raw },
     { callLLM, logger: logServerError }
   );
 

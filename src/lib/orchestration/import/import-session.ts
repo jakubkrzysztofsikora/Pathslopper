@@ -32,13 +32,13 @@ export interface ImportSessionInput {
   raw: string;
   /** Optional brief override — falls back to frontmatter + sensible defaults. */
   brief?: Partial<SessionBrief>;
-  /** GM consent to synthesise missing sections (clocks/fronts/endings). */
-  consent?: {
-    clocks?: boolean;
-    fronts?: boolean;
-    endings?: boolean;
-  };
 }
+// Consent-gated synthesis (skip clocks/fronts/endings stages unless the GM
+// consents) is planned for v2. Today the orchestrator always synthesises
+// missing sections and flags them in `provenance.synthesized` so the UI can
+// surface them for review. `pendingConsent` in the return value stays — it
+// tells the UI which absent sections were synthesised — but the input
+// channel is removed until a real gating implementation lands.
 
 export interface PendingConsent {
   clocks: boolean;

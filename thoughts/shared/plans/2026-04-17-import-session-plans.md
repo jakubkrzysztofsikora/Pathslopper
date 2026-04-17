@@ -64,16 +64,20 @@ Endings / Zakończenia.
 Explicitly out of scope in v1: Foundry `.fvttadv`, Roll20 JSON, PDF
 modules, Homebrewery tokens.
 
-## Amendment W — Consent-gated synthesis
+## Amendment W — Informational pending-consent + provenance review
 
 The Lazy-DM template does not author clocks, fronts, or endings.
 Research flagged that silently fabricating them and handing the GM a
-graph they didn't write is bad domain practice. The orchestrator
-therefore returns a `pendingConsent: {clocks, fronts, endings}` flag
-whenever a section is absent from the source. The API surfaces those
-flags, and the editor UI shows synthesized badges on every invented
-field so the GM can review or accept before approving. A future
-iteration may move to a true two-round consent handshake (v2).
+graph they didn't write is bad domain practice. In v1 the orchestrator
+always synthesises missing sections and returns a
+`pendingConsent: {clocks, fronts, endings}` flag whenever a section
+was absent from the source. The API surfaces those flags so the UI
+can warn the GM that those sections were invented. Every synthesised
+field is also tagged in `graph.provenance.synthesized` so the editor
+renders a `SynthesizedBadge` next to it for targeted GM review.
+A real two-round consent handshake (don't run LLM stages for
+clocks/fronts/endings until GM explicitly consents) is scoped for v2 —
+v1 intentionally exposes no `consent` input to avoid a misleading API.
 
 ## Amendment X — Provenance tracking
 

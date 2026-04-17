@@ -55,12 +55,12 @@ export function ImportStep() {
         body: JSON.stringify({ version: "pf2e" }),
       });
       const createJson = await createRes.json();
-      if (!createRes.ok || !createJson.ok) {
+      if (!createRes.ok || !createJson.ok || !createJson.session?.id) {
         setError(createJson.error ?? "Nie udało się utworzyć sesji.");
         setPhase("error");
         return;
       }
-      sessionId = createJson.id;
+      sessionId = createJson.session.id;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Błąd sieci przy tworzeniu sesji.");
       setPhase("error");
@@ -116,7 +116,7 @@ export function ImportStep() {
           eksport Notion). Tytuły sekcji jak {`"## Sceny"`} / {`"## Scenes"`}, {`"## Sekrety"`} /
           {` "## Secrets and Clues"`}, {`"## BNi"`} / {`"## NPCs"`} itd. są automatycznie rozpoznawane.
           Brakujące fragmenty (zegary, fronty, zakończenia) zostaną uzupełnione i
-          oznaczone jako wymysłone przez AI — sprawdź je w edytorze przed zatwierdzeniem.
+          oznaczone jako wymyślone przez AI — sprawdź je w edytorze przed zatwierdzeniem.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
