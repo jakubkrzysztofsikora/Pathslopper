@@ -7,6 +7,7 @@ import { GraphCanvas } from "./graph-canvas";
 import { NodeInspector } from "./node-inspector";
 import { GraphEditorToolbar } from "./graph-editor-toolbar";
 import { ClockTracker } from "./clock-tracker";
+import { clearSynthesizedPath } from "./synthesized-badge";
 import { t } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 
@@ -31,17 +32,24 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
   const selectedNode = graph.nodes.find((n) => n.id === selectedNodeId) ?? null;
 
   const handleUpdateNode = useCallback((nodeId: string, patch: Partial<SessionNode>) => {
-    setGraph((prev) => ({
-      ...prev,
-      nodes: prev.nodes.map((n) => (n.id === nodeId ? { ...n, ...patch } : n)),
-    }));
+    setGraph((prev) => {
+      let nextProvenance = prev.provenance ?? { synthesized: {} };
+      for (const field of Object.keys(patch)) {
+        nextProvenance = clearSynthesizedPath(nextProvenance, nodeId, field);
+      }
+      return {
+        ...prev,
+        nodes: prev.nodes.map((n) => (n.id === nodeId ? { ...n, ...patch } : n)),
+        provenance: Object.keys(nextProvenance.synthesized).length > 0 ? nextProvenance : undefined,
+      };
+    });
   }, []);
 
   async function handleSaveDraft() {
     const res = await fetch(`/api/sessions/${session.id}/graph`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ patch: { nodes: graph.nodes } }),
+      body: JSON.stringify({ patch: { nodes: graph.nodes, provenance: graph.provenance } }),
     });
     const json = await res.json();
     if (json.ok) {
@@ -246,6 +254,7 @@ export function AuthoringShell({ session }: AuthoringShellProps) {
             npcs={graph.npcs}
             locations={graph.locations}
             editMode={editMode}
+            provenance={graph.provenance}
             onUpdate={handleUpdateNode}
             onRegen={handleRegenNode}
           />

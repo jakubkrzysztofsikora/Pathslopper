@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,7 +236,14 @@ export function NewSessionWizard() {
                 },
               ]}
             />
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                href="/sesja/nowa/import"
+                className="text-sm text-zinc-400 underline decoration-dotted underline-offset-4 hover:text-amber-400"
+                data-testid="wizard-import-link"
+              >
+                Masz już notatki sesji? Zaimportuj zamiast generować od zera.
+              </Link>
               <Button
                 onClick={() => setStep(1)}
                 data-testid="wizard-next-0"

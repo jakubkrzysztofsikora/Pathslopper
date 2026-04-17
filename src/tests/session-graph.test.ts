@@ -124,6 +124,40 @@ describe("SessionGraphSchema", () => {
     }
   });
 
+  it("accepts a graph with provenance and retains it on round-trip", () => {
+    const base = makeGraph();
+    const graph: SessionGraph = {
+      ...base,
+      provenance: {
+        synthesized: {
+          [base.nodes[0].id]: ["prompt", "outcomes.failure"],
+          "npc-mayor": ["*"],
+        },
+      },
+    };
+    const result = SessionGraphSchema.safeParse(graph);
+    if (!result.success) {
+      console.error(result.error.issues);
+    }
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.provenance?.synthesized[base.nodes[0].id]).toEqual([
+        "prompt",
+        "outcomes.failure",
+      ]);
+      expect(result.data.provenance?.synthesized["npc-mayor"]).toEqual(["*"]);
+    }
+  });
+
+  it("accepts a graph without provenance (backward compat)", () => {
+    const graph = makeGraph();
+    const result = SessionGraphSchema.safeParse(graph);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.provenance).toBeUndefined();
+    }
+  });
+
   it("rejects Three-Clue Rule violation (conclusionTag with < 3 secrets)", () => {
     const base = makeGraph();
     // Replace secrets with only 2 for one tag

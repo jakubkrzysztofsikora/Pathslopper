@@ -1,20 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import type { SessionNode, Npc, Location } from "@/lib/schemas/session-graph";
+import type { SessionNode, Npc, Location, Provenance } from "@/lib/schemas/session-graph";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
+import { SynthesizedBadge, isSynthesized } from "./synthesized-badge";
 
 interface NodeInspectorProps {
   node: SessionNode | null;
   npcs: Npc[];
   locations: Location[];
   editMode: boolean;
+  provenance?: Provenance;
   onUpdate: (nodeId: string, patch: Partial<SessionNode>) => void;
   onRegen: (nodeId: string) => Promise<void>;
 }
 
-export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onRegen }: NodeInspectorProps) {
+export function NodeInspector({ node, npcs, locations, editMode, provenance, onUpdate, onRegen }: NodeInspectorProps) {
   const [regenning, setRegenning] = useState(false);
 
   if (!node) {
@@ -36,10 +38,14 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
     try { await onRegen(node.id); } finally { setRegenning(false); }
   }
 
-  function field(label: string, children: React.ReactNode) {
+  function field(label: string, children: React.ReactNode, fieldPath?: string) {
+    const flagged = fieldPath ? isSynthesized(provenance, node!.id, fieldPath) : false;
     return (
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-400">{label}</label>
+        <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+          {label}
+          {flagged && <SynthesizedBadge />}
+        </label>
         {children}
       </div>
     );
@@ -62,7 +68,8 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
           value={node.title}
           disabled={!editMode}
           onChange={(e) => onUpdate(node.id, { title: e.target.value })}
-        />
+        />,
+        "title"
       )}
 
       {field(t("authoring.inspectorSynopsisLabel"),
@@ -72,7 +79,8 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
           value={node.synopsis}
           disabled={!editMode}
           onChange={(e) => onUpdate(node.id, { synopsis: e.target.value })}
-        />
+        />,
+        "synopsis"
       )}
 
       {field(t("authoring.inspectorPromptLabel"),
@@ -82,7 +90,8 @@ export function NodeInspector({ node, npcs, locations, editMode, onUpdate, onReg
           value={node.prompt}
           disabled={!editMode}
           onChange={(e) => onUpdate(node.id, { prompt: e.target.value })}
-        />
+        />,
+        "prompt"
       )}
 
       {field(t("authoring.inspectorTensionLabel"),
