@@ -113,8 +113,8 @@ export function ImportStep() {
         <CardTitle>Importuj istniejące notatki</CardTitle>
         <CardDescription>
           Wklej swoje notatki sesji w Markdownie (Obsidian, gist, szablon Sly Flourish,
-          eksport Notion). Tytuły sekcji jak "## Sceny" / "## Scenes", "## Sekrety" /
-          "## Secrets and Clues", "## BNi" / "## NPCs" itd. są automatycznie rozpoznawane.
+          eksport Notion). Tytuły sekcji jak {`"## Sceny"`} / {`"## Scenes"`}, {`"## Sekrety"`} /
+          {` "## Secrets and Clues"`}, {`"## BNi"`} / {`"## NPCs"`} itd. są automatycznie rozpoznawane.
           Brakujące fragmenty (zegary, fronty, zakończenia) zostaną uzupełnione i
           oznaczone jako wymysłone przez AI — sprawdź je w edytorze przed zatwierdzeniem.
         </CardDescription>
