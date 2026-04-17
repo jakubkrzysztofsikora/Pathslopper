@@ -28,7 +28,7 @@ export function assembleGraph(
   stageD: StageDWiring,
   stageE: StageEProse,
   stageF: StageFStatBlocks
-): Partial<SessionGraph> {
+): Omit<SessionGraph, "provenance" | "validatedAt"> {
   const now = new Date().toISOString();
 
   const nodes: SessionNode[] = stageB.scenes.map((scene) => ({

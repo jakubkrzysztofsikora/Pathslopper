@@ -122,7 +122,7 @@ export async function POST(
   }
 
   const result = await importSession(
-    { raw },
+    { raw, consent: bodyParse.data.consent },
     { callLLM, logger: logServerError }
   );
 

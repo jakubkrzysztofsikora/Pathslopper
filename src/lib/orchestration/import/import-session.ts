@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type { CallLLM, ChatMessage, ResponseFormat } from "@/lib/llm/client";
 import type { SessionBrief } from "@/lib/schemas/session-brief";
 import type {
@@ -11,6 +10,7 @@ import { compileGraph } from "@/lib/orchestration/director/ink";
 import { STAGE_C_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-c-worldkit";
 import { STAGE_D_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-d-wiring";
 import { STAGE_F_JSON_SCHEMA } from "@/lib/prompts/session-generator/stage-f-statblocks";
+import { assembleGraph } from "@/lib/orchestration/generate-session-assembler";
 import { parseMarkdownToSections, type ImportedSections } from "./markdown-parser";
 import { buildImportChain } from "./import-stages";
 
@@ -271,7 +271,6 @@ export async function importSession(
   mergeSynthesizedPaths(synthesized, stageD.value.synthesizedPaths);
 
   // Stage E needs a partial graph.
-  const { assembleGraph } = await import("@/lib/orchestration/generate-session-assembler");
   const partialGraph = assembleGraph(
     brief,
     stripSynthesized(stageA.value),
@@ -343,7 +342,8 @@ export async function importSession(
   const repairs: string[] = [];
   const provenance: Provenance = { synthesized };
 
-  const withProvenance = { ...assembled, id: randomUUID(), provenance };
+  // assembleGraph already mints a fresh graph id; don't overwrite it.
+  const withProvenance = { ...assembled, provenance };
   const parse = SessionGraphSchema.safeParse(withProvenance);
 
   if (!parse.success) {
