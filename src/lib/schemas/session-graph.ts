@@ -336,6 +336,21 @@ export const EndingSchema = z.object({
 export type Ending = z.infer<typeof EndingSchema>;
 
 // ---------------------------------------------------------------------------
+// Provenance — tracks fields the LLM invented rather than extracted from
+// user-supplied import content. Populated by the import pipeline; the editor
+// UI renders a "synthesized" badge next to any flagged field so the GM can
+// review before approving. `["*"]` marks an entire entity as synthesized.
+// Entity ids are free-form (scene id, npc id, secret id, etc.) and field
+// paths are dot-delimited relative to the entity root.
+// ---------------------------------------------------------------------------
+
+export const ProvenanceSchema = z.object({
+  synthesized: z.record(z.string(), z.array(z.string())),
+});
+
+export type Provenance = z.infer<typeof ProvenanceSchema>;
+
+// ---------------------------------------------------------------------------
 // SessionGraph — top-level authoring format
 // ---------------------------------------------------------------------------
 
@@ -353,6 +368,7 @@ export const SessionGraphSchema = z
     npcs: z.array(NpcSchema).min(3).max(12),
     locations: z.array(LocationSchema).min(2).max(10),
     endings: z.array(EndingSchema).min(2).max(5),
+    provenance: ProvenanceSchema.optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     validatedAt: z.string().datetime().optional(),
